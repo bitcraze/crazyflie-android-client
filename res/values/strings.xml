@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">CrazyflieControl</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="title_activity_main">Crazyflie Control</string>
+    <string name="connect">Connect</string>
+    <string name="copter_channel">Copter channel:</string>
+    <string name="menu_connect">Connect</string>
+
+</resources>
