@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Crazyradio Dongle -->
+    <usb-device
+        product-id="30583"
+        vendor-id="6421" />
+
+</resources>
