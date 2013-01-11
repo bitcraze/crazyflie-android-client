@@ -1,7 +1,19 @@
 syntax: glob
-bin/*
-proguard-project.txt
-project.properties
-.classpath
-.project
-.settings/org.eclipse.jdt.core.prefs
+*.class
+*.apk
+*.dex
+*.ap_
+*.suo
+ 
+syntax: regexp
+^(.*[\\/])?gen[\\/].*
+^(.*[\\/])?bin[\\/].*
+^(.*[\\/])?obj[\\/].*
+^(.*[\\/])?log[\\/].*
+^(.*[\\/])?obf[\\/].*
+^(.*[\\/])?jars[\\/].*
+^(.*[\\/])?jar-sources[\\/].*
+^(.*[\\/])?javadoc[\\/].*
+^(.*[\\/])?\.svn[\\/].*
+^(.*[\\/])?\.metadata[\\/].*
+^(.*[\\/])?\.settings[\\/].*

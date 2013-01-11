@@ -1,5 +1,10 @@
 package se.bitcraze.crazyfliecontrol;
 
+import struct.JavaStruct;
+import struct.StructClass;
+import struct.StructException;
+import struct.StructField;
+
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import android.os.Bundle;
 import android.app.Activity;
@@ -117,12 +122,34 @@ public class MainActivity extends Activity implements Runnable{
 		mConnection.controlTransfer(0x40, 0x03,   0, 0, null, 0, 100);
 		
 		while (mDevice != null) {
-			byte [] data = new byte[33];
+			CommanderPacket cpk = new CommanderPacket();
+			byte [] data;// = new byte[1];
+			byte [] rdata = new byte[33];
 			
-			data[0] = (byte) 0xff;
+			//data[0] = (byte) 0xFF;
 			
-        	mConnection.bulkTransfer(mEpOut, data, 1, 100);
-        	mConnection.bulkTransfer(mEpIn, data, 33, 100);
+			cpk.port = (byte) 0x30;
+			cpk.pitch = 0;
+			cpk.roll  = 0;
+			cpk.yaw   = 0;
+			cpk.thrust = 20000;
+			
+			try {
+				data = JavaStruct.pack(cpk);
+				Log.v(TAG, "Sending a packet of " + data.length + " bytes");
+				String datastr = "[";
+				for (int i=0; i<data.length; i++)
+					datastr += "" + data[i] + ", ";
+				datastr += "]";
+				Log.v(TAG, "Sending data " + datastr);
+				mConnection.bulkTransfer(mEpOut, data, data.length, 100);
+	        	mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+			} catch (StructException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+
 			try {
 				Thread.sleep(20, 0);
 			} catch (InterruptedException e) {
