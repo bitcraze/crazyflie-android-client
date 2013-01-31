@@ -1,4 +1,33 @@
+/**
+ *    ||          ____  _ __                           
+ * +------+      / __ )(_) /_______________ _____  ___ 
+ * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+ *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ *
+ * Copyright (C) 2013 Bitcraze AB
+ *
+ * Crazyflie Nano Quadcopter Client
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
 package se.bitcraze.crazyfliecontrol;
+
+import java.nio.ByteOrder;
 
 import struct.JavaStruct;
 import struct.StructClass;
@@ -6,6 +35,8 @@ import struct.StructException;
 import struct.StructField;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
@@ -37,13 +68,22 @@ public class MainActivity extends Activity implements Runnable{
 
 	private UsbDeviceConnection mConnection;
 	
+	char thrust = 0;
+	float roll = 0;
+	float pitch = 0;
+	float yaw = 0;
+	
+	public int resolution = 1000;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
     
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
+        mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        mJoysticks.setMovementRange(resolution, resolution);
         mUsbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
     }
 
@@ -123,19 +163,17 @@ public class MainActivity extends Activity implements Runnable{
 		
 		while (mDevice != null) {
 			CommanderPacket cpk = new CommanderPacket();
-			byte [] data;// = new byte[1];
+			byte [] data;
 			byte [] rdata = new byte[33];
 			
-			//data[0] = (byte) 0xFF;
-			
 			cpk.port = (byte) 0x30;
-			cpk.pitch = 0;
-			cpk.roll  = 0;
-			cpk.yaw   = 0;
-			cpk.thrust = 20000;
+			cpk.pitch = pitch;
+			cpk.roll  = roll;
+			cpk.yaw   = yaw;
+			cpk.thrust = thrust;
 			
 			try {
-				data = JavaStruct.pack(cpk);
+				data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
 				Log.v(TAG, "Sending a packet of " + data.length + " bytes");
 				String datastr = "[";
 				for (int i=0; i<data.length; i++)
@@ -157,4 +195,54 @@ public class MainActivity extends Activity implements Runnable{
 			}
 		}
 	}
+	
+    private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
+
+        @Override
+        public void OnMoved(int pan, int tilt) {
+        		float stilt = (float) tilt / resolution; 
+        		float span = (float) pan / resolution;
+        		int t = (int) ((int) (-1) * stilt * 40000);
+
+        		if (stilt < 0.0)
+               		thrust = (char) (20000 + t);
+               	else
+               		thrust = 0;
+                yaw = (float) 150.0 * span;
+
+                Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
+        }
+
+        @Override
+        public void OnReleased() {
+        		Log.i("Joystick-Right", "Release");
+        }
+        
+        public void OnReturnedToCenter() {
+        		Log.i("Joystick-Right", "Center");
+        		thrust = 0;
+        };
+    }; 
+
+	private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
+
+        @Override
+        public void OnMoved(int pan, int tilt) {
+        		float stilt = (float) tilt / resolution; 
+	    		float span = (float) pan / resolution;
+
+        		pitch = (float) (20.0 * stilt); // Pitch is inversed in firmware
+        		roll = (float) (20.0 * span);
+
+        		Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
+        }
+
+        @Override
+        public void OnReleased() {
+        }
+        
+        public void OnReturnedToCenter() {
+        };
+}; 
+	
 }
