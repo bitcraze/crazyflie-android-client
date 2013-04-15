@@ -174,12 +174,12 @@ public class MainActivity extends Activity implements Runnable{
 			
 			try {
 				data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
-				Log.v(TAG, "Sending a packet of " + data.length + " bytes");
+				//Log.v(TAG, "Sending a packet of " + data.length + " bytes");
 				String datastr = "[";
 				for (int i=0; i<data.length; i++)
 					datastr += "" + data[i] + ", ";
 				datastr += "]";
-				Log.v(TAG, "Sending data " + datastr);
+				//Log.v(TAG, "Sending data " + datastr);
 				mConnection.bulkTransfer(mEpOut, data, data.length, 100);
 	        	mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
 			} catch (StructException e1) {
@@ -210,16 +210,16 @@ public class MainActivity extends Activity implements Runnable{
                		thrust = 0;
                 yaw = (float) 150.0 * span;
 
-                Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
+                //Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
         }
 
         @Override
         public void OnReleased() {
-        		Log.i("Joystick-Right", "Release");
+        		//Log.i("Joystick-Right", "Release");
         }
         
         public void OnReturnedToCenter() {
-        		Log.i("Joystick-Right", "Center");
+        		//Log.i("Joystick-Right", "Center");
         		thrust = 0;
         };
     }; 
@@ -234,7 +234,7 @@ public class MainActivity extends Activity implements Runnable{
         		pitch = (float) (20.0 * stilt); // Pitch is inversed in firmware
         		roll = (float) (20.0 * span);
 
-        		Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
+        		//Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
         }
 
         @Override
