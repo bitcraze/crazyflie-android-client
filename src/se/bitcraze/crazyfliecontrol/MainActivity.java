@@ -30,17 +30,17 @@ package se.bitcraze.crazyfliecontrol;
 import java.nio.ByteOrder;
 
 import struct.JavaStruct;
-import struct.StructClass;
 import struct.StructException;
-import struct.StructField;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
@@ -50,6 +50,7 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends Activity implements Runnable{
 	
@@ -60,7 +61,7 @@ public class MainActivity extends Activity implements Runnable{
 
 	private Object mDevice;
 
-	private UsbEndpoint mEndpointIntr;
+//	private UsbEndpoint mEndpointIntr;
 
 	private UsbEndpoint mEpIn;
 
@@ -75,12 +76,31 @@ public class MainActivity extends Activity implements Runnable{
 	
 	public int resolution = 1000;
 	
+	SharedPreferences preferences;
+
+	private int radioChannel;
+	private int radioBandwidth;
+
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-    
+
+        // Set default preference values
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        // Initialize preferences
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        String radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
+        String radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
+        radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
+        radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+        
+        Log.v(TAG, "radiochannel: " + radioChannel);
+        Log.v(TAG, "radiobandwidth: " + radioBandwidth);
+        
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
         mJoysticks.setMovementRange(resolution, resolution);
@@ -91,6 +111,18 @@ public class MainActivity extends Activity implements Runnable{
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	switch(item.getItemId()){
+    	
+    	case R.id.preferences:
+    		Intent intent = new Intent(this, PreferencesActivity.class);
+    		startActivity(intent);
+    		break;
+    	}
+    	return true;
     }
     
     @Override
@@ -156,10 +188,10 @@ public class MainActivity extends Activity implements Runnable{
    
     //Runs the communication loop in a thread...
 	public void run() {
-		//Set channel 107
-		mConnection.controlTransfer(0x40, 0x01, 107, 0, null, 0, 100);
-		//Set datarate 250K
-		mConnection.controlTransfer(0x40, 0x03,   0, 0, null, 0, 100);
+		//Set channel
+		mConnection.controlTransfer(0x40, 0x01, radioChannel, 0, null, 0, 100);
+		//Set datarate
+		mConnection.controlTransfer(0x40, 0x03, radioBandwidth, 0, null, 0, 100);
 		
 		while (mDevice != null) {
 			CommanderPacket cpk = new CommanderPacket();

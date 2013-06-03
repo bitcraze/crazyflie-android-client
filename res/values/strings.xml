@@ -7,5 +7,14 @@
     <string name="connect">Connect</string>
     <string name="copter_channel">Copter channel:</string>
     <string name="menu_connect">Connect</string>
+    <string name="menu_preferences">Preferences</string>
+    <string name="preferences_title">Crazyflie Control Preferences</string>
+    <string name="preferences_category_connection">Connection Preferences</string>
+    <string name="preferences_radio_channel">Radio channel</string>
+    <string name="preferences_radio_channel_summary">Set the radio channel</string>
+    <string name="preferences_radio_bandwidth">Radio bandwidth</string>
+    <string name="preferences_radio_bandwidth_summary">Set the radio bandwidth</string>
+    <string name="preferences_radio_bandwidth_defaultvalue">0</string>
+    <string name="preferences_radio_channel_defaultvalue">10</string>
 
 </resources>

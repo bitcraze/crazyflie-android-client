@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="@string/preferences_title">
+    <PreferenceCategory android:title="@string/preferences_category_connection">
+        <EditTextPreference
+            android:key="pref_radiochannel"
+            android:title="@string/preferences_radio_channel"
+            android:dialogTitle="@string/preferences_radio_channel"
+            android:summary="@string/preferences_radio_channel_summary"
+            android:defaultValue="@string/preferences_radio_channel_defaultvalue"/>
+        
+        <ListPreference
+            android:key="pref_radiobandwidth"
+            android:title="@string/preferences_radio_bandwidth"
+            android:dialogTitle="@string/preferences_radio_bandwidth"
+            android:entryValues="@array/radioBandwidthEntryValues"
+            android:entries="@array/radioBandwidthEntries"
+            android:summary="@string/preferences_radio_bandwidth_summary"
+            android:defaultValue="@string/preferences_radio_bandwidth_defaultvalue"/>
+    </PreferenceCategory>
+    
+</PreferenceScreen>
