@@ -54,23 +54,25 @@ public class MainActivity extends Activity{
 	private TextView textView_thrust;
 	private TextView textView_yaw;
 
-	private char thrust = 0;
-	private float roll = 0;
-	private float pitch = 0;
-	private float yaw = 0;
+	private float right_analog_x;
+	private float right_analog_y;
+	private float left_analog_x;
+	private float left_analog_y;
 
 	private RadioLink radioLink;
-	
 	public int resolution = 1000;
+	public float deadzone = 0.2f;
 	
 	SharedPreferences preferences;
 
 	private int radioChannel;
 	private int radioBandwidth;
+	private int mode;
 
 	private String radioChannelDefaultValue;
 	private String radioBandwidthDefaultValue;
-	
+	private String modeDefaultValue;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +86,7 @@ public class MainActivity extends Activity{
         
         radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
         radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
+        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultvalue);
         
         Log.v(TAG, "radiochannel: " + radioChannel);
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
@@ -124,6 +127,7 @@ public class MainActivity extends Activity{
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
         
+        setMode();
         setRadioLink();
 
         UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -141,6 +145,10 @@ public class MainActivity extends Activity{
     	super.onRestart();
     	onResume();
     }
+
+	private void setMode(){
+		this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
+	}
 
 	private void setRadioLink() {
 		if(radioLink == null) {
@@ -165,64 +173,88 @@ public class MainActivity extends Activity{
         textView_yaw.setText("Yaw: " + getYaw());
 	}
 
-    public char getThrust() {
-		return thrust;
-	}
-
-	public void setThrust(char thrust) {
-		this.thrust = thrust;
+	public char getThrust() {
+		float thrust = ((mode == 1 || mode == 3) ? getRightAnalog_Y() : getLeftAnalog_Y());
+		
+		if(thrust < deadzone*-1){
+			return (char) (20000 + (thrust * getThrustFactor()));
+		}
+		return 0;
 	}
 
 	public float getRoll() {
-		return roll;
-	}
-
-	public void setRoll(float roll) {
-		this.roll = roll;
+		float roll = (mode == 1 || mode == 2) ? getRightAnalog_X() : getLeftAnalog_X();
+		return roll * getRollFactor() * getDeadzone(roll);
 	}
 
 	public float getPitch() {
-		return pitch;
-	}
-
-	public void setPitch(float pitch) {
-		this.pitch = pitch;
+		float pitch = (mode == 1 || mode == 3) ? getLeftAnalog_Y() : getRightAnalog_Y();
+		return pitch * getPitchFactor() * getDeadzone(pitch);
 	}
 
 	public float getYaw() {
-		return yaw;
+		float yaw = (mode == 1 || mode == 2) ? getLeftAnalog_X() : getRightAnalog_X();
+		return yaw * getYawFactor() * getDeadzone(yaw);
 	}
 
-	public void setYaw(float yaw) {
-		this.yaw = yaw;
+	private float getDeadzone(float axis) {
+		if(axis < deadzone && axis > deadzone*-1) {
+			return 0;
+		}
+		return 1;
+	}
+
+	public float getRightAnalog_X() {
+		return right_analog_x;
+	}
+
+	public float getRightAnalog_Y() {
+		return right_analog_y;
+	}
+
+	public float getLeftAnalog_X() {
+		return left_analog_x;
+	}
+
+	public float getLeftAnalog_Y() {
+		return left_analog_y;
+	}
+
+	public float getPitchFactor() {
+		return 20;
+	}
+
+	public float getRollFactor() {
+		return 20; 
+	}
+
+	public float getYawFactor() {
+		return 150;
+	}
+
+	public float getThrustFactor() {
+		return 40000 * -1;
 	}
 
 	private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-        		float stilt = (float) tilt / resolution; 
-        		float span = (float) pan / resolution;
-        		int t = (int) ((int) (-1) * stilt * 40000);
+    		right_analog_y = (float) tilt / resolution; 
+    		right_analog_x = (float) pan / resolution;
 
-        		if (stilt < 0.0)
-               		setThrust((char) (20000 + t));
-               	else
-               		setThrust((char) 0);
-                setYaw((float) 150.0 * span);
-
-                updateFlightData();
-                //Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
+    		updateFlightData();
         }
 
         @Override
         public void OnReleased() {
-        		//Log.i("Joystick-Right", "Release");
+        	//Log.i("Joystick-Right", "Release");
         }
         
         public void OnReturnedToCenter() {
-        		//Log.i("Joystick-Right", "Center");
-        		setThrust((char) 0);
+        	//Log.i("Joystick-Right", "Center");
+        	right_analog_y = 0;
+        	right_analog_x = 0;
         };
     }; 
 
@@ -230,14 +262,10 @@ public class MainActivity extends Activity{
 
         @Override
         public void OnMoved(int pan, int tilt) {
-        		float stilt = (float) tilt / resolution; 
-	    		float span = (float) pan / resolution;
+    		left_analog_y = (float) tilt / resolution; 
+    		left_analog_x= (float) pan / resolution;
 
-        		setPitch((float) (20.0 * stilt)); // Pitch is inversed in firmware
-        		setRoll((float) (20.0 * span));
-
-        		updateFlightData();
-        		//Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
+        	updateFlightData();
         }
 
         @Override
@@ -245,6 +273,8 @@ public class MainActivity extends Activity{
         }
         
         public void OnReturnedToCenter() {
+    		left_analog_y = 0;
+    		left_analog_x = 0;
         };
 }; 
 	

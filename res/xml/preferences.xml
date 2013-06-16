@@ -17,5 +17,13 @@
             android:summary="@string/preferences_radio_bandwidth_summary"
             android:defaultValue="@string/preferences_radio_bandwidth_defaultvalue"/>
     </PreferenceCategory>
-    
+    <PreferenceCategory android:title="@string/preferences_category_control">
+        <ListPreference
+            android:key="pref_mode"
+            android:entryValues="@array/modeValues"
+            android:entries="@array/modeValues"
+            android:dialogTitle="@string/preferences_mode"
+            android:title="@string/preferences_mode"
+            android:defaultValue="@string/preferences_mode_defaultvalue" />
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -14,6 +14,7 @@ import android.view.MenuItem;
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
 	public static final String KEY_PREF_RADIO_BANDWIDTH = "pref_radiobandwidth";
+	public static final String KEY_PREF_MODE = "pref_mode";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     	String keyString = sharedPreferences.getString(KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue);
     	radioBandwidthPref.setSummary(stringArray[Integer.parseInt(keyString)]);
 
+        Preference modePref = findPreference(KEY_PREF_MODE);
+        String modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultvalue);
+        modePref.setSummary(sharedPreferences.getString(KEY_PREF_MODE, modeDefaultValue));
         
 		setupActionBar();
 	}
@@ -67,6 +71,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         	String[] stringArray = getResources().getStringArray(R.array.radioBandwidthEntries);
         	String keyString = sharedPreferences.getString(key, "");
         	radioBandwidthPref.setSummary(stringArray[Integer.parseInt(keyString)]);
+        }
+        if (key.equals(KEY_PREF_MODE)) {
+            Preference modePref = findPreference(key);
+            modePref.setSummary(sharedPreferences.getString(key, ""));
         }
     }
     

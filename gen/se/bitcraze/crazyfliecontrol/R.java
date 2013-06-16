@@ -9,6 +9,7 @@ package se.bitcraze.crazyfliecontrol;
 
 public final class R {
     public static final class array {
+        public static final int modeValues=0x7f050002;
         public static final int radioBandwidthEntries=0x7f050000;
         public static final int radioBandwidthEntryValues=0x7f050001;
     }
@@ -42,8 +43,11 @@ public final class R {
         public static final int menu_connect=0x7f060006;
         public static final int menu_disconnect=0x7f060002;
         public static final int menu_preferences=0x7f060007;
-        public static final int pitch=0x7f060010;
+        public static final int pitch=0x7f060013;
         public static final int preferences_category_connection=0x7f060009;
+        public static final int preferences_category_control=0x7f060010;
+        public static final int preferences_mode=0x7f060011;
+        public static final int preferences_mode_defaultvalue=0x7f060012;
         public static final int preferences_radio_bandwidth=0x7f06000c;
         public static final int preferences_radio_bandwidth_defaultvalue=0x7f06000e;
         public static final int preferences_radio_bandwidth_summary=0x7f06000d;
@@ -51,10 +55,10 @@ public final class R {
         public static final int preferences_radio_channel_defaultvalue=0x7f06000f;
         public static final int preferences_radio_channel_summary=0x7f06000b;
         public static final int preferences_title=0x7f060008;
-        public static final int roll=0x7f060011;
-        public static final int thrust=0x7f060012;
+        public static final int roll=0x7f060014;
+        public static final int thrust=0x7f060015;
         public static final int title_activity_main=0x7f060003;
-        public static final int yaw=0x7f060013;
+        public static final int yaw=0x7f060016;
     }
     public static final class style {
         public static final int AppTheme=0x7f070000;

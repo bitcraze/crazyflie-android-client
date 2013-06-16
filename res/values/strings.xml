@@ -16,6 +16,9 @@
     <string name="preferences_radio_bandwidth_summary">Set the radio bandwidth</string>
     <string name="preferences_radio_bandwidth_defaultvalue">0</string>
     <string name="preferences_radio_channel_defaultvalue">10</string>
+    <string name="preferences_category_control">Control preferences</string>
+    <string name="preferences_mode">Mode</string>
+    <string name="preferences_mode_defaultvalue">3</string>
     <string name="pitch">Pitch: 0</string>
     <string name="roll">Roll: 0</string>
     <string name="thrust">Thrust: 0</string>
