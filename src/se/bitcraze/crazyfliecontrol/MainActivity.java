@@ -27,6 +27,9 @@
 
 package se.bitcraze.crazyfliecontrol;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -37,9 +40,12 @@ import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
@@ -94,7 +100,6 @@ public class MainActivity extends Activity{
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
         
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
-        mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
         mJoysticks.setMovementRange(resolution, resolution);
     }
 
@@ -129,6 +134,14 @@ public class MainActivity extends Activity{
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
         
+        if(isPS3ControllerConnected()){
+        	Toast.makeText(this, "Using external PS3 controller", Toast.LENGTH_SHORT).show();
+        	mJoysticks.setOnJostickMovedListener(null, null);     	
+        }else{        
+        	Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
+        	mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        }
+        
         setControlConfig();
         setRadioLink();
 
@@ -146,6 +159,26 @@ public class MainActivity extends Activity{
     protected void onRestart() {
     	super.onRestart();
     	onResume();
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        // Check that the event came from a joystick since a generic motion event
+        // could be almost anything.
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 &&
+        		event.getAction() == MotionEvent.ACTION_MOVE) {
+        	
+        	//hardcoded to work with PS3 controller
+        	right_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_Z));
+        	right_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_RZ)); 
+        	left_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_X));
+	        left_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_Y));
+	        
+            updateFlightData();
+            return true;
+        }else{
+        	return super.dispatchGenericMotionEvent(event);
+        }
     }
 
 	private void setControlConfig(){
@@ -174,6 +207,20 @@ public class MainActivity extends Activity{
         textView_roll.setText("Roll: " + getRoll());
         textView_thrust.setText("Thrust: " + (float) getThrust());
         textView_yaw.setText("Yaw: " + getYaw());
+	}
+	
+	//TODO: this should not be limited to PS3 controllers in the future
+	private boolean isPS3ControllerConnected(){
+	    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+	    HashMap<String,UsbDevice> deviceList = usbManager.getDeviceList();        
+	    for(Entry<String, UsbDevice> e : deviceList.entrySet()){
+	    	UsbDevice usbDevice = (UsbDevice) e.getValue();
+	    	//PS3 Controller has vendorId 1356 and productId 616
+	    	if(usbDevice.getVendorId() == 1356 && usbDevice.getProductId() == 616){
+	    		return true;
+	    	}
+	    }
+	    return false;
 	}
 
 	public char getThrust() {
