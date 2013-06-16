@@ -6,7 +6,8 @@
             android:title="@string/preferences_radio_channel"
             android:dialogTitle="@string/preferences_radio_channel"
             android:summary="@string/preferences_radio_channel_summary"
-            android:defaultValue="@string/preferences_radio_channel_defaultvalue"/>
+            android:defaultValue="@string/preferences_radio_channel_defaultvalue"
+            android:inputType="number"/>
         
         <ListPreference
             android:key="pref_radiobandwidth"
@@ -25,5 +26,11 @@
             android:dialogTitle="@string/preferences_mode"
             android:title="@string/preferences_mode"
             android:defaultValue="@string/preferences_mode_defaultvalue" />
+        <EditTextPreference
+            android:key="pref_deadzone"
+            android:title="@string/preferences_deadzone"
+            android:dialogTitle="@string/preferences_deadzone"
+            android:defaultValue="@string/preferences_deadzone_defaultvalue"
+            android:inputType="numberDecimal"/>
     </PreferenceCategory>
 </PreferenceScreen>

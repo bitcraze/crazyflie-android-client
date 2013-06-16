@@ -61,17 +61,18 @@ public class MainActivity extends Activity{
 
 	private RadioLink radioLink;
 	public int resolution = 1000;
-	public float deadzone = 0.2f;
 	
 	SharedPreferences preferences;
 
 	private int radioChannel;
 	private int radioBandwidth;
 	private int mode;
+	public float deadzone;
 
 	private String radioChannelDefaultValue;
 	private String radioBandwidthDefaultValue;
 	private String modeDefaultValue;
+	private String deadzoneDefaultValue;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +88,7 @@ public class MainActivity extends Activity{
         radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
         radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
         modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultvalue);
+        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultvalue);
         
         Log.v(TAG, "radiochannel: " + radioChannel);
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
@@ -127,7 +129,7 @@ public class MainActivity extends Activity{
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
         
-        setMode();
+        setControlConfig();
         setRadioLink();
 
         UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -146,8 +148,9 @@ public class MainActivity extends Activity{
     	onResume();
     }
 
-	private void setMode(){
+	private void setControlConfig(){
 		this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
+		this.deadzone = Float.parseFloat(preferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
 	}
 
 	private void setRadioLink() {

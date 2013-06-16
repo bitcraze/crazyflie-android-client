@@ -15,6 +15,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
 	public static final String KEY_PREF_RADIO_BANDWIDTH = "pref_radiobandwidth";
 	public static final String KEY_PREF_MODE = "pref_mode";
+	public static final String KEY_PREF_DEADZONE = "pref_deadzone";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         Preference modePref = findPreference(KEY_PREF_MODE);
         String modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultvalue);
         modePref.setSummary(sharedPreferences.getString(KEY_PREF_MODE, modeDefaultValue));
+
+        Preference deadzonePref = findPreference(KEY_PREF_DEADZONE);
+        String deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultvalue);
+        deadzonePref.setSummary(sharedPreferences.getString(KEY_PREF_DEADZONE, deadzoneDefaultValue));
         
 		setupActionBar();
 	}
@@ -75,6 +80,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_MODE)) {
             Preference modePref = findPreference(key);
             modePref.setSummary(sharedPreferences.getString(key, ""));
+        }
+        if (key.equals(KEY_PREF_DEADZONE)) {
+        	Preference deadzonePref = findPreference(key);
+        	deadzonePref.setSummary(sharedPreferences.getString(key, ""));
         }
     }
     

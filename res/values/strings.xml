@@ -19,6 +19,8 @@
     <string name="preferences_category_control">Control preferences</string>
     <string name="preferences_mode">Mode</string>
     <string name="preferences_mode_defaultvalue">3</string>
+    <string name="preferences_deadzone">Deadzone</string>
+    <string name="preferences_deadzone_defaultvalue">0.1</string>
     <string name="pitch">Pitch: 0</string>
     <string name="roll">Roll: 0</string>
     <string name="thrust">Thrust: 0</string>
