@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;

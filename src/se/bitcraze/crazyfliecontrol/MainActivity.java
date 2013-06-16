@@ -81,6 +81,8 @@ public class MainActivity extends Activity implements Runnable{
 	private int radioChannel;
 	private int radioBandwidth;
 
+	private String radioChannelDefaultValue;
+	private String radioBandwidthDefaultValue;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,10 +95,8 @@ public class MainActivity extends Activity implements Runnable{
         // Initialize preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
-        String radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
-        String radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
-        radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
-        radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+        radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
+        radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
         
         Log.v(TAG, "radiochannel: " + radioChannel);
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
@@ -112,7 +112,7 @@ public class MainActivity extends Activity implements Runnable{
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch(item.getItemId()){
@@ -133,6 +133,8 @@ public class MainActivity extends Activity implements Runnable{
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
         
+        setRadioLink();
+
         UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
         if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
             setDevice(device);
@@ -142,7 +144,12 @@ public class MainActivity extends Activity implements Runnable{
             }
         }
     }
-    
+
+	private void setRadioLink() {
+        radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
+        radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+	}
+
     private void setDevice(UsbDevice device) {
         Log.d(TAG, "setDevice " + device);
         if (device.getInterfaceCount() != 1) {
