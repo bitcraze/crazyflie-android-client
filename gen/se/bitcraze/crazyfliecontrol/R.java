@@ -19,10 +19,14 @@ public final class R {
         public static final int ic_launcher=0x7f020001;
     }
     public static final class id {
-        public static final int joysticks=0x7f090000;
-        public static final int menu_connect=0x7f090001;
-        public static final int menu_disconnect=0x7f090002;
-        public static final int preferences=0x7f090003;
+        public static final int joysticks=0x7f090004;
+        public static final int menu_connect=0x7f090005;
+        public static final int menu_disconnect=0x7f090006;
+        public static final int pitch=0x7f090000;
+        public static final int preferences=0x7f090007;
+        public static final int roll=0x7f090001;
+        public static final int thrust=0x7f090002;
+        public static final int yaw=0x7f090003;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -38,6 +42,7 @@ public final class R {
         public static final int menu_connect=0x7f060006;
         public static final int menu_disconnect=0x7f060002;
         public static final int menu_preferences=0x7f060007;
+        public static final int pitch=0x7f060010;
         public static final int preferences_category_connection=0x7f060009;
         public static final int preferences_radio_bandwidth=0x7f06000c;
         public static final int preferences_radio_bandwidth_defaultvalue=0x7f06000e;
@@ -46,7 +51,10 @@ public final class R {
         public static final int preferences_radio_channel_defaultvalue=0x7f06000f;
         public static final int preferences_radio_channel_summary=0x7f06000b;
         public static final int preferences_title=0x7f060008;
+        public static final int roll=0x7f060011;
+        public static final int thrust=0x7f060012;
         public static final int title_activity_main=0x7f060003;
+        public static final int yaw=0x7f060013;
     }
     public static final class style {
         public static final int AppTheme=0x7f070000;

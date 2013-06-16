@@ -3,15 +3,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+	<TextView
+        android:id="@+id/pitch"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/pitch"
+        android:layout_alignParentLeft="true"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    
+	<TextView
+        android:id="@+id/roll"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/roll"
+        android:layout_toRightOf="@+id/pitch"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+	<TextView
+        android:id="@+id/thrust"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/thrust"
+        android:layout_toRightOf="@+id/roll"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+	<TextView
+        android:id="@+id/yaw"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/yaw"
+        android:layout_toRightOf="@+id/thrust"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+	
     <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
         android:id="@+id/joysticks"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" >
-
-    </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
+        android:layout_height="300dp"
+        android:layout_below="@+id/pitch"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

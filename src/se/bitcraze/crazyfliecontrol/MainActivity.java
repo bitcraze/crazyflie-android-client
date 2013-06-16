@@ -39,6 +39,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
@@ -48,6 +49,10 @@ public class MainActivity extends Activity{
     private static final String TAG = "CrazyflieControl";
 
 	private DualJoystickView mJoysticks;
+	private TextView textView_pitch;
+	private TextView textView_roll;
+	private TextView textView_thrust;
+	private TextView textView_yaw;
 
 	private char thrust = 0;
 	private float roll = 0;
@@ -131,6 +136,12 @@ public class MainActivity extends Activity{
         }
     }
 
+    @Override
+    protected void onRestart() {
+    	super.onRestart();
+    	onResume();
+    }
+
 	private void setRadioLink() {
 		if(radioLink == null) {
 			radioLink = new RadioLink((UsbManager) getSystemService(Context.USB_SERVICE), this);
@@ -140,6 +151,18 @@ public class MainActivity extends Activity{
 
         radioLink.setChannel(radioChannel);
         radioLink.setBandwidth(radioBandwidth);
+	}
+
+	public void updateFlightData(){
+        textView_pitch = (TextView) findViewById(R.id.pitch);
+        textView_roll = (TextView) findViewById(R.id.roll);
+        textView_thrust = (TextView) findViewById(R.id.thrust);
+        textView_yaw = (TextView) findViewById(R.id.yaw);
+        
+        textView_pitch.setText("Pitch: " + getPitch() * -1); //inverse
+        textView_roll.setText("Roll: " + getRoll());
+        textView_thrust.setText("Thrust: " + (float) getThrust());
+        textView_yaw.setText("Yaw: " + getYaw());
 	}
 
     public char getThrust() {
@@ -188,6 +211,7 @@ public class MainActivity extends Activity{
                		setThrust((char) 0);
                 setYaw((float) 150.0 * span);
 
+                updateFlightData();
                 //Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
         }
 
@@ -212,6 +236,7 @@ public class MainActivity extends Activity{
         		setPitch((float) (20.0 * stilt)); // Pitch is inversed in firmware
         		setRoll((float) (20.0 * span));
 
+        		updateFlightData();
         		//Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
         }
 
