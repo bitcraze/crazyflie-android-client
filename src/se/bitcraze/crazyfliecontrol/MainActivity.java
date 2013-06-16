@@ -27,52 +27,34 @@
 
 package se.bitcraze.crazyfliecontrol;
 
-import java.nio.ByteOrder;
-
-import struct.JavaStruct;
-import struct.StructException;
-
-import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
-import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
-
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends Activity implements Runnable{
+import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
+
+public class MainActivity extends Activity{
 	
     private static final String TAG = "CrazyflieControl";
 
 	private DualJoystickView mJoysticks;
-	private UsbManager mUsbManager;
 
-	private Object mDevice;
+	private char thrust = 0;
+	private float roll = 0;
+	private float pitch = 0;
+	private float yaw = 0;
 
-//	private UsbEndpoint mEndpointIntr;
-
-	private UsbEndpoint mEpIn;
-
-	private UsbEndpoint mEpOut;
-
-	private UsbDeviceConnection mConnection;
-	
-	char thrust = 0;
-	float roll = 0;
-	float pitch = 0;
-	float yaw = 0;
+	private RadioLink radioLink;
 	
 	public int resolution = 1000;
 	
@@ -104,7 +86,6 @@ public class MainActivity extends Activity implements Runnable{
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
         mJoysticks.setMovementRange(resolution, resolution);
-        mUsbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
     }
 
     @Override
@@ -116,11 +97,16 @@ public class MainActivity extends Activity implements Runnable{
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch(item.getItemId()){
-    	
-    	case R.id.preferences:
-    		Intent intent = new Intent(this, PreferencesActivity.class);
-    		startActivity(intent);
-    		break;
+    	   	case R.id.preferences:
+	    		Intent intent = new Intent(this, PreferencesActivity.class);
+	    		startActivity(intent);
+	    		break;
+	    	case R.id.menu_connect:
+	    		radioLink.start();
+	    		break;
+	    	case R.id.menu_disconnect:
+	    		radioLink.stop();
+	    		break;
     	}
     	return true;
     }
@@ -137,105 +123,58 @@ public class MainActivity extends Activity implements Runnable{
 
         UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
         if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-            setDevice(device);
+            radioLink.setDevice(device);
         } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-            if (mDevice != null && mDevice.equals(device)) {
-                setDevice(null);
+            if (radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
+            	radioLink.setDevice(null);
             }
         }
     }
 
 	private void setRadioLink() {
+		if(radioLink == null) {
+			radioLink = new RadioLink((UsbManager) getSystemService(Context.USB_SERVICE), this);
+		}
         radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
         radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+
+        radioLink.setChannel(radioChannel);
+        radioLink.setBandwidth(radioBandwidth);
 	}
 
-    private void setDevice(UsbDevice device) {
-        Log.d(TAG, "setDevice " + device);
-        if (device.getInterfaceCount() != 1) {
-            Log.e(TAG, "could not find interface");
-            return;
-        }
-        UsbInterface intf = device.getInterface(0);
-        // device should have two endpoint
-        if (intf.getEndpointCount() != 2) {
-            Log.e(TAG, "could not find endpoint");
-            return;
-        }
-        // endpoints should be of type bulk
-        UsbEndpoint ep = intf.getEndpoint(0);
-        if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_BULK) {
-            Log.e(TAG, "endpoint is not bulk type");
-            return;
-        }
-        mDevice = device;
-        
-        if (ep.getDirection()==UsbConstants.USB_DIR_IN) {
-        	mEpIn = intf.getEndpoint(0);
-        	mEpOut = intf.getEndpoint(1);
-        } else {
-        	mEpIn = intf.getEndpoint(0);
-        	mEpOut = intf.getEndpoint(1);
-        }
-        
-        if (device != null) {
-            UsbDeviceConnection connection = mUsbManager.openDevice(device);
-            if (connection != null && connection.claimInterface(intf, true)) {
-                Log.d(TAG, "open SUCCESS");
-                mConnection = connection;
-                Thread thread = new Thread(this);
-                thread.start();
-
-            } else {
-                Log.d(TAG, "open FAIL");
-                mConnection = null;
-            }
-         }
-    }
-   
-    //Runs the communication loop in a thread...
-	public void run() {
-		//Set channel
-		mConnection.controlTransfer(0x40, 0x01, radioChannel, 0, null, 0, 100);
-		//Set datarate
-		mConnection.controlTransfer(0x40, 0x03, radioBandwidth, 0, null, 0, 100);
-		
-		while (mDevice != null) {
-			CommanderPacket cpk = new CommanderPacket();
-			byte [] data;
-			byte [] rdata = new byte[33];
-			
-			cpk.port = (byte) 0x30;
-			cpk.pitch = pitch;
-			cpk.roll  = roll;
-			cpk.yaw   = yaw;
-			cpk.thrust = thrust;
-			
-			try {
-				data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
-				//Log.v(TAG, "Sending a packet of " + data.length + " bytes");
-				String datastr = "[";
-				for (int i=0; i<data.length; i++)
-					datastr += "" + data[i] + ", ";
-				datastr += "]";
-				//Log.v(TAG, "Sending data " + datastr);
-				mConnection.bulkTransfer(mEpOut, data, data.length, 100);
-	        	mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
-			} catch (StructException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-
-			try {
-				Thread.sleep(20, 0);
-			} catch (InterruptedException e) {
-				;
-			}
-		}
+    public char getThrust() {
+		return thrust;
 	}
-	
-    private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
+
+	public void setThrust(char thrust) {
+		this.thrust = thrust;
+	}
+
+	public float getRoll() {
+		return roll;
+	}
+
+	public void setRoll(float roll) {
+		this.roll = roll;
+	}
+
+	public float getPitch() {
+		return pitch;
+	}
+
+	public void setPitch(float pitch) {
+		this.pitch = pitch;
+	}
+
+	public float getYaw() {
+		return yaw;
+	}
+
+	public void setYaw(float yaw) {
+		this.yaw = yaw;
+	}
+
+	private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
         public void OnMoved(int pan, int tilt) {
@@ -244,10 +183,10 @@ public class MainActivity extends Activity implements Runnable{
         		int t = (int) ((int) (-1) * stilt * 40000);
 
         		if (stilt < 0.0)
-               		thrust = (char) (20000 + t);
+               		setThrust((char) (20000 + t));
                	else
-               		thrust = 0;
-                yaw = (float) 150.0 * span;
+               		setThrust((char) 0);
+                setYaw((float) 150.0 * span);
 
                 //Log.i("Setpoint", "Thrust: " + Integer.toString((int) thrust)+", Yaw: "+ Float.toString(yaw));
         }
@@ -259,7 +198,7 @@ public class MainActivity extends Activity implements Runnable{
         
         public void OnReturnedToCenter() {
         		//Log.i("Joystick-Right", "Center");
-        		thrust = 0;
+        		setThrust((char) 0);
         };
     }; 
 
@@ -270,8 +209,8 @@ public class MainActivity extends Activity implements Runnable{
         		float stilt = (float) tilt / resolution; 
 	    		float span = (float) pan / resolution;
 
-        		pitch = (float) (20.0 * stilt); // Pitch is inversed in firmware
-        		roll = (float) (20.0 * span);
+        		setPitch((float) (20.0 * stilt)); // Pitch is inversed in firmware
+        		setRoll((float) (20.0 * span));
 
         		//Log.i("Setpoint", "Pitch" + Float.toString(pitch)+", Roll: "+ Float.toString(roll));
         }
