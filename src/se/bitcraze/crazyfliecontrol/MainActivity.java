@@ -35,7 +35,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -134,8 +136,8 @@ public class MainActivity extends Activity{
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
         
-        if(isPS3ControllerConnected()){
-        	Toast.makeText(this, "Using external PS3 controller", Toast.LENGTH_SHORT).show();
+        if(isExternalControllerConnected()){
+        	Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
         	mJoysticks.setOnJostickMovedListener(null, null);     	
         }else{        
         	Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
@@ -209,16 +211,21 @@ public class MainActivity extends Activity{
         textView_yaw.setText("Yaw: " + getYaw());
 	}
 	
-	//TODO: this should not be limited to PS3 controllers in the future
-	private boolean isPS3ControllerConnected(){
+	//does not yet recognize controller connected via sixaxis app (it still works, but the on-screen controls are not disabled)
+	private boolean isExternalControllerConnected(){
 	    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 	    HashMap<String,UsbDevice> deviceList = usbManager.getDeviceList();        
 	    for(Entry<String, UsbDevice> e : deviceList.entrySet()){
 	    	UsbDevice usbDevice = (UsbDevice) e.getValue();
-	    	//PS3 Controller has vendorId 1356 and productId 616
-	    	if(usbDevice.getVendorId() == 1356 && usbDevice.getProductId() == 616){
-	    		return true;
+	    	//do we need to be more specific?
+	    	for(int i = 0; i < usbDevice.getInterfaceCount();i++){
+	    		UsbInterface usbInterface = usbDevice.getInterface(i);
+	    		if(usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_HID){
+	    			Toast.makeText(this, "HID device found", Toast.LENGTH_SHORT).show();
+	    			return true;
+	    		}
 	    	}
+	    	
 	    }
 	    return false;
 	}
