@@ -38,6 +38,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
+import android.widget.Toast;
 
 public class RadioLink {
 
@@ -57,13 +58,21 @@ public class RadioLink {
 
 	private MainActivity mJoystick;
 	
+	private boolean debug = false;
+
+
 	public RadioLink(UsbManager usbManager, MainActivity joystick){
 		this.mUsbManager = usbManager;
 		this.mJoystick = joystick;
 	}
 	
 	public void start() {
-		Log.d(TAG, "start");
+		Log.d(TAG, "start()");
+		if(debug){
+			Toast.makeText(this.mJoystick, "DEBUG MODE", Toast.LENGTH_SHORT).show();
+            radioLinkThread = new Thread(radioControlRunnable);
+            radioLinkThread.start();
+		}
         if (mDevice != null && intf != null) {
             UsbDeviceConnection connection = mUsbManager.openDevice(mDevice);
             if (connection != null && connection.claimInterface(intf, true)) {
@@ -140,12 +149,14 @@ public class RadioLink {
 		//Run the Radio link loop to send attitude setpoint to the copter
 		public void run() {
 			//TODO: can channel and datarate be changed at any time?
-			//Set channel
-			mConnection.controlTransfer(0x40, 0x01, channel, 0, null, 0, 100);
-			//Set datarate
-			mConnection.controlTransfer(0x40, 0x03, bandwidth, 0, null, 0, 100);
+			if(mConnection != null){
+				//Set channel
+				mConnection.controlTransfer(0x40, 0x01, channel, 0, null, 0, 100);
+				//Set datarate
+				mConnection.controlTransfer(0x40, 0x03, bandwidth, 0, null, 0, 100);
+			}
 
-			while (true /*mDevice != null*/) {
+			while (mDevice != null || debug) {
 				//Log.v(TAG, "radioControlRunnable running");
 				CommanderPacket cpk = new CommanderPacket();
 				byte [] data;
@@ -158,6 +169,11 @@ public class RadioLink {
 				cpk.yaw   = mJoystick.getYaw();
 				cpk.thrust = mJoystick.getThrust();
 
+//				Log.i(TAG, "P: " + mJoystick.getPitch() + 
+//						  " R: " + mJoystick.getRoll() + 
+//						  " Y: " + mJoystick.getYaw() +
+//						  " T: " + mJoystick.getThrust());
+
 				try {
 					data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
 //					Log.v(TAG, "Sending a packet of " + data.length + " bytes");
@@ -166,8 +182,10 @@ public class RadioLink {
 //										datastr += "" + data[i] + ", ";
 //									datastr += "]";
 //					Log.v(TAG, "Sending data " + datastr);
-					mConnection.bulkTransfer(mEpOut, data, data.length, 100);
-					mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+					if(mConnection != null){
+						mConnection.bulkTransfer(mEpOut, data, data.length, 100);
+						mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+					}
 				} catch (StructException e1) {
 					e1.printStackTrace();
 				}
