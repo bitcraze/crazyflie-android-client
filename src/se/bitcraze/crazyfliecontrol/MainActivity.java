@@ -164,6 +164,12 @@ public class MainActivity extends Activity{
     }
 
     @Override
+    protected void onPause() {
+    	super.onPause();
+    	resetAxisValues();
+    }
+
+    @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event
         // could be almost anything.
@@ -293,6 +299,13 @@ public class MainActivity extends Activity{
 		return 40000 * -1;
 	}
 
+	private void resetAxisValues(){
+		right_analog_y = 0;
+    	right_analog_x = 0;
+    	left_analog_y = 0;
+		left_analog_x = 0;
+	}
+
 	private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
@@ -306,6 +319,8 @@ public class MainActivity extends Activity{
         @Override
         public void OnReleased() {
         	//Log.i("Joystick-Right", "Release");
+        	right_analog_y = 0;
+        	right_analog_x = 0;
         }
         
         public void OnReturnedToCenter() {
@@ -327,6 +342,8 @@ public class MainActivity extends Activity{
 
         @Override
         public void OnReleased() {
+    		left_analog_y = 0;
+    		left_analog_x = 0;
         }
         
         public void OnReturnedToCenter() {
