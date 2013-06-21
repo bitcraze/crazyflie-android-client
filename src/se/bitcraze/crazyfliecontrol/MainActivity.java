@@ -27,17 +27,12 @@
 
 package se.bitcraze.crazyfliecontrol;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -81,6 +76,8 @@ public class MainActivity extends Activity{
 	private String radioBandwidthDefaultValue;
 	private String modeDefaultValue;
 	private String deadzoneDefaultValue;
+
+	private boolean isOnscreenControllerDisabled;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -135,14 +132,11 @@ public class MainActivity extends Activity{
     	Intent intent = getIntent();
         Log.d(TAG, "intent: " + intent);
         String action = intent.getAction();
-        
-        if(isExternalControllerConnected()){
-        	Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
-        	mJoysticks.setOnJostickMovedListener(null, null);     	
-        }else{        
-        	Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
-        	mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-        }
+
+        //Reset input method
+       	Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
+       	this.isOnscreenControllerDisabled = false;
+       	mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
         
         setControlConfig();
         setRadioLink();
@@ -176,6 +170,12 @@ public class MainActivity extends Activity{
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 &&
         		event.getAction() == MotionEvent.ACTION_MOVE) {
         	
+        	Log.i(TAG, "Input device: " + event.getDevice().getName());
+        	
+        	if(!isOnscreenControllerDisabled){
+        		disableOnscreenController();
+        	}
+
         	//hardcoded to work with PS3 controller
         	right_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_Z));
         	right_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_RZ)); 
@@ -187,6 +187,12 @@ public class MainActivity extends Activity{
         }else{
         	return super.dispatchGenericMotionEvent(event);
         }
+    }
+
+    private void disableOnscreenController(){
+    	Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
+    	mJoysticks.setOnJostickMovedListener(null, null);
+    	this.isOnscreenControllerDisabled = true;
     }
 
 	private void setControlConfig(){
@@ -215,25 +221,6 @@ public class MainActivity extends Activity{
         textView_roll.setText("Roll: " + getRoll());
         textView_thrust.setText("Thrust: " + (float) getThrust());
         textView_yaw.setText("Yaw: " + getYaw());
-	}
-	
-	//does not yet recognize controller connected via sixaxis app (it still works, but the on-screen controls are not disabled)
-	private boolean isExternalControllerConnected(){
-	    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-	    HashMap<String,UsbDevice> deviceList = usbManager.getDeviceList();        
-	    for(Entry<String, UsbDevice> e : deviceList.entrySet()){
-	    	UsbDevice usbDevice = (UsbDevice) e.getValue();
-	    	//do we need to be more specific?
-	    	for(int i = 0; i < usbDevice.getInterfaceCount();i++){
-	    		UsbInterface usbInterface = usbDevice.getInterface(i);
-	    		if(usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_HID){
-	    			Toast.makeText(this, "HID device found", Toast.LENGTH_SHORT).show();
-	    			return true;
-	    		}
-	    	}
-	    	
-	    }
-	    return false;
 	}
 
 	public char getThrust() {
