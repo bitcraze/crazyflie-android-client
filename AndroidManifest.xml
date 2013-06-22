@@ -17,7 +17,9 @@
         android:allowBackup="true">
         <activity
             android:name="se.bitcraze.crazyfliecontrol.MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTop"
+            android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
