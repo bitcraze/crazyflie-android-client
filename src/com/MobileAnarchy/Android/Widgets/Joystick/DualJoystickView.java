@@ -100,7 +100,7 @@ public class DualJoystickView extends LinearLayout {
 	
 	public void setYAxisInverted(boolean leftYAxisInverted, boolean rightYAxisInverted) {
 		stickL.setYAxisInverted(leftYAxisInverted);
-		stickL.setYAxisInverted(rightYAxisInverted);
+		stickR.setYAxisInverted(rightYAxisInverted);
 	}
 
 	public void setMovementConstraint(int movementConstraint) {
