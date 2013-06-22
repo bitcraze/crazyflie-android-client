@@ -158,16 +158,11 @@ public class RadioLink {
 
 			while (mDevice != null || debug) {
 				//Log.v(TAG, "radioControlRunnable running");
-				CommanderPacket cpk = new CommanderPacket();
+				CommanderPacket cpk = new CommanderPacket(mJoystick.getRoll(), mJoystick.getPitch(),
+														  mJoystick.getYaw(), (char) (mJoystick.getThrust() * 1000));
+
 				byte [] data;
 				byte [] rdata = new byte[33];
-
-				cpk.port = (byte) 0x30;
-
-				cpk.pitch = mJoystick.getPitch();
-				cpk.roll  = mJoystick.getRoll();
-				cpk.yaw   = mJoystick.getYaw();
-				cpk.thrust = (char) (mJoystick.getThrust() * 1000);
 
 //				Log.i(TAG, "P: " + mJoystick.getPitch() + 
 //						  " R: " + mJoystick.getRoll() + 

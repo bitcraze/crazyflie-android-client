@@ -42,4 +42,12 @@ public class CommanderPacket {
 	public float yaw;
 	@StructField(order = 4)
 	public char thrust;
+
+	public CommanderPacket(float roll, float pitch, float yaw, char thrust) {
+		this.port = (byte) 0x30;
+		this.roll = roll;
+		this.pitch = pitch;
+		this.yaw = yaw;
+		this.thrust = thrust;
+	}
 };
