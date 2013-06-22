@@ -37,6 +37,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -198,6 +199,23 @@ public class MainActivity extends Activity{
         }else{
         	return super.dispatchGenericMotionEvent(event);
         }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+    	//TODO: works for PS3 controller, but does it also work for other controllers?
+        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) != 0) {        
+	        switch (event.getAction()) {
+	            case KeyEvent.ACTION_DOWN:
+	            	//TODO: use keys
+	                break;
+	            default:
+	            	break;
+	        }
+	        //do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
+	        return true;
+        }
+    	return super.dispatchKeyEvent(event);
     }
 
     private void disableOnscreenController(){
