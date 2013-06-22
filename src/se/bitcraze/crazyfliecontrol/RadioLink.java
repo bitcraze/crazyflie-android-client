@@ -159,7 +159,8 @@ public class RadioLink {
 			while (mDevice != null || debug) {
 				//Log.v(TAG, "radioControlRunnable running");
 				CommanderPacket cpk = new CommanderPacket(mJoystick.getRoll(), mJoystick.getPitch(),
-														  mJoystick.getYaw(), (char) (mJoystick.getThrust() * 1000));
+														  mJoystick.getYaw(), (char) (mJoystick.getThrust() * 1000),
+														  mJoystick.isXmode());
 
 				byte [] data;
 				byte [] rdata = new byte[33];

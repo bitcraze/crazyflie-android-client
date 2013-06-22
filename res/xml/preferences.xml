@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="@string/preferences_title">
-    <PreferenceCategory android:title="@string/preferences_category_connection">
+    <PreferenceCategory
+    	android:title="@string/preferences_category_connection">
         <EditTextPreference
             android:key="pref_radiochannel"
             android:title="@string/preferences_radio_channel"
@@ -33,9 +34,13 @@
             android:inputType="numberDecimal"/>
         <CheckBoxPreference
             android:key="pref_afc_bool"
-            android:summary="Use at your own risk!"
-            android:title="@string/preferences_advancedflightcontrol" android:defaultValue="false"/>
-        <PreferenceScreen android:title="@string/preferences_afc_title" android:key="pref_afc_screen">
+            android:title="@string/preferences_advancedflightcontrol"
+            android:defaultValue="false"
+            android:summaryOn="@string/preferences_afc_bool_summary_on"
+            android:summaryOff="@string/preferences_afc_bool_summary_off"/>
+        <PreferenceScreen
+            android:title="@string/preferences_afc_title"
+            android:key="pref_afc_screen">
             <EditTextPreference
                 android:key="pref_maxrollpitchangle"
                 android:title="@string/preferences_maxRollPitchAngle_title"
@@ -60,6 +65,11 @@
                 android:defaultValue="@string/preferences_minThrust_defaultValue"
                 android:dialogTitle="@string/preferences_minThrust_title"
                 android:inputType="number"/>
+            <CheckBoxPreference
+                android:key="pref_xmode"
+                android:title="@string/preferences_xmode_title"
+                android:defaultValue="false"
+                android:summary="@string/preferences_xmode_summary"/>
             <Preference
 	            android:key="pref_reset_afc"
             	android:title="@string/preferences_reset_afc_title"

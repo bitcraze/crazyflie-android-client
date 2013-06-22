@@ -6,6 +6,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -25,6 +26,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 	public static final String KEY_PREF_MAX_YAW_ANGLE = "pref_maxyawangle";
 	public static final String KEY_PREF_MAX_THRUST = "pref_maxthrust";
 	public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
+	public static final String KEY_PREF_XMODE = "pref_xmode";
 	public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
 
 	private static final int RADIOCHANNEL_UPPER_LIMIT = 125; 
@@ -81,6 +83,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 				resetPreference(KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue, null);
 				resetPreference(KEY_PREF_MAX_THRUST, maxThrustDefaultValue, null);
 				resetPreference(KEY_PREF_MIN_THRUST, minThrustDefaultValue, null);
+				resetPreference(KEY_PREF_XMODE, false);
 				return true;
 			}
 		});
@@ -160,6 +163,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_MIN_THRUST)) {
         	setSummaryInt(key, minThrustDefaultValue, MIN_THRUST_UPPER_LIMIT, "Min thrust");
         }
+        if (key.equals(KEY_PREF_XMODE)){
+        	CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+        	pref.setChecked(sharedPreferences.getBoolean(key, false));
+        }
     }
     
 	private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue){
@@ -188,6 +195,12 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     	}
     	SharedPreferences.Editor editor = sharedPreferences.edit();
     	editor.putString(pKey, pDefaultValue);
+    	editor.commit();
+    }
+
+    private void resetPreference(String pKey, boolean pDefaultValue){
+    	SharedPreferences.Editor editor = sharedPreferences.edit();
+    	editor.putBoolean(pKey, pDefaultValue);
     	editor.commit();
     }
 

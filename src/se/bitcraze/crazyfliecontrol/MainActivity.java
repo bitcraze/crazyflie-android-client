@@ -74,6 +74,7 @@ public class MainActivity extends Activity{
 	private int maxYawAngle;
 	private int maxThrust;
 	private int minThrust;
+	private boolean xmode;
 
 	private String radioChannelDefaultValue;
 	private String radioBandwidthDefaultValue;
@@ -213,11 +214,13 @@ public class MainActivity extends Activity{
 			this.maxYawAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
 			this.maxThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
 			this.minThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
+			this.xmode = preferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
 		}else{
 			this.maxRollPitchAngle = Integer.parseInt(maxRollPitchAngleDefaultValue);
 			this.maxYawAngle = Integer.parseInt(maxYawAngleDefaultValue);
 			this.maxThrust = Integer.parseInt(maxThrustDefaultValue);
 			this.minThrust = Integer.parseInt(minThrustDefaultValue);
+			this.xmode = false;
 		}
 	}
 
@@ -307,6 +310,10 @@ public class MainActivity extends Activity{
 			addThrust = (maxThrust - minThrust);
 		}
 		return addThrust;
+	}
+
+	public boolean isXmode(){
+		return this.xmode;
 	}
 
 	private void resetAxisValues(){

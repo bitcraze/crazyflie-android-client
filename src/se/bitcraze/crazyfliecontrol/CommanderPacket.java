@@ -43,10 +43,15 @@ public class CommanderPacket {
 	@StructField(order = 4)
 	public char thrust;
 
-	public CommanderPacket(float roll, float pitch, float yaw, char thrust) {
+	public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
 		this.port = (byte) 0x30;
-		this.roll = roll;
-		this.pitch = pitch;
+        if(xmode){
+        	this.pitch = 0.707f * (roll + pitch);
+        	this.roll = 0.707f * (roll - pitch);
+        }else{
+        	this.pitch = pitch;        	
+        	this.roll = roll;
+        }
 		this.yaw = yaw;
 		this.thrust = thrust;
 	}
