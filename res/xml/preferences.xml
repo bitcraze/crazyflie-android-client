@@ -6,9 +6,8 @@
             android:title="@string/preferences_radio_channel"
             android:dialogTitle="@string/preferences_radio_channel"
             android:summary="@string/preferences_radio_channel_summary"
-            android:defaultValue="@string/preferences_radio_channel_defaultvalue"
+            android:defaultValue="@string/preferences_radio_channel_defaultValue"
             android:inputType="number"/>
-        
         <ListPreference
             android:key="pref_radiobandwidth"
             android:title="@string/preferences_radio_bandwidth"
@@ -16,7 +15,7 @@
             android:entryValues="@array/radioBandwidthEntryValues"
             android:entries="@array/radioBandwidthEntries"
             android:summary="@string/preferences_radio_bandwidth_summary"
-            android:defaultValue="@string/preferences_radio_bandwidth_defaultvalue"/>
+            android:defaultValue="@string/preferences_radio_bandwidth_defaultValue"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_category_control">
         <ListPreference
@@ -25,12 +24,46 @@
             android:entries="@array/modeValues"
             android:dialogTitle="@string/preferences_mode"
             android:title="@string/preferences_mode"
-            android:defaultValue="@string/preferences_mode_defaultvalue" />
+            android:defaultValue="@string/preferences_mode_defaultValue" />
         <EditTextPreference
             android:key="pref_deadzone"
             android:title="@string/preferences_deadzone"
             android:dialogTitle="@string/preferences_deadzone"
-            android:defaultValue="@string/preferences_deadzone_defaultvalue"
+            android:defaultValue="@string/preferences_deadzone_defaultValue"
             android:inputType="numberDecimal"/>
+        <CheckBoxPreference
+            android:key="pref_afc_bool"
+            android:summary="Use at your own risk!"
+            android:title="@string/preferences_advancedflightcontrol" android:defaultValue="false"/>
+        <PreferenceScreen android:title="@string/preferences_afc_title" android:key="pref_afc_screen">
+            <EditTextPreference
+                android:key="pref_maxrollpitchangle"
+                android:title="@string/preferences_maxRollPitchAngle_title"
+                android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
+                android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
+                android:inputType="number"/>
+            <EditTextPreference
+                android:key="pref_maxyawangle"
+                android:title="@string/preferences_maxYawAngle_title"
+                android:dialogTitle="@string/preferences_maxYawAngle_title"
+                android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
+                android:inputType="number"/>
+            <EditTextPreference
+                android:key="pref_maxthrust"
+                android:title="@string/preferences_maxThrust_title"
+                android:defaultValue="@string/preferences_maxThrust_defaultValue"
+                android:dialogTitle="@string/preferences_maxThrust_title"
+                android:inputType="number"/>
+            <EditTextPreference
+                android:key="pref_minthrust"
+                android:title="@string/preferences_minThrust_title"
+                android:defaultValue="@string/preferences_minThrust_defaultValue"
+                android:dialogTitle="@string/preferences_minThrust_title"
+                android:inputType="number"/>
+            <Preference
+	            android:key="pref_reset_afc"
+            	android:title="@string/preferences_reset_afc_title"
+            	android:summary="@string/preferences_reset_afc_summary"/>
+        </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>

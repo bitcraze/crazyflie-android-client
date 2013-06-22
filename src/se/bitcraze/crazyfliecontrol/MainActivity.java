@@ -31,7 +31,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
@@ -71,11 +70,19 @@ public class MainActivity extends Activity{
 	private int radioBandwidth;
 	private int mode;
 	public float deadzone;
+	private int maxRollPitchAngle;
+	private int maxYawAngle;
+	private int maxThrust;
+	private int minThrust;
 
 	private String radioChannelDefaultValue;
 	private String radioBandwidthDefaultValue;
 	private String modeDefaultValue;
 	private String deadzoneDefaultValue;
+	private String maxRollPitchAngleDefaultValue;
+	private String maxYawAngleDefaultValue;
+	private String maxThrustDefaultValue;
+	private String minThrustDefaultValue;
 
 	private boolean isOnscreenControllerDisabled;
 
@@ -89,10 +96,14 @@ public class MainActivity extends Activity{
         // Initialize preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         
-        radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultvalue);
-        radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultvalue);
-        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultvalue);
-        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultvalue);
+        radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultValue);
+        radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultValue);
+        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
+        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
+        maxRollPitchAngleDefaultValue = getResources().getString(R.string.preferences_maxRollPitchAngle_defaultValue);
+        maxYawAngleDefaultValue = getResources().getString(R.string.preferences_maxYawAngle_defaultValue);
+        maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
+        minThrustDefaultValue = getResources().getString(R.string.preferences_minThrust_defaultValue);
         
         Log.v(TAG, "radiochannel: " + radioChannel);
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
@@ -197,6 +208,17 @@ public class MainActivity extends Activity{
 	private void setControlConfig(){
 		this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
 		this.deadzone = Float.parseFloat(preferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
+		if(preferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)){
+			this.maxRollPitchAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue));
+			this.maxYawAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
+			this.maxThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
+			this.minThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
+		}else{
+			this.maxRollPitchAngle = Integer.parseInt(maxRollPitchAngleDefaultValue);
+			this.maxYawAngle = Integer.parseInt(maxYawAngleDefaultValue);
+			this.maxThrust = Integer.parseInt(maxThrustDefaultValue);
+			this.minThrust = Integer.parseInt(minThrustDefaultValue);
+		}
 	}
 
 	private void setRadioLink() {
@@ -218,27 +240,27 @@ public class MainActivity extends Activity{
         
         textView_pitch.setText("Pitch: " + getPitch() * -1); //inverse
         textView_roll.setText("Roll: " + getRoll());
-        textView_thrust.setText("Thrust: " + (float) getThrust());
+        textView_thrust.setText("Thrust (%): " + getThrust());
         textView_yaw.setText("Yaw: " + getYaw());
 	}
 
-	public char getThrust() {
+	public float getThrust() {
 		float thrust = ((mode == 1 || mode == 3) ? getRightAnalog_Y() : getLeftAnalog_Y());
-		
-		if(thrust < deadzone*-1){
-			return (char) (20000 + (thrust * getThrustFactor()));
+		thrust = thrust *-1; //invert
+		if(thrust > deadzone){
+			return minThrust + (thrust * getThrustFactor());
 		}
 		return 0;
 	}
 
 	public float getRoll() {
 		float roll = (mode == 1 || mode == 2) ? getRightAnalog_X() : getLeftAnalog_X();
-		return roll * getRollFactor() * getDeadzone(roll);
+		return roll * getRollPitchFactor() * getDeadzone(roll);
 	}
 
 	public float getPitch() {
 		float pitch = (mode == 1 || mode == 3) ? getLeftAnalog_Y() : getRightAnalog_Y();
-		return pitch * getPitchFactor() * getDeadzone(pitch);
+		return pitch * getRollPitchFactor() * getDeadzone(pitch);
 	}
 
 	public float getYaw() {
@@ -269,20 +291,22 @@ public class MainActivity extends Activity{
 		return left_analog_y;
 	}
 
-	public float getPitchFactor() {
-		return 20;
-	}
-
-	public float getRollFactor() {
-		return 20; 
+	public float getRollPitchFactor() {
+		return maxRollPitchAngle; 
 	}
 
 	public float getYawFactor() {
-		return 150;
+		return maxYawAngle;
 	}
 
 	public float getThrustFactor() {
-		return 40000 * -1;
+		int addThrust = 0;
+		if((maxThrust - minThrust) < 0){
+			addThrust = 0; //do not allow negative values
+		}else{
+			addThrust = (maxThrust - minThrust);
+		}
+		return addThrust;
 	}
 
 	private void resetAxisValues(){

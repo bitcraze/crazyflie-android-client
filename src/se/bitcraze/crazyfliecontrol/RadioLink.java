@@ -167,7 +167,7 @@ public class RadioLink {
 				cpk.pitch = mJoystick.getPitch();
 				cpk.roll  = mJoystick.getRoll();
 				cpk.yaw   = mJoystick.getYaw();
-				cpk.thrust = mJoystick.getThrust();
+				cpk.thrust = (char) (mJoystick.getThrust() * 1000);
 
 //				Log.i(TAG, "P: " + mJoystick.getPitch() + 
 //						  " R: " + mJoystick.getRoll() + 
