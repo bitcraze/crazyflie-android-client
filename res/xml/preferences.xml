@@ -56,14 +56,14 @@
             <EditTextPreference
                 android:key="pref_maxthrust"
                 android:title="@string/preferences_maxThrust_title"
-                android:defaultValue="@string/preferences_maxThrust_defaultValue"
                 android:dialogTitle="@string/preferences_maxThrust_title"
+                android:defaultValue="@string/preferences_maxThrust_defaultValue"
                 android:inputType="number"/>
             <EditTextPreference
                 android:key="pref_minthrust"
                 android:title="@string/preferences_minThrust_title"
-                android:defaultValue="@string/preferences_minThrust_defaultValue"
                 android:dialogTitle="@string/preferences_minThrust_title"
+                android:defaultValue="@string/preferences_minThrust_defaultValue"
                 android:inputType="number"/>
             <CheckBoxPreference
                 android:key="pref_xmode"

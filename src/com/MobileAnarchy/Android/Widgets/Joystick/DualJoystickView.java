@@ -1,5 +1,6 @@
 package com.MobileAnarchy.Android.Widgets.Joystick;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -50,6 +51,7 @@ public class DualJoystickView extends LinearLayout {
 	}
 	
 	@Override
+	@SuppressLint("DrawAllocation")
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		removeView(stickL);

@@ -315,7 +315,7 @@ public class JoystickView extends View {
 	private void constrainCircle() {
 		float diffX = touchX;
 		float diffY = touchY;
-		double radial = FloatMath.sqrt((diffX*diffX) + (diffY*diffY));
+		double radial = Math.sqrt((diffX*diffX) + (diffY*diffY));
 		if ( radial > movementRadius ) {
 			touchX = (int)((diffX / radial) * movementRadius);
 			touchY = (int)((diffY / radial) * movementRadius);
