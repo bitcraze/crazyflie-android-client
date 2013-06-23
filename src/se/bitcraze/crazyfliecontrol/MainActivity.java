@@ -204,10 +204,11 @@ public class MainActivity extends Activity{
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
     	//TODO: works for PS3 controller, but does it also work for other controllers?
-        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) != 0) {        
+        if (event.getSource() == 1281) {        
 	        switch (event.getAction()) {
 	            case KeyEvent.ACTION_DOWN:
 	            	//TODO: use keys
+//	            	Toast.makeText(this, "Event.getSource(): " + event.getSource(), Toast.LENGTH_SHORT).show();
 	                break;
 	            default:
 	            	break;
