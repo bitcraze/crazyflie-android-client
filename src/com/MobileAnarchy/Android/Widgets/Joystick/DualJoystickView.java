@@ -21,7 +21,7 @@ public class DualJoystickView extends LinearLayout {
 	private JoystickView stickL;
 	private JoystickView stickR;
 
-	private View pad;
+	private View padding;
 
 	public DualJoystickView(Context context) {
 		super(context);
@@ -47,7 +47,7 @@ public class DualJoystickView extends LinearLayout {
 			dbgPaint1.setStyle(Paint.Style.STROKE);
 		}
 		
-		pad = new View(getContext());
+		padding = new View(getContext());
 	}
 	
 	@Override
@@ -55,27 +55,27 @@ public class DualJoystickView extends LinearLayout {
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		removeView(stickL);
+		removeView(padding);
 		removeView(stickR);
 
-		float padW = getMeasuredWidth()-(getMeasuredHeight()*2);
-		int joyWidth = (int) ((getMeasuredWidth()-padW)/2);
-		LayoutParams joyLParams = new LayoutParams(joyWidth,getMeasuredHeight());
+		int joyHeight = getMeasuredHeight();
+		int joyWidth = joyHeight;
+		int paddingWidth = getMeasuredWidth()-(joyWidth*2);
 		
-		stickL.setLayoutParams(joyLParams);
-		stickR.setLayoutParams(joyLParams);
+		LayoutParams joyParams = new LayoutParams(joyWidth,joyHeight);
+		stickL.setLayoutParams(joyParams);
+		stickR.setLayoutParams(joyParams);
 		
 		stickL.TAG = "L";
 		stickR.TAG = "R";
 		stickL.setPointerId(JoystickView.INVALID_POINTER_ID);
 		stickR.setPointerId(JoystickView.INVALID_POINTER_ID);
 
-		addView(stickL);
+		ViewGroup.LayoutParams padLParams = new ViewGroup.LayoutParams(paddingWidth,joyHeight);
+		padding.setLayoutParams(padLParams);
 
-		ViewGroup.LayoutParams padLParams = new ViewGroup.LayoutParams((int) padW,getMeasuredHeight());
-		removeView(pad);
-		pad.setLayoutParams(padLParams);
-		addView(pad);
-		
+		addView(stickL);
+		addView(padding);
 		addView(stickR);
 	}
 	

@@ -27,6 +27,8 @@
 
 package se.bitcraze.crazyfliecontrol;
 
+import java.math.BigDecimal;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -110,6 +112,11 @@ public class MainActivity extends Activity{
         Log.v(TAG, "radiochannel: " + radioChannel);
         Log.v(TAG, "radiobandwidth: " + radioBandwidth);
         
+        textView_pitch = (TextView) findViewById(R.id.pitch);
+        textView_roll = (TextView) findViewById(R.id.roll);
+        textView_thrust = (TextView) findViewById(R.id.thrust);
+        textView_yaw = (TextView) findViewById(R.id.yaw);
+
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setMovementRange(resolution, resolution);
     }
@@ -255,15 +262,16 @@ public class MainActivity extends Activity{
 	}
 
 	public void updateFlightData(){
-        textView_pitch = (TextView) findViewById(R.id.pitch);
-        textView_roll = (TextView) findViewById(R.id.roll);
-        textView_thrust = (TextView) findViewById(R.id.thrust);
-        textView_yaw = (TextView) findViewById(R.id.yaw);
-        
-        textView_pitch.setText("Pitch: " + getPitch() * -1); //inverse
-        textView_roll.setText("Roll: " + getRoll());
-        textView_thrust.setText("Thrust (%): " + getThrust());
-        textView_yaw.setText("Yaw: " + getYaw());
+        textView_pitch.setText("Pitch: " + round(getPitch() * -1)); //inverse
+        textView_roll.setText("Roll: " +  round(getRoll()));
+        textView_thrust.setText("Thrust (%): " +  round(getThrust()));
+        textView_yaw.setText("Yaw: " +  round(getYaw()));
+	}
+
+	public static double round(double unrounded){
+	    BigDecimal bd = new BigDecimal(unrounded);
+	    BigDecimal rounded = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+	    return rounded.doubleValue();
 	}
 
 	public float getThrust() {
