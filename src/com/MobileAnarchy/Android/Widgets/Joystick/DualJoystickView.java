@@ -62,6 +62,13 @@ public class DualJoystickView extends LinearLayout {
 		int joyWidth = joyHeight;
 		int paddingWidth = getMeasuredWidth()-(joyWidth*2);
 		
+		//Layout fix for HP Touchpad
+		if(paddingWidth < 0){
+			joyWidth = getMeasuredWidth()/2;
+			joyHeight = joyWidth;
+			paddingWidth = getMeasuredWidth() - (joyWidth*2);
+		}
+
 		LayoutParams joyParams = new LayoutParams(joyWidth,joyHeight);
 		stickL.setLayoutParams(joyParams);
 		stickR.setLayoutParams(joyParams);
