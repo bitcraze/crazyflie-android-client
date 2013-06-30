@@ -42,76 +42,75 @@ import android.widget.Toast;
 
 public class RadioLink {
 
-	private static final String TAG = "Crazyflie_RadioLink";
+    private static final String TAG = "Crazyflie_RadioLink";
 
-	private UsbDevice mDevice;
-	private UsbInterface intf;
-	private UsbEndpoint mEpIn;
-	private UsbEndpoint mEpOut;
-	private UsbDeviceConnection mConnection;
+    private UsbDevice mDevice;
+    private UsbInterface intf;
+    private UsbEndpoint mEpIn;
+    private UsbEndpoint mEpOut;
+    private UsbDeviceConnection mConnection;
 
-	private int channel;
-	private int bandwidth;
+    private int channel;
+    private int bandwidth;
 
-	private Thread radioLinkThread;
+    private Thread radioLinkThread;
 
-	private MainActivity mJoystick;
-	
-	private boolean debug = false;
+    private MainActivity mJoystick;
 
+    private boolean debug = false;
 
-    public RadioLink(MainActivity joystick){
-		this.mJoystick = joystick;
-	}
+    public RadioLink(MainActivity joystick) {
+        this.mJoystick = joystick;
+    }
 
     public void start() {
         Log.d(TAG, "RadioLink start()");
-        if(mConnection != null || debug){
-            if(debug){
+        if (mConnection != null || debug) {
+            if (debug) {
                 Toast.makeText(this.mJoystick, "DEBUG MODE", Toast.LENGTH_SHORT).show();
             }
-            if(radioLinkThread == null){
+            if (radioLinkThread == null) {
                 radioLinkThread = new Thread(radioControlRunnable);
                 radioLinkThread.start();
             }
-        }else {
+        } else {
             Log.d(TAG, "mConnection is null");
             Toast.makeText(mJoystick, "CrazyRadio not attached", Toast.LENGTH_SHORT).show();
-         }
+        }
     }
 
-	public void stop() {
+    public void stop() {
         Log.d(TAG, "RadioLink stop()");
-		if(radioLinkThread != null){
-			radioLinkThread.interrupt();
+        if (radioLinkThread != null) {
+            radioLinkThread.interrupt();
             radioLinkThread = null;
-		}
-	}
-	
-	public int getChannel() {
-		return channel;
-	}
+        }
+    }
 
-	public void setChannel(int channel) {
-		this.channel = channel;
-	}
-	
+    public int getChannel() {
+        return channel;
+    }
+
+    public void setChannel(int channel) {
+        this.channel = channel;
+    }
+
     public int getBandwidth() {
-		return bandwidth;
-	}
+        return bandwidth;
+    }
 
-	public void setBandwidth(int bandwidth) {
-		this.bandwidth = bandwidth;
-	}
-	
-	public Object getDevice(){
-		return mDevice;
-	}
+    public void setBandwidth(int bandwidth) {
+        this.bandwidth = bandwidth;
+    }
+
+    public Object getDevice() {
+        return mDevice;
+    }
 
     public void setDevice(UsbManager usbManager, UsbDevice device) {
-        
-        if(usbManager == null && device == null){
-            if(mConnection != null){
+
+        if (usbManager == null && device == null) {
+            if (mConnection != null) {
                 mConnection.releaseInterface(intf);
                 mConnection.close();
             }
@@ -119,7 +118,7 @@ public class RadioLink {
             mDevice = null;
             return;
         }
-        
+
         Log.d(TAG, "setDevice " + device);
         // find interface
         if (device.getInterfaceCount() != 1) {
@@ -140,11 +139,11 @@ public class RadioLink {
         }
         // check endpoint direction
         if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-        	mEpIn = intf.getEndpoint(0);
-        	mEpOut = intf.getEndpoint(1);
+            mEpIn = intf.getEndpoint(0);
+            mEpOut = intf.getEndpoint(1);
         } else {
-        	mEpIn = intf.getEndpoint(1);
-        	mEpOut = intf.getEndpoint(0);
+            mEpIn = intf.getEndpoint(1);
+            mEpOut = intf.getEndpoint(0);
         }
 
         mDevice = device;
@@ -154,62 +153,60 @@ public class RadioLink {
             if (connection != null && connection.claimInterface(intf, true)) {
                 Log.d(TAG, "open SUCCESS");
                 mConnection = connection;
-            }else{
+            } else {
                 Log.d(TAG, "open FAIL");
-                mConnection = null; //TODO: is that necessary?
+                mConnection = null; // TODO: is that necessary?
             }
         }
     }
-	
-	private Runnable radioControlRunnable = new Runnable() {
-	
-		//Run the Radio link loop to send attitude setpoint to the copter
-		public void run() {
-			//TODO: can channel and datarate be changed at any time?
-			if(mConnection != null){
-				//Set channel
-				mConnection.controlTransfer(0x40, 0x01, channel, 0, null, 0, 100);
-				//Set datarate
-				mConnection.controlTransfer(0x40, 0x03, bandwidth, 0, null, 0, 100);
-			}
+
+    private Runnable radioControlRunnable = new Runnable() {
+
+        // Run the Radio link loop to send attitude setpoint to the copter
+        public void run() {
+            // TODO: can channel and datarate be changed at any time?
+            if (mConnection != null) {
+                // Set channel
+                mConnection.controlTransfer(0x40, 0x01, channel, 0, null, 0, 100);
+                // Set datarate
+                mConnection.controlTransfer(0x40, 0x03, bandwidth, 0, null, 0, 100);
+            }
 
             while (mConnection != null || debug) {
-				//Log.v(TAG, "radioControlRunnable running");
-				CommanderPacket cpk = new CommanderPacket(mJoystick.getRoll(), mJoystick.getPitch(),
-														  mJoystick.getYaw(), (char) (mJoystick.getThrust() * 1000),
-														  mJoystick.isXmode());
+                // Log.v(TAG, "radioControlRunnable running");
+                CommanderPacket cpk = new CommanderPacket(mJoystick.getRoll(), mJoystick.getPitch(), mJoystick.getYaw(), (char) (mJoystick.getThrust() * 1000), mJoystick.isXmode());
 
-				byte [] data;
-				byte [] rdata = new byte[33];
+                byte[] data;
+                byte[] rdata = new byte[33];
 
-//				Log.i(TAG, "P: " + mJoystick.getPitch() + 
-//						  " R: " + mJoystick.getRoll() + 
-//						  " Y: " + mJoystick.getYaw() +
-//						  " T: " + mJoystick.getThrust());
+                // Log.i(TAG, "P: " + mJoystick.getPitch() +
+                // " R: " + mJoystick.getRoll() +
+                // " Y: " + mJoystick.getYaw() +
+                // " T: " + mJoystick.getThrust());
 
-				try {
-					data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
-//					Log.v(TAG, "Sending a packet of " + data.length + " bytes");
-//									String datastr = "[";
-//									for (int i=0; i<data.length; i++)
-//										datastr += "" + data[i] + ", ";
-//									datastr += "]";
-//					Log.v(TAG, "Sending data " + datastr);
-					if(mConnection != null){
-						mConnection.bulkTransfer(mEpOut, data, data.length, 100);
-						mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
-					}
-				} catch (StructException e1) {
-					e1.printStackTrace();
-				}
+                try {
+                    data = JavaStruct.pack(cpk, ByteOrder.LITTLE_ENDIAN);
+                    // Log.v(TAG, "Sending a packet of " + data.length + " bytes");
+                    // String datastr = "[";
+                    // for (int i=0; i<data.length; i++)
+                    // datastr += "" + data[i] + ", ";
+                    // datastr += "]";
+                    // Log.v(TAG, "Sending data " + datastr);
+                    if (mConnection != null) {
+                        mConnection.bulkTransfer(mEpOut, data, data.length, 100);
+                        mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+                    }
+                } catch (StructException e1) {
+                    e1.printStackTrace();
+                }
 
-				try {
-					Thread.sleep(20, 0);
-				} catch (InterruptedException e) {
-					//Log.v(TAG, "radioControlRunnable catch block");
-					break;
-				}
-			}
-		}
-	};
+                try {
+                    Thread.sleep(20, 0);
+                } catch (InterruptedException e) {
+                    // Log.v(TAG, "radioControlRunnable catch block");
+                    break;
+                }
+            }
+        }
+    };
 }
