@@ -28,10 +28,15 @@
 package se.bitcraze.crazyfliecontrol;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -52,6 +57,8 @@ import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 public class MainActivity extends Activity{
 	
     private static final String TAG = "CrazyflieControl";
+
+    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
 	private DualJoystickView mJoysticks;
 	private TextView textView_pitch;
@@ -88,7 +95,13 @@ public class MainActivity extends Activity{
 	private String maxThrustDefaultValue;
 	private String minThrustDefaultValue;
 
+    private UsbManager mUsbManager;
+    private UsbDevice device;
+    private PendingIntent mPermissionIntent;
+
 	private boolean isOnscreenControllerDisabled;
+
+    private boolean mPermissionAsked = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -119,6 +132,13 @@ public class MainActivity extends Activity{
 
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setMovementRange(resolution, resolution);
+
+        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(mUsbReceiver, filter);
     }
 
     @Override
@@ -148,26 +168,10 @@ public class MainActivity extends Activity{
     public void onResume() {
     	super.onResume();
     	
-    	Intent intent = getIntent();
-        Log.d(TAG, "intent: " + intent);
-        String action = intent.getAction();
-
-        //Reset input method
-       	Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
-       	this.isOnscreenControllerDisabled = false;
-       	mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-        
+        resetInputMethod();
+        searchForCrazyRadio();
         setControlConfig();
         setRadioLink();
-
-        UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-            radioLink.setDevice(device);
-        } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-            if (radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
-            	radioLink.setDevice(null);
-            }
-        }
     }
 
     @Override
@@ -232,6 +236,12 @@ public class MainActivity extends Activity{
     	this.isOnscreenControllerDisabled = true;
     }
 
+    private void resetInputMethod(){
+        Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
+        this.isOnscreenControllerDisabled = false;
+        mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+    }
+
 	private void setControlConfig(){
 		this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
 		this.deadzone = Float.parseFloat(preferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
@@ -250,9 +260,33 @@ public class MainActivity extends Activity{
 		}
 	}
 
+    /**
+     * Iterate over all attached USB devices and look for CrazyRadio.
+     * If CrazyRadio is found, request permission.
+     */
+    private void searchForCrazyRadio() {
+        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        //Iterate over USB devices
+        for(Entry<String, UsbDevice> e : deviceList.entrySet()){
+            Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
+            //CrazyRadio - Vendor ID: 6421, Product ID: 30583
+            if(e.getValue().getVendorId() == 6421 && e.getValue().getProductId() == 30583){
+                device = deviceList.get(e.getKey());
+            }
+        }
+
+        if(device != null && !this.mPermissionAsked ){
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+            mUsbManager.requestPermission(device, mPermissionIntent);
+            mPermissionAsked = true;
+        }else{
+            Log.d(TAG, "device == null");
+        }
+    }
+
 	private void setRadioLink() {
 		if(radioLink == null) {
-			radioLink = new RadioLink((UsbManager) getSystemService(Context.USB_SERVICE), this);
+            radioLink = new RadioLink(this);
 		}
         radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
         radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
@@ -260,6 +294,41 @@ public class MainActivity extends Activity{
         radioLink.setChannel(radioChannel);
         radioLink.setBandwidth(radioBandwidth);
 	}
+
+    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.d(TAG, "onReceive");
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                Log.d(TAG, "USB_PERMISSON");
+                synchronized (this) {
+                    UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (device != null) {
+                            Toast.makeText(MainActivity.this, "CrazyRadio attached", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "setDevice");
+                            radioLink.setDevice(mUsbManager, device);
+                        }
+                    } else {
+                        Log.d(TAG, "permission denied for device " + device);
+                    }
+                }
+            }
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                Log.d(TAG, "USB device detached ");
+                if (device != null) {
+                    Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
+                    if (radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
+                        Log.d(TAG, "setDevice(null,null)");
+                        radioLink.setDevice(null, null);
+                        mPermissionAsked = false;
+                    }
+                }
+            }
+        }
+    };
 
 	public void updateFlightData(){
         textView_pitch.setText("Pitch: " + round(getPitch() * -1)); //inverse
