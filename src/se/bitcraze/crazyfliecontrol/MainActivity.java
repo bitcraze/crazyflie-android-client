@@ -187,6 +187,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onDestroy() {
+        unregisterReceiver(mUsbReceiver);
+        super.onDestroy();
+    }
+
+    @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event
         // could be almost anything.
