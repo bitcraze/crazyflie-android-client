@@ -150,10 +150,6 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.preferences:
-            Intent intent = new Intent(this, PreferencesActivity.class);
-            startActivity(intent);
-            break;
         case R.id.menu_connect:
             radioLink.start();
             break;
@@ -163,6 +159,10 @@ public class MainActivity extends Activity {
         case R.id.menu_radio_scan:
             int[] result = radioLink.scanChannels(mUsbManager);
             setRadioChannelAndBandwidth(result[0], result[1]);
+            break;
+        case R.id.preferences:
+            Intent intent = new Intent(this, PreferencesActivity.class);
+            startActivity(intent);
             break;
         }
         return true;

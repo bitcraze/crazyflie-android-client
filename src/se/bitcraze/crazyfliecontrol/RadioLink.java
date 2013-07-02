@@ -45,13 +45,13 @@ public class RadioLink {
     private static final String TAG = "Crazyflie_RadioLink";
 
     private UsbDevice mDevice;
-    private UsbInterface intf;
+    private UsbInterface mIntf;
     private UsbEndpoint mEpIn;
     private UsbEndpoint mEpOut;
     private UsbDeviceConnection mConnection;
 
-    private int channel;
-    private int bandwidth;
+    private int mChannel;
+    private int mBandwidth;
 
     private Thread radioLinkThread;
 
@@ -88,19 +88,19 @@ public class RadioLink {
     }
 
     public int getChannel() {
-        return channel;
+        return mChannel;
     }
 
     public void setChannel(int channel) {
-        this.channel = channel;
+        this.mChannel = channel;
     }
 
     public int getBandwidth() {
-        return bandwidth;
+        return mBandwidth;
     }
 
     public void setBandwidth(int bandwidth) {
-        this.bandwidth = bandwidth;
+        this.mBandwidth = bandwidth;
     }
 
     public Object getDevice() {
@@ -111,7 +111,7 @@ public class RadioLink {
 
         if (usbManager == null && device == null) {
             if (mConnection != null) {
-                mConnection.releaseInterface(intf);
+                mConnection.releaseInterface(mIntf);
                 mConnection.close();
             }
             mConnection = null;
@@ -125,32 +125,32 @@ public class RadioLink {
             Log.e(TAG, "Could not find interface");
             return;
         }
-        intf = device.getInterface(0);
+        mIntf = device.getInterface(0);
         // device should have two endpoints
-        if (intf.getEndpointCount() != 2) {
+        if (mIntf.getEndpointCount() != 2) {
             Log.e(TAG, "Could not find endpoints");
             return;
         }
         // endpoints should be of type bulk
-        UsbEndpoint ep = intf.getEndpoint(0);
+        UsbEndpoint ep = mIntf.getEndpoint(0);
         if (ep.getType() != UsbConstants.USB_ENDPOINT_XFER_BULK) {
             Log.e(TAG, "Endpoint is not of type bulk");
             return;
         }
         // check endpoint direction
         if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-            mEpIn = intf.getEndpoint(0);
-            mEpOut = intf.getEndpoint(1);
+            mEpIn = mIntf.getEndpoint(0);
+            mEpOut = mIntf.getEndpoint(1);
         } else {
-            mEpIn = intf.getEndpoint(1);
-            mEpOut = intf.getEndpoint(0);
+            mEpIn = mIntf.getEndpoint(1);
+            mEpOut = mIntf.getEndpoint(0);
         }
 
         mDevice = device;
 
-        if (mDevice != null && intf != null) {
+        if (mDevice != null && mIntf != null) {
             UsbDeviceConnection connection = usbManager.openDevice(mDevice);
-            if (connection != null && connection.claimInterface(intf, true)) {
+            if (connection != null && connection.claimInterface(mIntf, true)) {
                 Log.d(TAG, "open SUCCESS");
                 mConnection = connection;
             } else {
@@ -221,9 +221,9 @@ public class RadioLink {
             // TODO: can channel and datarate be changed at any time?
             if (mConnection != null) {
                 // Set channel
-                mConnection.controlTransfer(0x40, 0x01, channel, 0, null, 0, 100);
+                mConnection.controlTransfer(0x40, 0x01, mChannel, 0, null, 0, 100);
                 // Set datarate
-                mConnection.controlTransfer(0x40, 0x03, bandwidth, 0, null, 0, 100);
+                mConnection.controlTransfer(0x40, 0x03, mBandwidth, 0, null, 0, 100);
             }
 
             while (mConnection != null || debug) {
