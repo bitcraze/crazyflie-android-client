@@ -160,6 +160,10 @@ public class MainActivity extends Activity {
         case R.id.menu_disconnect:
             radioLink.stop();
             break;
+        case R.id.menu_radio_scan:
+            int[] result = radioLink.scanChannels(mUsbManager);
+            setRadioChannelAndBandwidth(result[0], result[1]);
+            break;
         }
         return true;
     }
@@ -233,6 +237,15 @@ public class MainActivity extends Activity {
             return true;
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    private void setRadioChannelAndBandwidth(int channel, int bandwidth){
+        if(channel != -1 && bandwidth != -1){
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(bandwidth));
+            editor.commit();
+        }
     }
 
     private void disableOnscreenController() {
