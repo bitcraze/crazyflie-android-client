@@ -41,6 +41,7 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.InputDevice;
@@ -100,8 +101,8 @@ public class MainActivity extends Activity {
     private PendingIntent mPermissionIntent;
 
     private boolean isOnscreenControllerDisabled;
-
     private boolean mPermissionAsked = false;
+    private boolean mDoubleBackToExitPressedOnce = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -195,6 +196,24 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         unregisterReceiver(mUsbReceiver);
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDoubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+        this.mDoubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                mDoubleBackToExitPressedOnce = false;
+
+            }
+        }, 2000);
     }
 
     @Override
