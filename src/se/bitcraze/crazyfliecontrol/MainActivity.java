@@ -188,6 +188,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         resetAxisValues();
+        radioLink.stop();
     }
 
     @Override
