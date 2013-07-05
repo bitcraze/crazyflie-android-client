@@ -32,14 +32,27 @@ import struct.StructField;
 
 @StructClass 
 public class CommanderPacket {
-	@StructField(order = 0)
-	public byte port;
-	@StructField(order = 1)
-	public float roll;
-	@StructField(order = 2)
-	public float pitch;
-	@StructField(order = 3)
-	public float yaw;
-	@StructField(order = 4)
-	public char thrust;
-};
+    @StructField(order = 0)
+    public byte port;
+    @StructField(order = 1)
+    public float roll;
+    @StructField(order = 2)
+    public float pitch;
+    @StructField(order = 3)
+    public float yaw;
+    @StructField(order = 4)
+    public char thrust;
+
+    public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
+        this.port = (byte) 0x30;
+        if (xmode) {
+            this.pitch = 0.707f * (roll + pitch);
+            this.roll = 0.707f * (roll - pitch);
+        } else {
+            this.pitch = pitch;
+            this.roll = roll;
+        }
+        this.yaw = yaw;
+        this.thrust = thrust;
+    }
+}
