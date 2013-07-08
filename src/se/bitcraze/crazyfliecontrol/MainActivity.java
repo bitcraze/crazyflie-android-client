@@ -254,7 +254,8 @@ public class MainActivity extends Activity {
                 break;
             }
             // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-            return true;
+            if (!Build.MODEL.toUpperCase().contains("OUYA"))
+            	return true;
         }
         return super.dispatchKeyEvent(event);
     }
