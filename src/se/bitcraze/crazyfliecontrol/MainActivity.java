@@ -29,6 +29,7 @@ package se.bitcraze.crazyfliecontrol;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map.Entry;
 
 import android.app.Activity;
@@ -40,6 +41,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -244,6 +246,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // TODO: works for PS3 controller, but does it also work for other controllers?
+        // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
             switch (event.getAction()) {
             case KeyEvent.ACTION_DOWN:
@@ -253,9 +256,10 @@ public class MainActivity extends Activity {
             default:
                 break;
             }
-            // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-            if (!Build.MODEL.toUpperCase().contains("OUYA"))
-            	return true;
+            //exception for OUYA controllers
+            if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")){
+                return true;
+            }
         }
         return super.dispatchKeyEvent(event);
     }
