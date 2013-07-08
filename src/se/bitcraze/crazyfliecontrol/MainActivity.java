@@ -99,7 +99,7 @@ public class MainActivity extends Activity {
     private String minThrustDefaultValue;
 
     private UsbManager mUsbManager;
-    private UsbDevice device;
+    private UsbDevice mDevice;
     private PendingIntent mPermissionIntent;
 
     private boolean isOnscreenControllerDisabled;
@@ -154,12 +154,14 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.menu_connect:
+            setupCrazyRadio();
             radioLink.start();
             break;
         case R.id.menu_disconnect:
             radioLink.stop();
             break;
         case R.id.menu_radio_scan:
+            setupCrazyRadio();
             int[] result = radioLink.scanChannels(mUsbManager);
             setRadioChannelAndBandwidth(result[0], result[1]);
             break;
@@ -174,11 +176,8 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-
         resetInputMethod();
-        searchForCrazyRadio();
         setControlConfig();
-        setRadioLink();
     }
 
     @Override
@@ -191,7 +190,9 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         resetAxisValues();
-        radioLink.stop();
+        if(radioLink != null){
+            radioLink.stop();
+        }
     }
 
     @Override
@@ -264,6 +265,15 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
+    private void setupCrazyRadio(){
+        searchForCrazyRadio();
+        setRadioLink();
+        if(mDevice != null && radioLink.getDevice() == null){
+            Log.d(TAG, "SetupCrazyRadio setDevice");
+            radioLink.setDevice(mUsbManager, mDevice);
+        }
+    }
+
     private void setRadioChannelAndBandwidth(int channel, int bandwidth){
         if(channel != -1 && bandwidth != -1){
             SharedPreferences.Editor editor = preferences.edit();
@@ -313,13 +323,14 @@ public class MainActivity extends Activity {
             Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
             // CrazyRadio - Vendor ID: 6421, Product ID: 30583
             if (e.getValue().getVendorId() == 6421 && e.getValue().getProductId() == 30583) {
-                device = deviceList.get(e.getKey());
+                mDevice = deviceList.get(e.getKey());
             }
         }
 
-        if (device != null && !this.mPermissionAsked) {
+        if (mDevice != null && !this.mPermissionAsked) {
+            Log.d(TAG, "Request permission");
             mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-            mUsbManager.requestPermission(device, mPermissionIntent);
+            mUsbManager.requestPermission(mDevice, mPermissionIntent);
             mPermissionAsked = true;
         } else {
             Log.d(TAG, "device == null");
@@ -362,7 +373,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "USB device detached ");
                 if (device != null) {
                     Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
-                    if (radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
+                    if (radioLink != null && radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
                         Log.d(TAG, "setDevice(null,null)");
                         radioLink.setDevice(null, null);
                         mPermissionAsked = false;
