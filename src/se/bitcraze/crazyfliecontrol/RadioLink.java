@@ -172,8 +172,8 @@ public class RadioLink {
         int[] result = new int[]{-1,-1};
 
         if (mConnection != null) {
-            //simple packet
-            byte[] packet = new byte[2];
+            //null packet
+            byte[] packet = new byte[1];
             packet[0] = (byte) 255;
             
             byte [] rdata = new byte[64];
@@ -183,27 +183,20 @@ public class RadioLink {
             for(int b = 0; b < 3; b++){
                 //set bandwidth
                 mConnection.controlTransfer(0x40, 0x03, b, 0, null, 0, 100);
-                for(int i = 0; i < 126;i++){
-                    //set channel
-                    mConnection.controlTransfer(0x40, 0x01, i, 0, null, 0, 100);
-                    //send packet, receive ack when channel is found
-                    sendPacket(packet, rdata);
-                    if(rdata[0] != 0){
-                        result[0] = i; //channel
-                        result[1] = b; //bandwidth
-                        Log.d(TAG, "Channel found: " + i + " Data rate: " + b);
-                        String[] bandwidthStrings = mJoystick.getResources().getStringArray(R.array.radioBandwidthEntries);
-                        Toast.makeText(mJoystick, "Channel found: " + i + " Data rate: " + bandwidthStrings[b] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-                        //TODO: handle more than one found channel
-                        break;
-                    }
-                    try {
-                        Thread.sleep(20, 0);
-                    } catch (InterruptedException e) {
-                        Log.v(TAG, "scanChannels InterruptedException");
-                    }
-                }
-                if(rdata[0] != 0){
+
+            	mConnection.controlTransfer(0x40, 0x21, 0, 125, packet, packet.length, 1000);
+            	int nfound = mConnection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
+            	if (nfound > 0) {
+            		result[0] = rdata[0]; //channel
+                    result[1] = b; //bandwidth
+                    Log.d(TAG, "Channel found: " + rdata[0] + " Data rate: " + b);
+                    String[] bandwidthStrings = mJoystick.getResources().getStringArray(R.array.radioBandwidthEntries);
+                    Toast.makeText(mJoystick, "Channel found: " + rdata[0] + " Data rate: " + bandwidthStrings[b] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+                    //TODO: handle more than one found channel
+                    break;
+            	}
+
+            	if(rdata[0] != 0){
                     break;
                 }
             }
