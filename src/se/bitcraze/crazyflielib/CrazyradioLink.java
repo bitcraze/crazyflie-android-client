@@ -16,6 +16,10 @@ import android.util.Log;
 
 public class CrazyradioLink extends AbstractLink {
 
+	// CrazyRadio USB device IDs
+	public static final int VENDOR_ID = 6421;
+	public static final int PRODUCT_ID = 30583;
+	
 	private static final String LOG_TAG = "Crazyflie_RadioLink";
 	
 	private final UsbDevice mUsbDevice;

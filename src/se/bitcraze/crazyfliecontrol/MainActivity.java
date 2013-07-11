@@ -328,9 +328,9 @@ public class MainActivity extends Activity {
         // Iterate over USB devices
         for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
             Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
-            // CrazyRadio - Vendor ID: 6421, Product ID: 30583
-            if (e.getValue().getVendorId() == 6421 && e.getValue().getProductId() == 30583) {
-                mDevice = deviceList.get(e.getKey());
+            if (e.getValue().getVendorId() == CrazyradioLink.VENDOR_ID && e.getValue().getProductId() == CrazyradioLink.PRODUCT_ID) {
+                mDevice = e.getValue();
+                break; // stop after first matching device is found
             }
         }
 
