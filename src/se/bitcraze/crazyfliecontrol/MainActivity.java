@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
 
+import se.bitcraze.crazyflielib.CommanderPacket;
+import se.bitcraze.crazyflielib.CrazyradioLink;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -74,7 +77,7 @@ public class MainActivity extends Activity {
     private float left_analog_x;
     private float left_analog_y;
 
-    private RadioLink radioLink;
+    private CrazyradioLink crazyflieLink;
     public int resolution = 1000;
 
     SharedPreferences preferences;
@@ -105,6 +108,8 @@ public class MainActivity extends Activity {
     private boolean isOnscreenControllerDisabled;
     private boolean mPermissionAsked = false;
     private boolean mDoubleBackToExitPressedOnce = false;
+    
+    private Thread mSendJoystickDataThread;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -155,15 +160,26 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
         case R.id.menu_connect:
             setupCrazyRadio();
-            radioLink.start();
+            try {
+            	linkConnect();
+            } catch(IllegalStateException e) {
+            	Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
             break;
         case R.id.menu_disconnect:
-            radioLink.stop();
+            linkDisconnect();
             break;
         case R.id.menu_radio_scan:
             setupCrazyRadio();
-            int[] result = radioLink.scanChannels(mUsbManager);
-            setRadioChannelAndBandwidth(result[0], result[1]);
+            try {
+            	int[] result = crazyflieLink.scanChannels();
+            	String[] bandwidthStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
+            	Toast.makeText(this, "Channel found: " + result[0] + " Data rate: " + bandwidthStrings[result[1]] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+            	
+            	setRadioChannelAndBandwidth(result[0], result[1]);
+            } catch(IllegalStateException e) {
+            	Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
             break;
         case R.id.preferences:
             Intent intent = new Intent(this, PreferencesActivity.class);
@@ -190,8 +206,8 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         resetAxisValues();
-        if(radioLink != null){
-            radioLink.stop();
+        if(crazyflieLink != null){
+            linkDisconnect();
         }
     }
 
@@ -267,11 +283,10 @@ public class MainActivity extends Activity {
 
     private void setupCrazyRadio(){
         searchForCrazyRadio();
-        setRadioLink();
-        if(mDevice != null && radioLink.getDevice() == null){
-            Log.d(TAG, "SetupCrazyRadio setDevice");
-            radioLink.setDevice(mUsbManager, mDevice);
+        if (crazyflieLink == null && mDevice != null) {
+            crazyflieLink = new CrazyradioLink(mUsbManager, mDevice);
         }
+        setRadioLink();
     }
 
     private void setRadioChannelAndBandwidth(int channel, int bandwidth){
@@ -338,14 +353,11 @@ public class MainActivity extends Activity {
     }
 
     private void setRadioLink() {
-        if (radioLink == null) {
-            radioLink = new RadioLink(this);
-        }
         radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
         radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
 
-        radioLink.setChannel(radioChannel);
-        radioLink.setBandwidth(radioBandwidth);
+        crazyflieLink.setChannel(radioChannel);
+        crazyflieLink.setBandwidth(radioBandwidth);
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -360,8 +372,10 @@ public class MainActivity extends Activity {
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
                             Toast.makeText(MainActivity.this, "CrazyRadio attached", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "setDevice");
-                            radioLink.setDevice(mUsbManager, device);
+                            Log.d(TAG, "new CrazyradioLink(...)");
+                            if( crazyflieLink == null ) {
+                            	crazyflieLink = new CrazyradioLink(mUsbManager, device);
+                            }
                         }
                     } else {
                         Log.d(TAG, "permission denied for device " + device);
@@ -373,15 +387,45 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "USB device detached ");
                 if (device != null) {
                     Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
-                    if (radioLink != null && radioLink.getDevice() != null && radioLink.getDevice().equals(device)) {
-                        Log.d(TAG, "setDevice(null,null)");
-                        radioLink.setDevice(null, null);
+                    if (crazyflieLink != null) {
+                        Log.d(TAG, "linkDisconnect()");
+                        linkDisconnect();
                         mPermissionAsked = false;
                     }
                 }
             }
         }
     };
+    
+    public void linkConnect() {
+    	crazyflieLink.connect();
+    	mSendJoystickDataThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					while(crazyflieLink != null) {
+						crazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust() * 1000), isXmode()));
+						
+						try {
+		                    Thread.sleep(20, 0);
+		                } catch (InterruptedException e) {
+		                    break;
+		                }
+					}
+				}
+			});
+    	mSendJoystickDataThread.start();
+    }
+    
+    public void linkDisconnect() {
+    	if(crazyflieLink != null) {
+    		crazyflieLink.disconnect();
+    		crazyflieLink = null;
+    	}
+    	if(mSendJoystickDataThread != null) {
+    		mSendJoystickDataThread.interrupt();
+    		mSendJoystickDataThread = null;
+    	}
+    }
 
     public void updateFlightData() {
         textView_pitch.setText("Pitch: " + round(getPitch() * -1)); // inverse

@@ -25,13 +25,13 @@
  *
  */
 
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyflielib;
 
 import struct.StructClass;
 import struct.StructField;
 
 @StructClass 
-public class CommanderPacket {
+public class CommanderPacket implements Packet {
     @StructField(order = 0)
     public byte port;
     @StructField(order = 1)
