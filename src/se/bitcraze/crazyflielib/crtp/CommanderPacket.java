@@ -25,26 +25,19 @@
  *
  */
 
-package se.bitcraze.crazyflielib;
+package se.bitcraze.crazyflielib.crtp;
 
-import struct.StructClass;
-import struct.StructField;
+import java.nio.ByteBuffer;
 
-@StructClass 
-public class CommanderPacket implements Packet {
-    @StructField(order = 0)
-    public byte port;
-    @StructField(order = 1)
-    public float roll;
-    @StructField(order = 2)
-    public float pitch;
-    @StructField(order = 3)
-    public float yaw;
-    @StructField(order = 4)
-    public char thrust;
+public class CommanderPacket extends CRTPPacket {
+    private final float roll;
+    private final float pitch;
+    private final float yaw;
+    private final char thrust;
 
     public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
-        this.port = (byte) 0x30;
+        super((byte) 0x30);
+        
         if (xmode) {
             this.pitch = 0.707f * (roll + pitch);
             this.roll = 0.707f * (roll - pitch);
@@ -55,4 +48,18 @@ public class CommanderPacket implements Packet {
         this.yaw = yaw;
         this.thrust = thrust;
     }
+
+	@Override
+	protected void serializeData(ByteBuffer buffer) {
+		buffer.putFloat(roll);
+		buffer.putFloat(pitch);
+		buffer.putFloat(yaw);
+		buffer.putChar(thrust);
+	}
+
+	@Override
+	protected int getDataByteCount() {
+		return 3*4 + 1*2; // 3 floats with size 4, 1 char with size 2
+	}
+
 }

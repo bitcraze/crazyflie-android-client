@@ -1,11 +1,9 @@
 package se.bitcraze.crazyflielib;
 
-import java.nio.ByteOrder;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import struct.JavaStruct;
-import struct.StructException;
+import se.bitcraze.crazyflielib.crtp.CRTPPacket;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -32,7 +30,7 @@ public class CrazyradioLink extends AbstractLink {
     
     private Thread mRadioLinkThread;
     
-    private final BlockingDeque<Packet> mSendQueue;
+    private final BlockingDeque<CRTPPacket> mSendQueue;
     
     /**
      * Holds information about a specific connection.
@@ -71,7 +69,7 @@ public class CrazyradioLink extends AbstractLink {
 		this.mConnectionData = connectionData;
 		initDevice(usbManager);
 		
-		this.mSendQueue = new LinkedBlockingDeque<Packet>();
+		this.mSendQueue = new LinkedBlockingDeque<CRTPPacket>();
 	}
 	
 	private void initDevice(UsbManager usbManager) {
@@ -196,7 +194,7 @@ public class CrazyradioLink extends AbstractLink {
 	}
 
 	@Override
-	public void send(Packet p) {
+	public void send(CRTPPacket p) {
 		this.mSendQueue.addLast(p);
 	}
 	
@@ -217,7 +215,7 @@ public class CrazyradioLink extends AbstractLink {
             while (mConnection != null) {
                 // Log.v(TAG, "radioControlRunnable running");
             	try {
-	                final Packet p = mSendQueue.takeFirst();
+	                final CRTPPacket p = mSendQueue.takeFirst();
 	
 	                byte[] data;
 	                byte[] rdata = new byte[33];
@@ -227,21 +225,17 @@ public class CrazyradioLink extends AbstractLink {
 	                // " Y: " + mJoystick.getYaw() +
 	                // " T: " + mJoystick.getThrust());
 	
-	                try {
-	                    data = JavaStruct.pack(p, ByteOrder.LITTLE_ENDIAN);
-	                    // Log.v(TAG, "Sending a packet of " + data.length + " bytes");
-	                    // String datastr = "[";
-	                    // for (int i=0; i<data.length; i++)
-	                    // datastr += "" + data[i] + ", ";
-	                    // datastr += "]";
-	                    // Log.v(TAG, "Sending data " + datastr);
-	                    if (mConnection != null) {
-	                        mConnection.bulkTransfer(mEpOut, data, data.length, 100);
-	                        mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
-	                    }
-	                } catch (StructException e) {
-	                    e.printStackTrace();
-	                }
+                    data = p.toByteArray();
+                    // Log.v(TAG, "Sending a packet of " + data.length + " bytes");
+                    // String datastr = "[";
+                    // for (int i=0; i<data.length; i++)
+                    // datastr += "" + data[i] + ", ";
+                    // datastr += "]";
+                    // Log.v(TAG, "Sending data " + datastr);
+                    if (mConnection != null) {
+                        mConnection.bulkTransfer(mEpOut, data, data.length, 100);
+                        mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+                    }
                 } catch (InterruptedException e) {
                     // Log.v(TAG, "radioControlRunnable catch block");
                     break;

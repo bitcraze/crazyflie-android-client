@@ -32,10 +32,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
 
-import se.bitcraze.crazyflielib.CommanderPacket;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.Link;
+import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;

@@ -1,5 +1,7 @@
 package se.bitcraze.crazyflielib;
 
+import se.bitcraze.crazyflielib.crtp.CRTPPacket;
+
 /**
  * Representation of a link to the Crazyflie.
  */
@@ -24,7 +26,7 @@ public interface Link {
 	 * Send data to the Crazyflie.
 	 * @param p the packet of data to send.
 	 */
-	public void send(Packet p);
+	public void send(CRTPPacket p);
 	
 	/**
 	 * Add a listener to receive notifications about the connection status.
