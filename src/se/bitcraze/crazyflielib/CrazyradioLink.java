@@ -24,25 +24,47 @@ public class CrazyradioLink extends AbstractLink {
     private UsbEndpoint mEpOut;
     private UsbDeviceConnection mConnection;
 	
-    private int mChannel;
-    private int mBandwidth;
+    private final ConnectionData mConnectionData;
     
     private Thread mRadioLinkThread;
     
     private final BlockingDeque<Packet> mSendQueue;
     
     /**
+     * Holds information about a specific connection.
+     */
+    public static class ConnectionData {
+    	private final int channel;
+    	private final int bandwidth;
+    	
+		public ConnectionData(int channel, int bandwidth) {
+			this.channel = channel;
+			this.bandwidth = bandwidth;
+		}
+
+		public int getChannel() {
+			return channel;
+		}
+
+		public int getBandwidth() {
+			return bandwidth;
+		}
+    }
+    
+    /**
      * Create a new link using the Crazyradio.
      * @param usbManager
      * @param usbDevice
+     * @param connectionData
      * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
      */
-	public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice) {
+	public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData) {
 		if(usbManager == null || usbDevice == null) {
 			throw new IllegalArgumentException("USB manager and device must not be null");
 		}
 		
 		this.mUsbDevice = usbDevice;
+		this.mConnectionData = connectionData;
 		initDevice(usbManager);
 		
 		this.mSendQueue = new LinkedBlockingDeque<Packet>();
@@ -91,10 +113,11 @@ public class CrazyradioLink extends AbstractLink {
 	 * @return array containing the found channel and bandwidth.
 	 * @throws IllegalStateException
 	 */
-    public int[] scanChannels() throws IllegalStateException {
-        int[] result = new int[]{-1,-1};
+    public static ConnectionData scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
+        ConnectionData result = null;
 
-        if (mConnection != null) {
+        final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
+        if (connection != null) {
             //null packet
             byte[] packet = new byte[1];
             packet[0] = (byte) 255;
@@ -105,13 +128,12 @@ public class CrazyradioLink extends AbstractLink {
             //scan for all 3 data rates
             for(int b = 0; b < 3; b++){
                 //set bandwidth
-                mConnection.controlTransfer(0x40, 0x03, b, 0, null, 0, 100);
+                connection.controlTransfer(0x40, 0x03, b, 0, null, 0, 100);
 
-            	mConnection.controlTransfer(0x40, 0x21, 0, 125, packet, packet.length, 1000);
-            	int nfound = mConnection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
+                connection.controlTransfer(0x40, 0x21, 0, 125, packet, packet.length, 1000);
+            	int nfound = connection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
             	if (nfound > 0) {
-            		result[0] = rdata[0]; //channel
-                    result[1] = b; //bandwidth
+            		result = new ConnectionData(rdata[0], b);
                     Log.d(LOG_TAG, "Channel found: " + rdata[0] + " Data rate: " + b);
                     //TODO: handle more than one found channel
                     break;
@@ -122,26 +144,18 @@ public class CrazyradioLink extends AbstractLink {
                 }
             }
         } else {
-            Log.d(LOG_TAG, "mConnection is null");
+            Log.d(LOG_TAG, "connection is null");
             throw new IllegalStateException("CrazyRadio not attached");
         }
         return result;
     }
 	
 	public int getChannel() {
-        return mChannel;
-    }
-
-    public void setChannel(int channel) {
-        this.mChannel = channel;
+        return this.mConnectionData.getChannel();
     }
 
     public int getBandwidth() {
-        return mBandwidth;
-    }
-
-    public void setBandwidth(int bandwidth) {
-        this.mBandwidth = bandwidth;
+        return this.mConnectionData.getBandwidth();
     }
 	
 	@Override
@@ -183,7 +197,7 @@ public class CrazyradioLink extends AbstractLink {
 	}
 	
 	private final Runnable radioControlRunnable = new Runnable() {
-		// Run the Radio link loop to send attitude setpoint to the copter
+		// Run the Radio link loop to send and receive packets
 		@Override
         public void run() {
             // TODO: can channel and datarate be changed at any time?

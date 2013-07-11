@@ -33,8 +33,9 @@ import java.util.Locale;
 import java.util.Map.Entry;
 
 import se.bitcraze.crazyflielib.CommanderPacket;
+import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
-
+import se.bitcraze.crazyflielib.Link;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -77,13 +78,11 @@ public class MainActivity extends Activity {
     private float left_analog_x;
     private float left_analog_y;
 
-    private CrazyradioLink crazyflieLink;
+    private Link crazyflieLink;
     public int resolution = 1000;
 
     SharedPreferences preferences;
 
-    private int radioChannel;
-    private int radioBandwidth;
     private int mode;
     public float deadzone;
     private int maxRollPitchAngle;
@@ -130,9 +129,6 @@ public class MainActivity extends Activity {
         maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
         minThrustDefaultValue = getResources().getString(R.string.preferences_minThrust_defaultValue);
 
-        Log.v(TAG, "radiochannel: " + radioChannel);
-        Log.v(TAG, "radiobandwidth: " + radioBandwidth);
-
         textView_pitch = (TextView) findViewById(R.id.pitch);
         textView_roll = (TextView) findViewById(R.id.roll);
         textView_thrust = (TextView) findViewById(R.id.thrust);
@@ -159,7 +155,7 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case R.id.menu_connect:
-            setupCrazyRadio();
+            searchForCrazyRadio();
             try {
             	linkConnect();
             } catch(IllegalStateException e) {
@@ -170,13 +166,17 @@ public class MainActivity extends Activity {
             linkDisconnect();
             break;
         case R.id.menu_radio_scan:
-            setupCrazyRadio();
+        	searchForCrazyRadio();
             try {
-            	int[] result = crazyflieLink.scanChannels();
+            	CrazyradioLink.ConnectionData result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
             	String[] bandwidthStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
-            	Toast.makeText(this, "Channel found: " + result[0] + " Data rate: " + bandwidthStrings[result[1]] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
             	
-            	setRadioChannelAndBandwidth(result[0], result[1]);
+            	if(result != null) {
+            		Toast.makeText(this, "Channel found: " + result.getChannel() + " Data rate: " + bandwidthStrings[result.getBandwidth()] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+            		setRadioChannelAndBandwidth(result.getChannel(), result.getBandwidth());
+            	} else {
+            		Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
+            	}
             } catch(IllegalStateException e) {
             	Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -281,14 +281,6 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
-    private void setupCrazyRadio(){
-        searchForCrazyRadio();
-        if (crazyflieLink == null && mDevice != null) {
-            crazyflieLink = new CrazyradioLink(mUsbManager, mDevice);
-        }
-        setRadioLink();
-    }
-
     private void setRadioChannelAndBandwidth(int channel, int bandwidth){
         if(channel != -1 && bandwidth != -1){
             SharedPreferences.Editor editor = preferences.edit();
@@ -352,14 +344,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void setRadioLink() {
-        radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
-        radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
-
-        crazyflieLink.setChannel(radioChannel);
-        crazyflieLink.setBandwidth(radioBandwidth);
-    }
-
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
@@ -372,10 +356,6 @@ public class MainActivity extends Activity {
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
                             Toast.makeText(MainActivity.this, "CrazyRadio attached", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "new CrazyradioLink(...)");
-                            if( crazyflieLink == null ) {
-                            	crazyflieLink = new CrazyradioLink(mUsbManager, device);
-                            }
                         }
                     } else {
                         Log.d(TAG, "permission denied for device " + device);
@@ -397,26 +377,71 @@ public class MainActivity extends Activity {
         }
     };
     
-    public void linkConnect() {
-    	crazyflieLink.connect();
-    	mSendJoystickDataThread = new Thread(new Runnable() {
+    private void linkConnect() {
+    	// ensure previous link is disconnected
+    	linkDisconnect();
+    	
+    	int radioChannel = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
+        int radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+        
+        try {
+	    	crazyflieLink = new CrazyradioLink(mUsbManager, mDevice, new CrazyradioLink.ConnectionData(radioChannel, radioBandwidth));
+	    	
+	    	crazyflieLink.addConnectionListener(new ConnectionAdapter() {
 				@Override
-				public void run() {
-					while(crazyflieLink != null) {
-						crazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust() * 1000), isXmode()));
-						
-						try {
-		                    Thread.sleep(20, 0);
-		                } catch (InterruptedException e) {
-		                    break;
-		                }
-					}
+				public void connectionSetupFinished(Link l) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
+						}
+					});
+				}
+
+				@Override
+				public void connectionLost(Link l) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+						}
+					});
+				}
+
+				@Override
+				public void connectionFailed(Link l) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), "Connection failed", Toast.LENGTH_SHORT).show();
+						}
+					});
 				}
 			});
-    	mSendJoystickDataThread.start();
+	    	
+	    	crazyflieLink.connect();
+	    	mSendJoystickDataThread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						while(crazyflieLink != null) {
+							crazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust() * 1000), isXmode()));
+							
+							try {
+			                    Thread.sleep(20, 0);
+			                } catch (InterruptedException e) {
+			                    break;
+			                }
+						}
+					}
+				});
+	    	mSendJoystickDataThread.start();
+        } catch(IllegalArgumentException e) {
+        	Log.d(TAG, e.getMessage());
+        	Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
+        }
     }
     
-    public void linkDisconnect() {
+    private void linkDisconnect() {
     	if(crazyflieLink != null) {
     		crazyflieLink.disconnect();
     		crazyflieLink = null;
