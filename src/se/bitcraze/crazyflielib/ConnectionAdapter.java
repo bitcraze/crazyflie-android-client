@@ -40,4 +40,7 @@ public abstract class ConnectionAdapter implements ConnectionListener {
 	@Override
 	public void connectionFailed(Link l) {}
 
+	@Override
+	public void linkQualityUpdate(Link l, int quality) {}
+
 }

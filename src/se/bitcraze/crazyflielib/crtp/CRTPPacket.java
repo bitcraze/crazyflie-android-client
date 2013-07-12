@@ -10,8 +10,22 @@ public abstract class CRTPPacket {
 	
 	public static final ByteOrder BYTE_ORDER = ByteOrder.LITTLE_ENDIAN;
 	
+	public static final CRTPPacket NULL_PACKET = new CRTPPacket((byte) 0xff) {
+			@Override
+			protected void serializeData(ByteBuffer buffer) {}
+			
+			@Override
+			protected int getDataByteCount() {
+				return 0;
+			}
+		};
+	
 	private final byte mPacketHeader;
 	private byte[] mSerializedPacket;
+	
+	public CRTPPacket(int channel, int port) {
+		this((byte)( ((port & 0x0F) << 4) | (channel & 0x03) ));
+	}
 	
 	public CRTPPacket(byte packetHeader) {
 		this.mPacketHeader = packetHeader;

@@ -3,9 +3,14 @@
  */
 package se.bitcraze.crazyflielib;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import android.util.Log;
+
+import se.bitcraze.crazyflielib.crtp.ConsolePacket;
 
 /**
  * This class provides a skeletal implementation of the {@link Link} interface to minimize
@@ -51,6 +56,27 @@ public abstract class AbstractLink implements Link {
 	@Override
 	public void removeDataListener(DataListener l) {
 		this.dataListeners.remove(l);
+	}
+	
+	/**
+	 * Handle the response from the Crazyflie. Parses the CRPT packet
+	 * and inform registered listeners.
+	 * @param data the data received from the Crazyflie. Must not include any
+	 * 		headers or other attachments added by the link.
+	 */
+	protected void handleResponse(byte[] data) {
+		if(data.length >= 1) {
+			switch(data[0] >> 4) {
+			case ConsolePacket.PORT:
+				final ConsolePacket p = ConsolePacket.parse(Arrays.copyOfRange(data, 1, data.length));
+				Log.i(AbstractLink.class.getName(), "received console packet: " + p.getText());
+				break;
+			// TODO implement other types
+			default:
+				Log.w(AbstractLink.class.getName(), "packet contains unknown port");
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -104,6 +130,19 @@ public abstract class AbstractLink implements Link {
 		synchronized (this.connectionListeners) {
 			for(ConnectionListener cl : this.connectionListeners) {
 				cl.connectionFailed(this);
+			}
+		}
+	}
+	
+	/**
+	 * Notify all registered listeners about the link status.
+	 * @param quality quality of the link
+	 * @see ConnectionListener#linkQualityUpdate(Link, int)
+	 */
+	protected void notifyLinkQuality(int quality) {
+		synchronized (this.connectionListeners) {
+			for(ConnectionListener cl : this.connectionListeners) {
+				cl.linkQualityUpdate(this, quality);
 			}
 		}
 	}

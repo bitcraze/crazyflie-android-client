@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
@@ -72,6 +73,7 @@ public class MainActivity extends Activity {
     private TextView textView_roll;
     private TextView textView_thrust;
     private TextView textView_yaw;
+    private TextView textView_linkQuality;
 
     private float right_analog_x;
     private float right_analog_y;
@@ -133,6 +135,7 @@ public class MainActivity extends Activity {
         textView_roll = (TextView) findViewById(R.id.roll);
         textView_thrust = (TextView) findViewById(R.id.thrust);
         textView_yaw = (TextView) findViewById(R.id.yaw);
+        textView_linkQuality = (TextView) findViewById(R.id.linkQuality);
 
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setMovementRange(resolution, resolution);
@@ -168,12 +171,15 @@ public class MainActivity extends Activity {
         case R.id.menu_radio_scan:
         	searchForCrazyRadio();
             try {
-            	CrazyradioLink.ConnectionData result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
+            	CrazyradioLink.ConnectionData[] result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
             	String[] bandwidthStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
             	
-            	if(result != null) {
-            		Toast.makeText(this, "Channel found: " + result.getChannel() + " Data rate: " + bandwidthStrings[result.getBandwidth()] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-            		setRadioChannelAndBandwidth(result.getChannel(), result.getBandwidth());
+            	if(result != null && result.length > 0) {
+            		// use first channel
+            		// TODO let user choose channel
+            		final ConnectionData connData = result[0];
+            		Toast.makeText(this, "Channel found: " + connData.getChannel() + " Data rate: " + bandwidthStrings[connData.getBandwidth()] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+            		setRadioChannelAndBandwidth(connData.getChannel(), connData.getBandwidth());
             	} else {
             		Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
             	}
@@ -406,6 +412,7 @@ public class MainActivity extends Activity {
 							Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
 						}
 					});
+					linkDisconnect();
 				}
 
 				@Override
@@ -414,6 +421,17 @@ public class MainActivity extends Activity {
 						@Override
 						public void run() {
 							Toast.makeText(getApplicationContext(), "Connection failed", Toast.LENGTH_SHORT).show();
+						}
+					});
+					linkDisconnect();
+				}
+
+				@Override
+				public void linkQualityUpdate(Link l, final int quality) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							textView_linkQuality.setText("Link: " + quality + "%");
 						}
 					});
 				}

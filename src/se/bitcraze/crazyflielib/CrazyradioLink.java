@@ -1,7 +1,11 @@
 package se.bitcraze.crazyflielib;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import se.bitcraze.crazyflielib.crtp.CRTPPacket;
 import android.hardware.usb.UsbConstants;
@@ -17,6 +21,10 @@ public class CrazyradioLink extends AbstractLink {
 	// CrazyRadio USB device IDs
 	public static final int VENDOR_ID = 6421;
 	public static final int PRODUCT_ID = 30583;
+	
+	public static final int RETRYCOUNT_BEFORE_DISCONNECT = 10;
+	
+	public static final int PACKETS_BETWEEN_LINK_QUALITY_UPDATE = 5;
 	
 	private static final String LOG_TAG = "Crazyflie_RadioLink";
 	
@@ -111,12 +119,12 @@ public class CrazyradioLink extends AbstractLink {
     }
 	
 	/**
-	 * Scan for available channels. Currently only handles the first found channel.
-	 * @return array containing the found channel and bandwidth.
+	 * Scan for available channels.
+	 * @return array containing the found channels and bandwidths.
 	 * @throws IllegalStateException
 	 */
-    public static ConnectionData scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
-        ConnectionData result = null;
+    public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
+        List<ConnectionData> result = new ArrayList<ConnectionData>();
 
         final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
         if (connection != null) {
@@ -133,23 +141,18 @@ public class CrazyradioLink extends AbstractLink {
                 connection.controlTransfer(0x40, 0x03, b, 0, null, 0, 100);
 
                 connection.controlTransfer(0x40, 0x21, 0, 125, packet, packet.length, 1000);
-            	int nfound = connection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
-            	if (nfound > 0) {
-            		result = new ConnectionData(rdata[0], b);
-                    Log.d(LOG_TAG, "Channel found: " + rdata[0] + " Data rate: " + b);
-                    //TODO: handle more than one found channel
-                    break;
+            	final int nfound = connection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
+            	for(int i=0; i<nfound; i++) {
+            		result.add(new ConnectionData(rdata[i], b));
+                    Log.d(LOG_TAG, "Channel found: " + rdata[i] + " Data rate: " + b);
             	}
-
-            	if(rdata[0] != 0){
-                    break;
-                }
             }
         } else {
             Log.d(LOG_TAG, "connection is null");
             throw new IllegalStateException("CrazyRadio not attached");
         }
-        return result;
+        
+        return result.toArray(new ConnectionData[result.size()]);
     }
 	
 	public int getChannel() {
@@ -202,7 +205,9 @@ public class CrazyradioLink extends AbstractLink {
 		// Run the Radio link loop to send and receive packets
 		@Override
         public void run() {
-            // TODO: can channel and datarate be changed at any time?
+            int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
+            int nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
+			
             if (mConnection != null) {
                 // Set channel
                 mConnection.controlTransfer(0x40, 0x01, getChannel(), 0, null, 0, 100);
@@ -213,31 +218,45 @@ public class CrazyradioLink extends AbstractLink {
             notifyConnectionSetupFinished();
             
             while (mConnection != null) {
-                // Log.v(TAG, "radioControlRunnable running");
             	try {
-	                final CRTPPacket p = mSendQueue.takeFirst();
-	
-	                byte[] data;
-	                byte[] rdata = new byte[33];
-	
-	                // Log.i(TAG, "P: " + mJoystick.getPitch() +
-	                // " R: " + mJoystick.getRoll() +
-	                // " Y: " + mJoystick.getYaw() +
-	                // " T: " + mJoystick.getThrust());
-	
-                    data = p.toByteArray();
-                    // Log.v(TAG, "Sending a packet of " + data.length + " bytes");
-                    // String datastr = "[";
-                    // for (int i=0; i<data.length; i++)
-                    // datastr += "" + data[i] + ", ";
-                    // datastr += "]";
-                    // Log.v(TAG, "Sending data " + datastr);
+	                CRTPPacket p = mSendQueue.pollFirst(5, TimeUnit.MILLISECONDS);
+	                if( p == null ) { // if no packet was available in the send queue
+	                	p = CRTPPacket.NULL_PACKET;
+	                }
+	                
+	                byte[] receiveData = new byte[33];
+	                final byte[]sendData = p.toByteArray();
                     if (mConnection != null) {
-                        mConnection.bulkTransfer(mEpOut, data, data.length, 100);
-                        mConnection.bulkTransfer(mEpIn, rdata, 33, 100);
+                        mConnection.bulkTransfer(mEpOut, sendData, sendData.length, 100);
+                        final int receivedByteCount = mConnection.bulkTransfer(mEpIn, receiveData, receiveData.length, 100);
+                        
+                        if(receivedByteCount >= 1) {
+                        	// update link quality status
+                        	if(nextLinkQualityUpdate <= 0) {
+	                        	final int retransmission = receiveData[0] >> 4;
+	                        	notifyLinkQuality(Math.max(0, (10 - retransmission) * 10));
+	                        	nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
+                        	} else {
+                        		nextLinkQualityUpdate--;
+                        	}
+                        	
+	                        if((receiveData[0] & 1) != 0) { // check if ack received
+	                        	retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
+	                        	handleResponse(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
+	                        } else {
+	                        	// count lost packets
+	                        	retryBeforeDisconnectRemaining--;
+	                        	if(retryBeforeDisconnectRemaining <= 0) {
+	                        		notifyConnectionLost();
+	                        		disconnect();
+	                        		break;
+	                        	}
+	                        }
+                        } else {
+                        	Log.w(LOG_TAG, "CrazyradioLink comm error - didn't receive answer");
+                        }
                     }
                 } catch (InterruptedException e) {
-                    // Log.v(TAG, "radioControlRunnable catch block");
                     break;
                 }
             }

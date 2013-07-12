@@ -35,4 +35,11 @@ public interface ConnectionListener {
 	 * @param l the link where the connection has failed
 	 */
 	public void connectionFailed(Link l);
+	
+	/**
+	 * Called periodically to report link status. The quantity of updates is at the discretion of the link implementation.
+	 * @param l the link which reports the link status.
+	 * @param quality the quality in range from 0-100. 0 means bad quality, 100 is best quality.
+	 */
+	public void linkQualityUpdate(Link l, int quality);
 }
