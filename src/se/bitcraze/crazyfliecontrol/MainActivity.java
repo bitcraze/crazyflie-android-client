@@ -179,8 +179,8 @@ public class MainActivity extends Activity {
             		// use first channel
             		// TODO let user choose channel
             		final ConnectionData connData = result[0];
-            		Toast.makeText(this, "Channel found: " + connData.getChannel() + " Data rate: " + bandwidthStrings[connData.getBandwidth()] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-            		setRadioChannelAndBandwidth(connData.getChannel(), connData.getBandwidth());
+            		Toast.makeText(this, "Channel found: " + connData.getChannel() + " Data rate: " + bandwidthStrings[connData.getDataRate()] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+            		setRadioChannelAndBandwidth(connData.getChannel(), connData.getDataRate());
             	} else {
             		Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
             	}

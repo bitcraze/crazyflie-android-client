@@ -41,6 +41,20 @@ public class CrazyradioLink extends AbstractLink {
 	 */
 	public static final int PACKETS_BETWEEN_LINK_QUALITY_UPDATE = 5;
 	
+	// Dongle configuration requests
+	// See http://wiki.bitcraze.se/projects:crazyradio:protocol for documentation
+	private static final int REQUEST_SET_RADIO_CHANNEL = 0x01;
+	private static final int REQUEST_SET_RADIO_ADDRESS = 0x02;
+	private static final int REQUEST_SET_DATA_RATE = 0x03;
+	private static final int REQUEST_SET_RADIO_POWER = 0x04;
+	private static final int REQUEST_SET_RADIO_ARD = 0x05;
+	private static final int REQUEST_SET_RADIO_ARC = 0x06;
+	private static final int REQUEST_ACK_ENABLE = 0x10;
+	private static final int REQUEST_SET_CONT_CARRIER = 0x20;
+	private static final int REQUEST_START_SCAN_CHANNELS = 0x21;
+	private static final int REQUEST_GET_SCAN_CHANNELS = 0x21;
+	private static final int REQUEST_LAUNCH_BOOTLOADER = 0xFF;
+	
 	private static final String LOG_TAG = "Crazyflie_RadioLink";
 	
 	private final UsbDevice mUsbDevice;
@@ -48,8 +62,6 @@ public class CrazyradioLink extends AbstractLink {
     private UsbEndpoint mEpIn;
     private UsbEndpoint mEpOut;
     private UsbDeviceConnection mConnection;
-	
-    private final ConnectionData mConnectionData;
     
     private Thread mRadioLinkThread;
     
@@ -60,19 +72,19 @@ public class CrazyradioLink extends AbstractLink {
      */
     public static class ConnectionData {
     	private final int channel;
-    	private final int bandwidth;
+    	private final int dataRate;
     	
-		public ConnectionData(int channel, int bandwidth) {
+		public ConnectionData(int channel, int dataRate) {
 			this.channel = channel;
-			this.bandwidth = bandwidth;
+			this.dataRate = dataRate;
 		}
 
 		public int getChannel() {
 			return channel;
 		}
 
-		public int getBandwidth() {
-			return bandwidth;
+		public int getDataRate() {
+			return dataRate;
 		}
     }
     
@@ -80,7 +92,7 @@ public class CrazyradioLink extends AbstractLink {
      * Create a new link using the Crazyradio.
      * @param usbManager
      * @param usbDevice
-     * @param connectionData
+     * @param connectionData connection data to initialize the link
      * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
      * @throws IOException if the device cannot be opened
      */
@@ -90,8 +102,10 @@ public class CrazyradioLink extends AbstractLink {
 		}
 		
 		this.mUsbDevice = usbDevice;
-		this.mConnectionData = connectionData;
 		initDevice(usbManager);
+		
+		setRadioChannel(connectionData.getChannel());
+		setDataRate(connectionData.getDataRate());
 		
 		this.mSendQueue = new LinkedBlockingDeque<CRTPPacket>();
 	}
@@ -141,28 +155,45 @@ public class CrazyradioLink extends AbstractLink {
 	
 	/**
 	 * Scan for available channels.
+	 * @param usbManager
+	 * @param usbDevice
 	 * @return array containing the found channels and bandwidths.
 	 * @throws IllegalStateException if the CrazyRadio is not attached
 	 */
     public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
-        List<ConnectionData> result = new ArrayList<ConnectionData>();
-
         final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
-        if (connection != null) {
+        return CrazyradioLink.scanChannels(connection);
+    }
+    
+    /**
+     * Scan for available channels.
+     * @return array containing the found channels and bandwidths.
+     */
+    public ConnectionData[] scanChannels() {
+    	return CrazyradioLink.scanChannels(mConnection);
+    }
+    
+    /**
+     * Scan for available channels.
+     * @param connection connection to the USB dongle.
+     * @return array containing the found channels and bandwidths.
+     * @throws IllegalStateException if the CrazyRadio is not attached (the connection is <code>null</code>).
+     */
+    protected static ConnectionData[] scanChannels(UsbDeviceConnection connection) {
+    	List<ConnectionData> result = new ArrayList<ConnectionData>();
+    	if (connection != null) {
             //null packet
-            byte[] packet = new byte[1];
-            packet[0] = (byte) 255;
-            
-            byte [] rdata = new byte[64];
+            final byte[] packet = CRTPPacket.NULL_PACKET.toByteArray();
+            final byte [] rdata = new byte[64];
 
             Log.d(LOG_TAG, "Scanning...");
             //scan for all 3 data rates
             for(int b = 0; b < 3; b++){
-                //set bandwidth
-                connection.controlTransfer(0x40, 0x03, b, 0, null, 0, 100);
+                //set data rate
+                connection.controlTransfer(0x40, REQUEST_SET_DATA_RATE, b, 0, null, 0, 100);
 
-                connection.controlTransfer(0x40, 0x21, 0, 125, packet, packet.length, 1000);
-            	final int nfound = connection.controlTransfer(0xc0, 0x21, 0, 0, rdata, rdata.length, 1000);
+                connection.controlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet, packet.length, 1000);
+            	final int nfound = connection.controlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0, 0, rdata, rdata.length, 1000);
             	for(int i=0; i<nfound; i++) {
             		result.add(new ConnectionData(rdata[i], b));
                     Log.d(LOG_TAG, "Channel found: " + rdata[i] + " Data rate: " + b);
@@ -172,16 +203,7 @@ public class CrazyradioLink extends AbstractLink {
             Log.d(LOG_TAG, "connection is null");
             throw new IllegalStateException("CrazyRadio not attached");
         }
-        
-        return result.toArray(new ConnectionData[result.size()]);
-    }
-	
-	public int getChannel() {
-        return this.mConnectionData.getChannel();
-    }
-
-    public int getBandwidth() {
-        return this.mConnectionData.getBandwidth();
+    	return result.toArray(new ConnectionData[result.size()]);
     }
 	
     /**
@@ -227,6 +249,84 @@ public class CrazyradioLink extends AbstractLink {
 	}
 	
 	/**
+	 * Set the radio channel.
+	 * @param channel the new channel. Must be in range 0-125.
+	 */
+	public void setRadioChannel(int channel) {
+		mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null, 0, 100);
+	}
+	
+	/**
+	 * Set the data rate.
+	 * @param rate new data rate. Possible values are in range 0-2.
+	 */
+	public void setDataRate(int rate) {
+		mConnection.controlTransfer(0x40, REQUEST_SET_DATA_RATE, rate, 0, null, 0, 100);
+	}
+	
+	/**
+	 * Set the radio address. The same address must be configured in the receiver for the communication to work.
+	 * @param address the new address with a length of 5 byte.
+	 * @throws IllegalArgumentException if the length of the address doesn't equal 5 bytes
+	 */
+	public void setRadioAddress(byte[] address) {
+		if(address.length != 5) {
+			throw new IllegalArgumentException("radio address must be 5 bytes long");
+		}
+		mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ADDRESS, 0, 0, address, address.length, 100);
+	}
+	
+	/**
+	 * Set the continuous carrier mode. When enabled the radio chip provides
+	 * a test mode in which a continuous non-modulated sine wave is emitted.
+	 * When this mode is activated the radio dongle does not transmit any packets.
+	 * 
+	 * @param continuous <code>true</code> to enable the continuous carrier mode
+	 */
+	public void setContinuousCarrier(boolean continuous) {
+		mConnection.controlTransfer(0x40, REQUEST_SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null, 0, 100);
+	}
+	
+	/**
+	 * Configure the time the radio waits for the acknowledge.
+	 * @param us microseconds to wait. Will be rounded to the closest possible value supported by the radio.
+	 */
+	public void setAutoRetryADRTime(int us) {
+		int param = (int)Math.round(us / 250.0) - 1;
+		if(param < 0) {
+			param = 0;
+		} else if(param > 0xF) {
+			param = 0xF;
+		}
+		
+		mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARD, param, 0, null, 0, 100);
+	}
+	
+	/**
+	 * Set the length of the ACK payload.
+	 * @param bytes number of bytes in the payload.
+	 * @throws IllegalArgumentException if the payload length is not in range 0-32.
+	 */
+	public void setAutoRetryADRBytes(int bytes) {
+		if(bytes < 0 || bytes > 32 ) {
+			throw new IllegalArgumentException("payload length must be in range 0-32");
+		}
+		mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARD, 0x80 | bytes, 0, null, 0, 100);
+	}
+	
+	/**
+	 * Set how often the radio will retry a transfer if the ACK has not been received.
+	 * @param count the number of retries.
+	 * @throws IllegalArgumentException if the number of retries is not in range 0-15.
+	 */
+	public void setAutoRetryARC(int count) {
+		if(count < 0 || count > 15) {
+			throw new IllegalArgumentException("count must be in range 0-15");
+		}
+		mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARC, count, 0, null, 0, 100);
+	}
+	
+	/**
 	 * Handles communication with the dongle to send and receive packets
 	 */
 	private final Runnable radioControlRunnable = new Runnable() {
@@ -234,13 +334,6 @@ public class CrazyradioLink extends AbstractLink {
         public void run() {
             int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
             int nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
-			
-            if (mConnection != null) {
-                // Set channel
-                mConnection.controlTransfer(0x40, 0x01, getChannel(), 0, null, 0, 100);
-                // Set datarate
-                mConnection.controlTransfer(0x40, 0x03, getBandwidth(), 0, null, 0, 100);
-            }
 
             notifyConnectionSetupFinished();
             
