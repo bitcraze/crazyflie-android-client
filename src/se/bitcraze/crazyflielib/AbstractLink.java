@@ -21,6 +21,9 @@ public abstract class AbstractLink implements Link {
 	private List<ConnectionListener> connectionListeners;
 	private List<DataListener> dataListeners;
 	
+	/**
+	 * Create a new abstract link.
+	 */
 	public AbstractLink() {
 		this.connectionListeners = Collections.synchronizedList(new LinkedList<ConnectionListener>());
 		this.dataListeners = Collections.synchronizedList(new LinkedList<DataListener>());

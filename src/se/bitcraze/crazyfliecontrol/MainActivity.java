@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyfliecontrol;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Locale;
@@ -391,8 +392,10 @@ public class MainActivity extends Activity {
         int radioBandwidth = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
         
         try {
+        	// create link
 	    	crazyflieLink = new CrazyradioLink(mUsbManager, mDevice, new CrazyradioLink.ConnectionData(radioChannel, radioBandwidth));
 	    	
+	    	// add listener for connection status
 	    	crazyflieLink.addConnectionListener(new ConnectionAdapter() {
 				@Override
 				public void connectionSetupFinished(Link l) {
@@ -437,6 +440,7 @@ public class MainActivity extends Activity {
 				}
 			});
 	    	
+	    	// connect and start thread to periodically send commands containing the user input
 	    	crazyflieLink.connect();
 	    	mSendJoystickDataThread = new Thread(new Runnable() {
 					@Override
@@ -456,6 +460,9 @@ public class MainActivity extends Activity {
         } catch(IllegalArgumentException e) {
         	Log.d(TAG, e.getMessage());
         	Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
+        } catch(IOException e) {
+        	Log.e(TAG, e.getMessage());
+        	Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
     

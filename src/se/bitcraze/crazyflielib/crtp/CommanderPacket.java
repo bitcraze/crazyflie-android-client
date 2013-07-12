@@ -29,12 +29,23 @@ package se.bitcraze.crazyflielib.crtp;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Packet used for sending control set-points for the roll/pitch/yaw/thrust regulators.
+ */
 public class CommanderPacket extends CRTPPacket {
     private final float roll;
     private final float pitch;
     private final float yaw;
     private final char thrust;
 
+    /**
+     * Create a new commander packet.
+     * @param roll
+     * @param pitch
+     * @param yaw
+     * @param thrust
+     * @param xmode
+     */
     public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
         super((byte) 0x30);
         
@@ -59,7 +70,7 @@ public class CommanderPacket extends CRTPPacket {
 
 	@Override
 	protected int getDataByteCount() {
-		return 3*4 + 1*2; // 3 floats with size 4, 1 char with size 2
+		return 3*4 + 1*2; // 3 floats with size 4, 1 char (= uint16_t) with size 2
 	}
 
 }

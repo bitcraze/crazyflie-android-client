@@ -1,5 +1,6 @@
 package se.bitcraze.crazyflielib;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,12 +19,26 @@ import android.util.Log;
 
 public class CrazyradioLink extends AbstractLink {
 
-	// CrazyRadio USB device IDs
-	public static final int VENDOR_ID = 6421;
-	public static final int PRODUCT_ID = 30583;
+	/**
+	 * Vendor ID of the CrazyRadio USB dongle.
+	 */
+	public static final int VENDOR_ID = 0x1915;
 	
+	/**
+	 * Product ID of the CrazyRadio USB dongle.
+	 */
+	public static final int PRODUCT_ID = 0x7777;
+	
+	/**
+	 * Number of packets without acknowledgment before marking the connection
+	 * as broken and disconnecting.
+	 */
 	public static final int RETRYCOUNT_BEFORE_DISCONNECT = 10;
 	
+	/**
+	 * This number of packets should be processed between reports of the
+	 * link quality.
+	 */
 	public static final int PACKETS_BETWEEN_LINK_QUALITY_UPDATE = 5;
 	
 	private static final String LOG_TAG = "Crazyflie_RadioLink";
@@ -67,8 +82,9 @@ public class CrazyradioLink extends AbstractLink {
      * @param usbDevice
      * @param connectionData
      * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
+     * @throws IOException if the device cannot be opened
      */
-	public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData) {
+	public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData) throws IOException {
 		if(usbManager == null || usbDevice == null) {
 			throw new IllegalArgumentException("USB manager and device must not be null");
 		}
@@ -80,7 +96,12 @@ public class CrazyradioLink extends AbstractLink {
 		this.mSendQueue = new LinkedBlockingDeque<CRTPPacket>();
 	}
 	
-	private void initDevice(UsbManager usbManager) {
+	/**
+	 * Initialize the USB device. Determines endpoints and prepares communication.
+	 * @param usbManager
+	 * @throws IOException if the device cannot be opened
+	 */
+	private void initDevice(UsbManager usbManager) throws IOException {
         Log.d(LOG_TAG, "setDevice " + this.mUsbDevice);
         // find interface
         if (this.mUsbDevice.getInterfaceCount() != 1) {
@@ -114,14 +135,14 @@ public class CrazyradioLink extends AbstractLink {
             mConnection = connection;
         } else {
             Log.d(LOG_TAG, "open FAIL");
-            throw new RuntimeException("could not open usb connection"); // TODO replace with more specific exception
+            throw new IOException("could not open usb connection");
         }
     }
 	
 	/**
 	 * Scan for available channels.
 	 * @return array containing the found channels and bandwidths.
-	 * @throws IllegalStateException
+	 * @throws IllegalStateException if the CrazyRadio is not attached
 	 */
     public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
         List<ConnectionData> result = new ArrayList<ConnectionData>();
@@ -163,6 +184,10 @@ public class CrazyradioLink extends AbstractLink {
         return this.mConnectionData.getBandwidth();
     }
 	
+    /**
+     * Connect to the Crazyflie.
+     * @throws IllegalStateException if the CrazyRadio is not attached
+     */
 	@Override
 	public void connect() throws IllegalStateException {
 		Log.d(LOG_TAG, "RadioLink start()");
@@ -201,8 +226,10 @@ public class CrazyradioLink extends AbstractLink {
 		this.mSendQueue.addLast(p);
 	}
 	
+	/**
+	 * Handles communication with the dongle to send and receive packets
+	 */
 	private final Runnable radioControlRunnable = new Runnable() {
-		// Run the Radio link loop to send and receive packets
 		@Override
         public void run() {
             int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
