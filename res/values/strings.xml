@@ -39,6 +39,6 @@
     <string name="roll">Roll: 0</string>
     <string name="thrust">Thrust (%): 0</string>
     <string name="yaw">Yaw: 0</string>
-    <string name="linkQuality">Link: 0%</string>
+    <string name="linkQuality">Link: n/a</string>
 
 </resources>

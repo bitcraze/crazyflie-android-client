@@ -1,12 +1,13 @@
 /**
  * 
  */
+
 package se.bitcraze.crazyflielib;
 
 /**
- * An abstract adapter class for receiving connection events.
- * 
- * The methods in this class are empty. This class exists as convenience for creating listener objects. 
+ * An abstract adapter class for receiving connection events. The methods in
+ * this class are empty. This class exists as convenience for creating listener
+ * objects.
  */
 public abstract class ConnectionAdapter implements ConnectionListener {
 
