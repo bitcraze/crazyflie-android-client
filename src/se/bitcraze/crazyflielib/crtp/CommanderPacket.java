@@ -42,10 +42,10 @@ public class CommanderPacket extends CrtpPacket {
     /**
      * Create a new commander packet.
      * 
-     * @param roll
-     * @param pitch
-     * @param yaw
-     * @param thrust
+     * @param roll (Deg.)
+     * @param pitch (Deg.)
+     * @param yaw (Deg./s)
+     * @param thrust (0-65535)
      * @param xmode
      */
     public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {

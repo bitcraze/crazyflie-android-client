@@ -68,6 +68,8 @@ public class MainActivity extends Activity {
     private static final String TAG = "CrazyflieControl";
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+    
+    private static final int MAX_THRUST = 65535;
 
     private DualJoystickView mJoysticks;
     private TextView textView_pitch;
@@ -486,7 +488,7 @@ public class MainActivity extends Activity {
                 public void run() {
                     while (crazyflieLink != null) {
                         crazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(),
-                                (char) (getThrust() * 1000), isXmode()));
+                                (char) (getThrust()/100 * MAX_THRUST), isXmode()));
 
                         try {
                             Thread.sleep(20, 0);
