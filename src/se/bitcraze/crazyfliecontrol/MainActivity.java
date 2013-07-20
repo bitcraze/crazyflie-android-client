@@ -120,25 +120,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Set default preference values
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        // Initialize preferences
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        radioChannelDefaultValue = getResources().getString(
-                R.string.preferences_radio_channel_defaultValue);
-        radioBandwidthDefaultValue = getResources().getString(
-                R.string.preferences_radio_bandwidth_defaultValue);
-        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
-        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
-        maxRollPitchAngleDefaultValue = getResources().getString(
-                R.string.preferences_maxRollPitchAngle_defaultValue);
-        maxYawAngleDefaultValue = getResources().getString(
-                R.string.preferences_maxYawAngle_defaultValue);
-        maxThrustDefaultValue = getResources().getString(
-                R.string.preferences_maxThrust_defaultValue);
-        minThrustDefaultValue = getResources().getString(
-                R.string.preferences_minThrust_defaultValue);
+        setDefaultPreferenceValues();
 
         textView_pitch = (TextView) findViewById(R.id.pitch);
         textView_roll = (TextView) findViewById(R.id.roll);
@@ -155,6 +137,22 @@ public class MainActivity extends Activity {
         filter.addAction(ACTION_USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
+    }
+
+    private void setDefaultPreferenceValues(){
+        // Set default preference values
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        // Initialize preferences
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultValue);
+        radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultValue);
+        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
+        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
+        maxRollPitchAngleDefaultValue = getResources().getString(R.string.preferences_maxRollPitchAngle_defaultValue);
+        maxYawAngleDefaultValue = getResources().getString(R.string.preferences_maxYawAngle_defaultValue);
+        maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
+        minThrustDefaultValue = getResources().getString(R.string.preferences_minThrust_defaultValue);
     }
 
     @Override
@@ -178,29 +176,7 @@ public class MainActivity extends Activity {
                 linkDisconnect();
                 break;
             case R.id.menu_radio_scan:
-                searchForCrazyRadio();
-                try {
-                    CrazyradioLink.ConnectionData[] result = CrazyradioLink.scanChannels(
-                            mUsbManager, mDevice);
-                    String[] bandwidthStrings = this.getResources().getStringArray(
-                            R.array.radioBandwidthEntries);
-
-                    if (result != null && result.length > 0) {
-                        // use first channel
-                        // TODO let user choose channel
-                        final ConnectionData connData = result[0];
-                        Toast.makeText(
-                                this,
-                                "Channel found: " + connData.getChannel() + " Data rate: "
-                                        + bandwidthStrings[connData.getDataRate()]
-                                        + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-                        setRadioChannelAndBandwidth(connData.getChannel(), connData.getDataRate());
-                    } else {
-                        Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (IllegalStateException e) {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+                radioScan();
                 break;
             case R.id.preferences:
                 Intent intent = new Intent(this, PreferencesActivity.class);
@@ -311,8 +287,7 @@ public class MainActivity extends Activity {
         if (channel != -1 && bandwidth != -1) {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH,
-                    String.valueOf(bandwidth));
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(bandwidth));
             editor.commit();
         }
     }
@@ -330,20 +305,13 @@ public class MainActivity extends Activity {
     }
 
     private void setControlConfig() {
-        this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE,
-                modeDefaultValue));
-        this.deadzone = Float.parseFloat(preferences.getString(
-                PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
+        this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
+        this.deadzone = Float.parseFloat(preferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
         if (preferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.maxRollPitchAngle = Integer.parseInt(preferences
-                    .getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE,
-                            maxRollPitchAngleDefaultValue));
-            this.maxYawAngle = Integer.parseInt(preferences.getString(
-                    PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
-            this.maxThrust = Integer.parseInt(preferences.getString(
-                    PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
-            this.minThrust = Integer.parseInt(preferences.getString(
-                    PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
+            this.maxRollPitchAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue));
+            this.maxYawAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
+            this.maxThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
+            this.minThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
             this.xmode = preferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
         } else {
             this.maxRollPitchAngle = Integer.parseInt(maxRollPitchAngleDefaultValue);
@@ -362,10 +330,9 @@ public class MainActivity extends Activity {
         HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
         // Iterate over USB devices
         for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
-            Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " "
-                    + e.getValue().getProductId());
-            if (e.getValue().getVendorId() == CrazyradioLink.VENDOR_ID
-                    && e.getValue().getProductId() == CrazyradioLink.PRODUCT_ID) {
+            Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
+            if (e.getValue().getVendorId() == CrazyradioLink.VENDOR_ID &&
+                e.getValue().getProductId() == CrazyradioLink.PRODUCT_ID) {
                 mDevice = e.getValue();
                 break; // stop after first matching device is found
             }
@@ -373,8 +340,7 @@ public class MainActivity extends Activity {
 
         if (mDevice != null && !this.mPermissionAsked) {
             Log.d(TAG, "Request permission");
-            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(
-                    ACTION_USB_PERMISSION), 0);
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
             mUsbManager.requestPermission(mDevice, mPermissionIntent);
             mPermissionAsked = true;
         } else {
@@ -390,12 +356,10 @@ public class MainActivity extends Activity {
             if (ACTION_USB_PERMISSION.equals(action)) {
                 Log.d(TAG, "USB_PERMISSON");
                 synchronized (this) {
-                    UsbDevice device = (UsbDevice) intent
-                            .getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            Toast.makeText(MainActivity.this, "CrazyRadio attached",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "CrazyRadio attached", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Log.d(TAG, "permission denied for device " + device);
@@ -406,8 +370,7 @@ public class MainActivity extends Activity {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 Log.d(TAG, "USB device detached ");
                 if (device != null) {
-                    Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
                     if (crazyflieLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
@@ -439,8 +402,7 @@ public class MainActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT)
-                                    .show();
+                            Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -450,8 +412,7 @@ public class MainActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Connection lost",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
                         }
                     });
                     linkDisconnect();
@@ -462,8 +423,7 @@ public class MainActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Connection failed",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Connection failed", Toast.LENGTH_SHORT).show();
                         }
                     });
                     linkDisconnect();
@@ -526,6 +486,28 @@ public class MainActivity extends Activity {
                 textView_linkQuality.setText("Link: n/a");
             }
         });
+    }
+
+    private void radioScan() {
+        searchForCrazyRadio();
+        try {
+            CrazyradioLink.ConnectionData[] result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
+            String[] bandwidthStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
+
+            if (result != null && result.length > 0) {
+                // use first channel
+                // TODO let user choose channel
+                final ConnectionData connData = result[0];
+                Toast.makeText(this,"Channel found: " + connData.getChannel() +
+                                    " Data rate: " + bandwidthStrings[connData.getDataRate()]
+                                    + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+                setRadioChannelAndBandwidth(connData.getChannel(), connData.getDataRate());
+            } else {
+                Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IllegalStateException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void updateFlightData() {
