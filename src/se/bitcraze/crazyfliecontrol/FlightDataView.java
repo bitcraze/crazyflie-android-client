@@ -63,6 +63,9 @@ public class FlightDataView extends LinearLayout {
       textView_thrust = (TextView) findViewById(R.id.thrust);
       textView_yaw = (TextView) findViewById(R.id.yaw);
       textView_linkQuality = (TextView) findViewById(R.id.linkQuality);
+      //initialize
+      updateFlightData();
+      setLinkQualityText("n/a");
     }
 
     public FlightDataView(Context context) {
@@ -70,10 +73,14 @@ public class FlightDataView extends LinearLayout {
     }
 
     public void updateFlightData() {
-        textView_pitch.setText("Pitch: " + round((context.getPitch() * -1))); // inverse
-        textView_roll.setText("Roll: " + round(context.getRoll()));
-        textView_thrust.setText("Thrust (%): " + round(context.getThrust()));
-        textView_yaw.setText("Yaw: " + round(context.getYaw()));
+        textView_pitch.setText(format(R.string.pitch, round(context.getPitch() * -1))); // inverse
+        textView_roll.setText(format(R.string.roll, round(context.getRoll())));
+        textView_thrust.setText(format(R.string.thrust, round(context.getThrust())));
+        textView_yaw.setText(format(R.string.yaw, round(context.getYaw())));
+    }
+
+    private String format(int identifier, Object o){
+        return String.format(getResources().getString(identifier), o);
     }
 
     public static double round(double unrounded) {
@@ -83,7 +90,7 @@ public class FlightDataView extends LinearLayout {
     }
     
     public void setLinkQualityText(String quality){
-        textView_linkQuality.setText("Link: " + quality);
+        textView_linkQuality.setText(format(R.string.linkQuality, quality));
     }
 
 }
