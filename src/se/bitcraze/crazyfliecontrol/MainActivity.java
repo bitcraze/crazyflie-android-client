@@ -28,7 +28,6 @@
 package se.bitcraze.crazyfliecontrol;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -57,7 +56,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
@@ -72,11 +70,7 @@ public class MainActivity extends Activity {
     private static final int MAX_THRUST = 65535;
 
     private DualJoystickView mJoysticks;
-    private TextView textView_pitch;
-    private TextView textView_roll;
-    private TextView textView_thrust;
-    private TextView textView_yaw;
-    private TextView textView_linkQuality;
+    private FlightDataView mFlightDataView;
 
     private float right_analog_x;
     private float right_analog_y;
@@ -122,14 +116,10 @@ public class MainActivity extends Activity {
 
         setDefaultPreferenceValues();
 
-        textView_pitch = (TextView) findViewById(R.id.pitch);
-        textView_roll = (TextView) findViewById(R.id.roll);
-        textView_thrust = (TextView) findViewById(R.id.thrust);
-        textView_yaw = (TextView) findViewById(R.id.yaw);
-        textView_linkQuality = (TextView) findViewById(R.id.linkQuality);
-
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setMovementRange(resolution, resolution);
+
+        mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
@@ -252,7 +242,7 @@ public class MainActivity extends Activity {
             left_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_X));
             left_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_Y));
 
-            updateFlightData();
+            mFlightDataView.updateFlightData();
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
@@ -434,7 +424,7 @@ public class MainActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            textView_linkQuality.setText("Link: " + quality + "%");
+                            mFlightDataView.setLinkQualityText(quality + "%");
                         }
                     });
                 }
@@ -481,9 +471,8 @@ public class MainActivity extends Activity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // link quality is not available when there is no 
-                // active connection
-                textView_linkQuality.setText("Link: n/a");
+                // link quality is not available when there is no active connection
+                mFlightDataView.setLinkQualityText("n/a");
             }
         });
     }
@@ -508,19 +497,6 @@ public class MainActivity extends Activity {
         } catch (IllegalStateException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    public void updateFlightData() {
-        textView_pitch.setText("Pitch: " + round(getPitch() * -1)); // inverse
-        textView_roll.setText("Roll: " + round(getRoll()));
-        textView_thrust.setText("Thrust (%): " + round(getThrust()));
-        textView_yaw.setText("Yaw: " + round(getYaw()));
-    }
-
-    public static double round(double unrounded) {
-        BigDecimal bd = new BigDecimal(unrounded);
-        BigDecimal rounded = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
-        return rounded.doubleValue();
     }
 
     public float getThrust() {
@@ -606,7 +582,7 @@ public class MainActivity extends Activity {
             right_analog_y = (float) tilt / resolution;
             right_analog_x = (float) pan / resolution;
 
-            updateFlightData();
+            mFlightDataView.updateFlightData();
         }
 
         @Override
@@ -630,7 +606,7 @@ public class MainActivity extends Activity {
             left_analog_y = (float) tilt / resolution;
             left_analog_x = (float) pan / resolution;
 
-            updateFlightData();
+            mFlightDataView.updateFlightData();
         }
 
         @Override
