@@ -36,6 +36,44 @@
             android:key="pref_deadzone"
             android:title="@string/preferences_deadzone" />
 
+        <EditTextPreference
+            android:defaultValue="@string/preferences_trim_defaultValue"
+            android:dialogTitle="@string/preferences_rolltrim"
+            android:inputType="numberDecimal|numberSigned"
+            android:key="pref_rolltrim"
+            android:title="@string/preferences_rolltrim" />
+
+        <EditTextPreference
+            android:defaultValue="@string/preferences_trim_defaultValue"
+            android:dialogTitle="@string/preferences_pitchtrim"
+            android:inputType="numberDecimal|numberSigned"
+            android:key="pref_pitchtrim"
+            android:title="@string/preferences_pitchtrim" />
+
+        <PreferenceScreen 
+            android:key="pref_btn_screen"
+            android:title="@string/preferences_btn_title">
+            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                android:key="pref_emergency_btn"
+                android:title="@string/preferences_emergency_btn_title"/>
+            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                android:key="pref_rolltrim_plus_btn"
+                android:title="@string/preferences_rolltrim_plus_btn_title"/>
+            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                android:key="pref_rolltrim_minus_btn"
+                android:title="@string/preferences_rolltrim_minus_btn_title"/>
+            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                android:key="pref_pitchtrim_plus_btn"
+                android:title="@string/preferences_pitchtrim_plus_btn_title"/>
+            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                android:key="pref_pitchtrim_minus_btn"
+                android:title="@string/preferences_pitchtrim_minus_btn_title"/>
+            <Preference
+                android:key="pref_reset_btn"
+                android:summary="@string/preferences_reset_btn_summary"
+                android:title="@string/preferences_reset_btn_title" />
+        </PreferenceScreen>
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_afc_bool"

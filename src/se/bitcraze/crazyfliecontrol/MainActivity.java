@@ -79,8 +79,10 @@ public class MainActivity extends Activity {
 
     private Link crazyflieLink;
     public int resolution = 1000;
+    private float mMaxTrim = 0.5f;
+    private float mTrimIncrements = 0.1f; 
 
-    SharedPreferences preferences;
+    SharedPreferences mPreferences;
 
     private int mode;
     public float deadzone;
@@ -89,11 +91,25 @@ public class MainActivity extends Activity {
     private int maxThrust;
     private int minThrust;
     private boolean xmode;
+    private float mRollTrim;
+    private float mPitchTrim;
 
+    private int emergencyBtn;
+    private int rollTrimPlusBtn;
+    private int rollTrimMinusBtn;
+    private int pitchTrimPlusBtn;
+    private int pitchTrimMinusBtn;
+    
     private String radioChannelDefaultValue;
     private String radioBandwidthDefaultValue;
     private String modeDefaultValue;
     private String deadzoneDefaultValue;
+    private String trimDefaultValue;
+    private String emergencyBtnDefaultValue;
+    private String rollTrimPlusBtnDefaultValue;
+    private String rollTrimMinusBtnDefaultValue;
+    private String pitchTrimPlusBtnDefaultValue;
+    private String pitchTrimMinusBtnDefaultValue;
     private String maxRollPitchAngleDefaultValue;
     private String maxYawAngleDefaultValue;
     private String maxThrustDefaultValue;
@@ -133,12 +149,18 @@ public class MainActivity extends Activity {
         // Set default preference values
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         // Initialize preferences
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultValue);
         radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultValue);
         modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
         deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
+        trimDefaultValue = getResources().getString(R.string.preferences_trim_defaultValue);
+        emergencyBtnDefaultValue = getResources().getString(R.string.preferences_emergency_btn_defaultValue);
+        rollTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_plus_btn_defaultValue);
+        rollTrimMinusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
+        pitchTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
+        pitchTrimMinusBtnDefaultValue = getResources().getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
         maxRollPitchAngleDefaultValue = getResources().getString(R.string.preferences_maxRollPitchAngle_defaultValue);
         maxYawAngleDefaultValue = getResources().getString(R.string.preferences_maxYawAngle_defaultValue);
         maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
@@ -258,9 +280,22 @@ public class MainActivity extends Activity {
         if (event.getSource() == 1281) {
             switch (event.getAction()) {
                 case KeyEvent.ACTION_DOWN:
-                    // TODO: use keys
-                    // Toast.makeText(this, "Event.getSource(): " +
-                    // event.getSource(), Toast.LENGTH_SHORT).show();
+                    if(event.getKeyCode() == emergencyBtn){
+                        //quick solution
+                        resetAxisValues();
+                        if (crazyflieLink != null) {
+                            linkDisconnect();
+                        }
+                        Toast.makeText(this, "Emergency Stop", Toast.LENGTH_SHORT).show();
+                    }else if (event.getKeyCode() == rollTrimPlusBtn) {
+                        increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
+                    }else if (event.getKeyCode() == rollTrimMinusBtn) {
+                        decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
+                    }else if (event.getKeyCode() == pitchTrimPlusBtn) {
+                        increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                    }else if (event.getKeyCode() == pitchTrimMinusBtn) {
+                        decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                    }
                     break;
                 default:
                     break;
@@ -275,7 +310,7 @@ public class MainActivity extends Activity {
 
     private void setRadioChannelAndBandwidth(int channel, int bandwidth) {
         if (channel != -1 && bandwidth != -1) {
-            SharedPreferences.Editor editor = preferences.edit();
+            SharedPreferences.Editor editor = mPreferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(bandwidth));
             editor.commit();
@@ -295,14 +330,21 @@ public class MainActivity extends Activity {
     }
 
     private void setControlConfig() {
-        this.mode = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
-        this.deadzone = Float.parseFloat(preferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
-        if (preferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.maxRollPitchAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue));
-            this.maxYawAngle = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
-            this.maxThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
-            this.minThrust = Integer.parseInt(preferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
-            this.xmode = preferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
+        this.mode = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
+        this.deadzone = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
+        this.mRollTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM, trimDefaultValue));
+        this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, trimDefaultValue));
+        this.emergencyBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue));
+        this.rollTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue));
+        this.rollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue));
+        this.pitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue));
+        this.pitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue));
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
+            this.maxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue));
+            this.maxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
+            this.maxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
+            this.minThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
+            this.xmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
         } else {
             this.maxRollPitchAngle = Integer.parseInt(maxRollPitchAngleDefaultValue);
             this.maxYawAngle = Integer.parseInt(maxYawAngleDefaultValue);
@@ -310,6 +352,12 @@ public class MainActivity extends Activity {
             this.minThrust = Integer.parseInt(minThrustDefaultValue);
             this.xmode = false;
         }
+    }
+
+    private void setPreference(String pKey, String pDefaultValue) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(pKey, pDefaultValue);
+        editor.commit();
     }
 
     /**
@@ -375,9 +423,9 @@ public class MainActivity extends Activity {
         // ensure previous link is disconnected
         linkDisconnect();
 
-        int radioChannel = Integer.parseInt(preferences.getString(
+        int radioChannel = Integer.parseInt(mPreferences.getString(
                 PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
-        int radioBandwidth = Integer.parseInt(preferences.getString(
+        int radioBandwidth = Integer.parseInt(mPreferences.getString(
                 PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
 
         try {
@@ -510,12 +558,55 @@ public class MainActivity extends Activity {
 
     public float getRoll() {
         float roll = (mode == 1 || mode == 2) ? getRightAnalog_X() : getLeftAnalog_X();
-        return roll * getRollPitchFactor() * getDeadzone(roll);
+        return (roll + getRollTrim()) * getRollPitchFactor() * getDeadzone(roll);
+    }
+
+    private float getRollTrim() {
+        return mRollTrim;
+    }
+    
+    private void increaseTrim(String prefKey){
+        changeTrim(prefKey, true);
+    }
+
+    private void decreaseTrim(String prefKey){
+        changeTrim(prefKey, false);
+    }
+    
+    private void changeTrim(String prefKey, boolean increase){
+        float axis;
+        String axisName;
+        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
+            axisName = "Roll";
+            axis = mRollTrim;
+        }else{
+            axisName = "Pitch";
+            axis = mPitchTrim;
+        }
+        
+        if(increase && axis < mMaxTrim){
+            axis += mTrimIncrements;
+        }else if(!increase && axis > (mMaxTrim * -1)){
+           axis -= mTrimIncrements;
+        }
+
+        setPreference(prefKey, String.valueOf(axis));
+        Toast.makeText(this, axisName + " Trim: " + FlightDataView.round(axis), Toast.LENGTH_SHORT).show();
+        
+        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
+            mRollTrim = axis;
+        }else{
+            mPitchTrim = axis;
+        }
     }
 
     public float getPitch() {
         float pitch = (mode == 1 || mode == 3) ? getLeftAnalog_Y() : getRightAnalog_Y();
-        return pitch * getRollPitchFactor() * getDeadzone(pitch);
+        return (pitch + getPitchTrim()) * getRollPitchFactor() * getDeadzone(pitch);
+    }
+
+    private float getPitchTrim() {
+        return mPitchTrim;
     }
 
     public float getYaw() {

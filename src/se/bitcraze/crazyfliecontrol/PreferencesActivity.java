@@ -47,6 +47,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_RADIO_BANDWIDTH = "pref_radiobandwidth";
     public static final String KEY_PREF_MODE = "pref_mode";
     public static final String KEY_PREF_DEADZONE = "pref_deadzone";
+    public static final String KEY_PREF_ROLLTRIM = "pref_rolltrim";
+    public static final String KEY_PREF_PITCHTRIM = "pref_pitchtrim";
     public static final String KEY_PREF_AFC_BOOL = "pref_afc_bool";
     public static final String KEY_PREF_AFC_SCREEN = "pref_afc_screen";
     public static final String KEY_PREF_MAX_ROLLPITCH_ANGLE = "pref_maxrollpitchangle";
@@ -55,9 +57,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
+    public static final String KEY_PREF_EMERGENCY_BTN = "pref_emergency_btn";
+    public static final String KEY_PREF_ROLLTRIM_PLUS_BTN = "pref_rolltrim_plus_btn";
+    public static final String KEY_PREF_ROLLTRIM_MINUS_BTN = "pref_rolltrim_minus_btn";
+    public static final String KEY_PREF_PITCHTRIM_PLUS_BTN = "pref_pitchtrim_plus_btn";
+    public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
+    public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
     private static final float DEADZONE_UPPER_LIMIT = 1.0f;
+    private static final float TRIM_UPPER_LIMIT = 0.5f;
     private static final int MAX_ROLLPITCH_ANGLE_UPPER_LIMIT = 50;
     private static final int MAX_YAW_ANGLE_UPPER_LIMIT = 500;
     private static final int MAX_THRUST_UPPER_LIMIT = 100;
@@ -68,10 +77,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private String radioChannelDefaultValue;
     private String modeDefaultValue;
     private String deadzoneDefaultValue;
+    private String trimDefaultValue;
     private String maxRollPitchAngleDefaultValue;
     private String maxYawAngleDefaultValue;
     private String maxThrustDefaultValue;
     private String minThrustDefaultValue;
+    private String emergencyBtnDefaultValue;
+    private String rollTrimPlusBtnDefaultValue;
+    private String rollTrimMinusBtnDefaultValue;
+    private String pitchTrimPlusBtnDefaultValue;
+    private String pitchTrimMinusBtnDefaultValue;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,6 +96,12 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        setInitialSummaries();
+
+        setupActionBar();
+    }
+
+    private void setInitialSummaries() {
         // Set initial summaries and get default values
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
 
@@ -92,17 +113,36 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
         modeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MODE, R.string.preferences_mode_defaultValue);
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
+        trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
+        setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
 
-        Preference afcScreenPref = findPreference(KEY_PREF_AFC_SCREEN);
-        afcScreenPref.setEnabled(sharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
+        emergencyBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_EMERGENCY_BTN, R.string.preferences_emergency_btn_defaultValue);
+        rollTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_PLUS_BTN , R.string.preferences_rolltrim_plus_btn_defaultValue);
+        rollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
+        pitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
+        pitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
+        
+        findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                resetPreference(KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue, null);
+                resetPreference(KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue, null);
+                return true;
+            }
+        });
+        
+        findPreference(KEY_PREF_AFC_SCREEN).setEnabled(sharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
 
         maxRollPitchAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_ROLLPITCH_ANGLE, R.string.preferences_maxRollPitchAngle_defaultValue);
         maxYawAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_YAW_ANGLE, R.string.preferences_maxYawAngle_defaultValue);
         maxThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_THRUST, R.string.preferences_maxThrust_defaultValue);
         minThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MIN_THRUST, R.string.preferences_minThrust_defaultValue);
 
-        Preference resetAfcPref = findPreference(KEY_PREF_RESET_AFC);
-        resetAfcPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        findPreference(KEY_PREF_RESET_AFC).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -114,8 +154,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 return true;
             }
         });
-
-        setupActionBar();
     }
 
     /**
@@ -165,6 +203,34 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
             deadzonePref.setSummary(sharedPreferences.getString(key, ""));
         }
+        if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {
+            Preference trimPref = findPreference(key);
+            try {
+                float trim = Float.parseFloat(sharedPreferences.getString(key, trimDefaultValue));
+                if (Math.abs(trim) < 0.0 || Math.abs(trim) > TRIM_UPPER_LIMIT) {
+                    resetPreference(key, trimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
+                }
+            } catch (NumberFormatException nfe) {
+                resetPreference(key, trimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
+            }
+            trimPref.setSummary(sharedPreferences.getString(key, ""));
+        }
+        if (key.equals(KEY_PREF_EMERGENCY_BTN)) {
+            findPreference(key).setSummary(sharedPreferences.getString(key, emergencyBtnDefaultValue));
+        }
+        if (key.equals(KEY_PREF_ROLLTRIM_PLUS_BTN)) {
+            findPreference(key).setSummary(sharedPreferences.getString(key, rollTrimPlusBtnDefaultValue));
+        }
+        if (key.equals(KEY_PREF_ROLLTRIM_MINUS_BTN)) {
+            findPreference(key).setSummary(sharedPreferences.getString(key, rollTrimMinusBtnDefaultValue));
+        }
+        if (key.equals(KEY_PREF_PITCHTRIM_PLUS_BTN)) {
+            findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimPlusBtnDefaultValue));
+        }
+        if (key.equals(KEY_PREF_PITCHTRIM_MINUS_BTN)) {
+            findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimMinusBtnDefaultValue));
+        }
+        
         if (key.equals(KEY_PREF_AFC_BOOL)) {
             Preference afcScreenPref = findPreference(KEY_PREF_AFC_SCREEN);
             afcScreenPref.setEnabled(sharedPreferences.getBoolean(key, false));
