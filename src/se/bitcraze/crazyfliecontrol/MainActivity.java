@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map.Entry;
 
+import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
@@ -125,6 +126,8 @@ public class MainActivity extends Activity {
 
     private Thread mSendJoystickDataThread;
 
+    private String[] mDatarateStrings;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,6 +168,8 @@ public class MainActivity extends Activity {
         maxYawAngleDefaultValue = getResources().getString(R.string.preferences_maxYawAngle_defaultValue);
         maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
         minThrustDefaultValue = getResources().getString(R.string.preferences_minThrust_defaultValue);
+
+        mDatarateStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
     }
 
     @Override
@@ -308,12 +313,15 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
-    private void setRadioChannelAndBandwidth(int channel, int bandwidth) {
-        if (channel != -1 && bandwidth != -1) {
+    private void setRadioChannelAndDatarate(int channel, int datarate) {
+        if (channel != -1 && datarate != -1) {
             SharedPreferences.Editor editor = mPreferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(bandwidth));
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(datarate));
             editor.commit();
+
+            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] +
+                           "\nSetting preferences...", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -528,23 +536,47 @@ public class MainActivity extends Activity {
     private void radioScan() {
         searchForCrazyRadio();
         try {
-            CrazyradioLink.ConnectionData[] result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
-            String[] bandwidthStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
+            final ConnectionData[] result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
+
+            //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
+//            final CrazyradioLink.ConnectionData[] result = new ConnectionData[3];
+//            result[0] = new ConnectionData(13, 2);
+//            result[1] = new ConnectionData(15, 1);
+//            result[2] = new ConnectionData(125, 2);
 
             if (result != null && result.length > 0) {
-                // use first channel
-                // TODO let user choose channel
-                final ConnectionData connData = result[0];
-                Toast.makeText(this,"Channel found: " + connData.getChannel() +
-                                    " Data rate: " + bandwidthStrings[connData.getDataRate()]
-                                    + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-                setRadioChannelAndBandwidth(connData.getChannel(), connData.getDataRate());
+                if(result.length > 1){
+                    // let user choose connection, if there is more than one Crazyflie 
+                    showSelectConnectionDialog(result);
+                }else{
+                    // use first channel
+                    setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
+                }
             } else {
-                Toast.makeText(this, "No channel found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No connection found", Toast.LENGTH_SHORT).show();
             }
         } catch (IllegalStateException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showSelectConnectionDialog(final ConnectionData[] result) {
+        SelectConnectionDialogFragment selectConnectionDialogFragment = new SelectConnectionDialogFragment();
+        //supply list of Crazyflie connections as arguments
+        Bundle args = new Bundle();
+        String[] crazyflieArray = new String[result.length];
+        for(int i = 0; i < result.length; i++){
+            crazyflieArray[i] = i + ": Channel " + result[i].getChannel() + ", Data rate " + mDatarateStrings[result[i].getDataRate()];
+        }
+        args.putStringArray("connection_array", crazyflieArray);
+        selectConnectionDialogFragment.setArguments(args);
+        selectConnectionDialogFragment.setListener(new SelectCrazyflieDialogListener(){
+            @Override
+            public void onClick(int which) {
+                setRadioChannelAndDatarate(result[which].getChannel(), result[which].getDataRate());
+            }
+        });
+        selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
     }
 
     public float getThrust() {
