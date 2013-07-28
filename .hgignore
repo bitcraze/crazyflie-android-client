@@ -17,3 +17,4 @@ syntax: regexp
 ^(.*[\\/])?\.svn[\\/].*
 ^(.*[\\/])?\.metadata[\\/].*
 ^(.*[\\/])?\.settings[\\/].*
+^gen$
