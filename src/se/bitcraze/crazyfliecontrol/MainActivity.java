@@ -251,13 +251,12 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        // Check that the event came from a joystick since a generic motion
-        // event
+        // Check that the event came from a joystick since a generic motion event
         // could be almost anything.
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0
                 && event.getAction() == MotionEvent.ACTION_MOVE) {
 
-            Log.i(TAG, "Input device: " + event.getDevice().getName());
+            //Log.i(TAG, "Input device: " + event.getDevice().getName());
 
             if (!isOnscreenControllerDisabled) {
                 disableOnscreenController();
@@ -278,10 +277,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // TODO: works for PS3 controller, but does it also work for other
-        // controllers?
-        // do not call super if key event comes from a gamepad, otherwise the
-        // buttons can quit the app
+        // TODO: works for PS3 controller, but does it also work for other controllers?
+        // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
             switch (event.getAction()) {
                 case KeyEvent.ACTION_DOWN:
@@ -377,8 +374,7 @@ public class MainActivity extends Activity {
         // Iterate over USB devices
         for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
             Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
-            if (e.getValue().getVendorId() == CrazyradioLink.VENDOR_ID &&
-                e.getValue().getProductId() == CrazyradioLink.PRODUCT_ID) {
+            if (CrazyradioLink.isCrazyRadio(e.getValue())) {
                 mDevice = e.getValue();
                 break; // stop after first matching device is found
             }
@@ -415,7 +411,7 @@ public class MainActivity extends Activity {
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 Log.d(TAG, "USB device detached ");
-                if (device != null) {
+                if (device != null && CrazyradioLink.isCrazyRadio(device)) {
                     Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
                     if (crazyflieLink != null) {
                         Log.d(TAG, "linkDisconnect()");

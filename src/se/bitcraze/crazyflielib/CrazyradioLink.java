@@ -416,4 +416,9 @@ public class CrazyradioLink extends AbstractLink {
         }
     };
 
+    public static boolean isCrazyRadio(UsbDevice device){
+        return device.getVendorId() == CrazyradioLink.VENDOR_ID &&
+               device.getProductId() == CrazyradioLink.PRODUCT_ID;
+    }
+
 }
