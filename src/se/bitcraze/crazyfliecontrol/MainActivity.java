@@ -95,6 +95,10 @@ public class MainActivity extends Activity {
     private float mRollTrim;
     private float mPitchTrim;
 
+    private int mRightAnalogXAxis;
+    private int mRightAnalogYAxis;
+    private int mLeftAnalogXAxis;
+    private int mLeftAnalogYAxis;
     private int emergencyBtn;
     private int rollTrimPlusBtn;
     private int rollTrimMinusBtn;
@@ -106,6 +110,11 @@ public class MainActivity extends Activity {
     private String modeDefaultValue;
     private String deadzoneDefaultValue;
     private String trimDefaultValue;
+
+    private String rightAnalogXAxisDefaultValue;
+    private String rightAnalogYAxisDefaultValue;
+    private String leftAnalogXAxisDefaultValue;
+    private String leftAnalogYAxisDefaultValue;
     private String emergencyBtnDefaultValue;
     private String rollTrimPlusBtnDefaultValue;
     private String rollTrimMinusBtnDefaultValue;
@@ -159,6 +168,12 @@ public class MainActivity extends Activity {
         modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
         deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
         trimDefaultValue = getResources().getString(R.string.preferences_trim_defaultValue);
+
+        rightAnalogXAxisDefaultValue = getResources().getString(R.string.preferences_right_analog_x_axis_defaultValue);
+        rightAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_right_analog_y_axis_defaultValue);
+        leftAnalogXAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_x_axis_defaultValue);
+        leftAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_y_axis_defaultValue);
+
         emergencyBtnDefaultValue = getResources().getString(R.string.preferences_emergency_btn_defaultValue);
         rollTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_plus_btn_defaultValue);
         rollTrimMinusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
@@ -262,11 +277,11 @@ public class MainActivity extends Activity {
                 disableOnscreenController();
             }
 
-            // hardcoded to work with PS3 controller
-            right_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_Z));
-            right_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_RZ));
-            left_analog_x = (float) (event.getAxisValue(MotionEvent.AXIS_X));
-            left_analog_y = (float) (event.getAxisValue(MotionEvent.AXIS_Y));
+            // default axis are set to work with PS3 controller
+            right_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
+            right_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis));
+            left_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
+            left_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis));
 
             mFlightDataView.updateFlightData();
             return true;
@@ -339,6 +354,10 @@ public class MainActivity extends Activity {
         this.deadzone = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
         this.mRollTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM, trimDefaultValue));
         this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, trimDefaultValue));
+        this.mRightAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_X_AXIS, rightAnalogXAxisDefaultValue)); 
+        this.mRightAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue)); 
+        this.mLeftAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue)); 
+        this.mLeftAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue)); 
         this.emergencyBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue));
         this.rollTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue));
         this.rollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue));

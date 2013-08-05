@@ -53,21 +53,37 @@
         <PreferenceScreen 
             android:key="pref_btn_screen"
             android:title="@string/preferences_btn_title">
-            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
-                android:key="pref_emergency_btn"
-                android:title="@string/preferences_emergency_btn_title"/>
-            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
-                android:key="pref_rolltrim_plus_btn"
-                android:title="@string/preferences_rolltrim_plus_btn_title"/>
-            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
-                android:key="pref_rolltrim_minus_btn"
-                android:title="@string/preferences_rolltrim_minus_btn_title"/>
-            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
-                android:key="pref_pitchtrim_plus_btn"
-                android:title="@string/preferences_pitchtrim_plus_btn_title"/>
-            <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
-                android:key="pref_pitchtrim_minus_btn"
-                android:title="@string/preferences_pitchtrim_minus_btn_title"/>
+            <PreferenceCategory android:title="@string/preferences_category_axes" >
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_right_analog_x_axis"
+                    android:title="@string/preferences_right_analog_x_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_right_analog_y_axis"
+                    android:title="@string/preferences_right_analog_y_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_left_analog_x_axis"
+                    android:title="@string/preferences_left_analog_x_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_left_analog_y_axis"
+                    android:title="@string/preferences_left_analog_y_axis_title"/>
+            </PreferenceCategory>
+            <PreferenceCategory android:title="@string/preferences_category_buttons" >
+                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                    android:key="pref_emergency_btn"
+                    android:title="@string/preferences_emergency_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                    android:key="pref_rolltrim_plus_btn"
+                    android:title="@string/preferences_rolltrim_plus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                    android:key="pref_rolltrim_minus_btn"
+                    android:title="@string/preferences_rolltrim_minus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                    android:key="pref_pitchtrim_plus_btn"
+                    android:title="@string/preferences_pitchtrim_plus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                    android:key="pref_pitchtrim_minus_btn"
+                    android:title="@string/preferences_pitchtrim_minus_btn_title"/>
+            </PreferenceCategory>
             <Preference
                 android:key="pref_reset_btn"
                 android:summary="@string/preferences_reset_btn_summary"

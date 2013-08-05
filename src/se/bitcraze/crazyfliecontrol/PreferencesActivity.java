@@ -57,6 +57,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
+    public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
+    public static final String KEY_PREF_RIGHT_ANALOG_Y_AXIS = "pref_right_analog_y_axis";
+    public static final String KEY_PREF_LEFT_ANALOG_X_AXIS = "pref_left_analog_x_axis";
+    public static final String KEY_PREF_LEFT_ANALOG_Y_AXIS = "pref_left_analog_y_axis";
     public static final String KEY_PREF_EMERGENCY_BTN = "pref_emergency_btn";
     public static final String KEY_PREF_ROLLTRIM_PLUS_BTN = "pref_rolltrim_plus_btn";
     public static final String KEY_PREF_ROLLTRIM_MINUS_BTN = "pref_rolltrim_minus_btn";
@@ -82,6 +86,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private String maxYawAngleDefaultValue;
     private String maxThrustDefaultValue;
     private String minThrustDefaultValue;
+
+    private String rightAnalogXAxisDefaultValue;
+    private String rightAnalogYAxisDefaultValue;
+    private String leftAnalogXAxisDefaultValue;
+    private String leftAnalogYAxisDefaultValue;
     private String emergencyBtnDefaultValue;
     private String rollTrimPlusBtnDefaultValue;
     private String rollTrimMinusBtnDefaultValue;
@@ -116,6 +125,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
         setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
 
+        rightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
+        rightAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_Y_AXIS, R.string.preferences_right_analog_y_axis_defaultValue);
+        leftAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_X_AXIS, R.string.preferences_left_analog_x_axis_defaultValue);
+        leftAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_Y_AXIS, R.string.preferences_left_analog_y_axis_defaultValue);
+
         emergencyBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_EMERGENCY_BTN, R.string.preferences_emergency_btn_defaultValue);
         rollTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_PLUS_BTN , R.string.preferences_rolltrim_plus_btn_defaultValue);
         rollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
@@ -126,6 +140,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
+                resetPreference(KEY_PREF_RIGHT_ANALOG_X_AXIS, rightAnalogXAxisDefaultValue, null);
+                resetPreference(KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue, null);
+                resetPreference(KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue, null);
+                resetPreference(KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue, null);
+
                 resetPreference(KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue, null);
                 resetPreference(KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue, null);
                 resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue, null);
@@ -203,6 +222,20 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
             deadzonePref.setSummary(sharedPreferences.getString(key, ""));
         }
+
+        if (key.equals(KEY_PREF_RIGHT_ANALOG_X_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, rightAnalogXAxisDefaultValue));
+        }
+        if (key.equals(KEY_PREF_RIGHT_ANALOG_Y_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, rightAnalogYAxisDefaultValue));
+        }
+        if (key.equals(KEY_PREF_LEFT_ANALOG_X_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogXAxisDefaultValue));
+        }
+        if (key.equals(KEY_PREF_LEFT_ANALOG_Y_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogYAxisDefaultValue));
+        }
+
         if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {
             Preference trimPref = findPreference(key);
             try {
