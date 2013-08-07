@@ -77,6 +77,8 @@ public class MainActivity extends Activity {
     private float right_analog_y;
     private float left_analog_x;
     private float left_analog_y;
+    private float split_axis_yaw_right;
+    private float split_axis_yaw_left;
 
     private Link crazyflieLink;
     public int resolution = 1000;
@@ -99,6 +101,8 @@ public class MainActivity extends Activity {
     private int mRightAnalogYAxis;
     private int mLeftAnalogXAxis;
     private int mLeftAnalogYAxis;
+    private int mSplitAxisYawLeftAxis;
+    private int mSplitAxisYawRightAxis;
     private int emergencyBtn;
     private int rollTrimPlusBtn;
     private int rollTrimMinusBtn;
@@ -115,6 +119,8 @@ public class MainActivity extends Activity {
     private String rightAnalogYAxisDefaultValue;
     private String leftAnalogXAxisDefaultValue;
     private String leftAnalogYAxisDefaultValue;
+    private String splitAxisYawLeftAxisDefaultValue;
+    private String splitAxisYawRightAxisDefaultValue;
     private String emergencyBtnDefaultValue;
     private String rollTrimPlusBtnDefaultValue;
     private String rollTrimMinusBtnDefaultValue;
@@ -132,10 +138,13 @@ public class MainActivity extends Activity {
     private boolean isOnscreenControllerDisabled;
     private boolean mPermissionAsked = false;
     private boolean mDoubleBackToExitPressedOnce = false;
+    
+    private boolean mUseSplitAxisYaw = false;
 
     private Thread mSendJoystickDataThread;
 
     private String[] mDatarateStrings;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -173,6 +182,9 @@ public class MainActivity extends Activity {
         rightAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_right_analog_y_axis_defaultValue);
         leftAnalogXAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_x_axis_defaultValue);
         leftAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_y_axis_defaultValue);
+
+        splitAxisYawLeftAxisDefaultValue = getResources().getString(R.string.preferences_splitaxis_yaw_left_axis_defaultValue);
+        splitAxisYawRightAxisDefaultValue = getResources().getString(R.string.preferences_splitaxis_yaw_right_axis_defaultValue);
 
         emergencyBtnDefaultValue = getResources().getString(R.string.preferences_emergency_btn_defaultValue);
         rollTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_plus_btn_defaultValue);
@@ -283,6 +295,9 @@ public class MainActivity extends Activity {
             left_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
             left_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis));
 
+            split_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
+            split_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
+
             mFlightDataView.updateFlightData();
             return true;
         } else {
@@ -358,6 +373,9 @@ public class MainActivity extends Activity {
         this.mRightAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue)); 
         this.mLeftAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue)); 
         this.mLeftAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue)); 
+        this.mUseSplitAxisYaw = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_BOOL, false);
+        this.mSplitAxisYawLeftAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, splitAxisYawLeftAxisDefaultValue)); 
+        this.mSplitAxisYawRightAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, splitAxisYawRightAxisDefaultValue)); 
         this.emergencyBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue));
         this.rollTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue));
         this.rollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue));
@@ -657,7 +675,12 @@ public class MainActivity extends Activity {
     }
 
     public float getYaw() {
-        float yaw = (mode == 1 || mode == 2) ? getLeftAnalog_X() : getRightAnalog_X();
+        float yaw = 0;
+        if(mUseSplitAxisYaw){
+            yaw = split_axis_yaw_right - split_axis_yaw_left;
+        }else{
+            yaw = (mode == 1 || mode == 2) ? getLeftAnalog_X() : getRightAnalog_X();
+        }
         return yaw * getYawFactor() * getDeadzone(yaw);
     }
 

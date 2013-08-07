@@ -61,6 +61,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_RIGHT_ANALOG_Y_AXIS = "pref_right_analog_y_axis";
     public static final String KEY_PREF_LEFT_ANALOG_X_AXIS = "pref_left_analog_x_axis";
     public static final String KEY_PREF_LEFT_ANALOG_Y_AXIS = "pref_left_analog_y_axis";
+    public static final String KEY_PREF_SPLITAXIS_YAW_BOOL = "pref_splitaxis_yaw_bool";
+    public static final String KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS = "pref_splitaxis_yaw_left_axis";
+    public static final String KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS = "pref_splitaxis_yaw_right_axis";
     public static final String KEY_PREF_EMERGENCY_BTN = "pref_emergency_btn";
     public static final String KEY_PREF_ROLLTRIM_PLUS_BTN = "pref_rolltrim_plus_btn";
     public static final String KEY_PREF_ROLLTRIM_MINUS_BTN = "pref_rolltrim_minus_btn";
@@ -91,6 +94,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private String rightAnalogYAxisDefaultValue;
     private String leftAnalogXAxisDefaultValue;
     private String leftAnalogYAxisDefaultValue;
+    private String splitAxisLeftAxisDefaultValue;
+    private String splitAxisRightAxisDefaultValue;
     private String emergencyBtnDefaultValue;
     private String rollTrimPlusBtnDefaultValue;
     private String rollTrimMinusBtnDefaultValue;
@@ -130,6 +135,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         leftAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_X_AXIS, R.string.preferences_left_analog_x_axis_defaultValue);
         leftAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_Y_AXIS, R.string.preferences_left_analog_y_axis_defaultValue);
 
+        findPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS).setEnabled(sharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
+        findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
+        splitAxisLeftAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, R.string.preferences_splitaxis_yaw_left_axis_defaultValue);
+        splitAxisRightAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, R.string.preferences_splitaxis_yaw_right_axis_defaultValue);
+
         emergencyBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_EMERGENCY_BTN, R.string.preferences_emergency_btn_defaultValue);
         rollTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_PLUS_BTN , R.string.preferences_rolltrim_plus_btn_defaultValue);
         rollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
@@ -144,6 +154,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 resetPreference(KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue, null);
                 resetPreference(KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue, null);
                 resetPreference(KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue, null);
+                resetPreference(KEY_PREF_SPLITAXIS_YAW_BOOL, false);
+                resetPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, splitAxisLeftAxisDefaultValue, null);
+                resetPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, splitAxisRightAxisDefaultValue, null);
 
                 resetPreference(KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue, null);
                 resetPreference(KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue, null);
@@ -234,6 +247,20 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
         if (key.equals(KEY_PREF_LEFT_ANALOG_Y_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogYAxisDefaultValue));
+        }
+        
+        if (key.equals(KEY_PREF_SPLITAXIS_YAW_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
+            findPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
+            findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
+        }
+        
+        if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
+        }
+        if (key.equals(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS)){
+            findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisRightAxisDefaultValue));
         }
 
         if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {

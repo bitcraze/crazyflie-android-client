@@ -48,6 +48,12 @@
     <string name="preferences_left_analog_x_axis_defaultValue">AXIS_X</string>
     <string name="preferences_left_analog_y_axis_title">Left analog Y axis</string>
     <string name="preferences_left_analog_y_axis_defaultValue">AXIS_Y</string>
+    <string name="preferences_splitaxis_yaw_bool_summary">Use split axis control for yaw</string>
+    <string name="preferences_splitaxis_yaw_bool_title">Yaw split axis</string>
+    <string name="preferences_splitaxis_yaw_left_axis_title">Yaw split axis - left axis</string>
+    <string name="preferences_splitaxis_yaw_left_axis_defaultValue">AXIS_BRAKE</string>
+    <string name="preferences_splitaxis_yaw_right_axis_title">Yaw split axis - right axis</string>
+    <string name="preferences_splitaxis_yaw_right_axis_defaultValue">AXIS_GAS</string>
     <string name="preferences_axis_mapping_dialog_text">Please move a joystick axis...</string>
     <string name="preferences_category_buttons">Buttons</string>
     <string name="preferences_emergency_btn_title">Emergency stop</string>

@@ -66,6 +66,19 @@
                <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
                     android:key="pref_left_analog_y_axis"
                     android:title="@string/preferences_left_analog_y_axis_title"/>
+               <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="pref_splitaxis_yaw_bool"
+                    android:summary="@string/preferences_splitaxis_yaw_bool_summary"
+                    android:title="@string/preferences_splitaxis_yaw_bool_title" />
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_splitaxis_yaw_left_axis"
+                    android:title="@string/preferences_splitaxis_yaw_left_axis_title"
+                    android:defaultValue="@string/preferences_splitaxis_yaw_left_axis_defaultValue"/>
+               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+                    android:key="pref_splitaxis_yaw_right_axis"
+                    android:title="@string/preferences_splitaxis_yaw_right_axis_title"
+                    android:defaultValue="@string/preferences_splitaxis_yaw_right_axis_defaultValue"/>
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/preferences_category_buttons" >
                 <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
