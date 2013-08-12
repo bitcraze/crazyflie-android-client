@@ -89,7 +89,7 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
-        if(axisName == "") {
+        if(axisName.equals("")) {
             valueTextView.setText("No axis");
         } else {
             valueTextView.setText(axisName);
