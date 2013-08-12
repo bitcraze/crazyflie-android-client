@@ -170,6 +170,11 @@ public class CrazyradioLink extends AbstractLink {
      */
     public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice)
             throws IllegalStateException {
+    	if(usbDevice == null) {
+    		Log.d(LOG_TAG, "usbDevice is null");
+            throw new IllegalStateException("CrazyRadio not attached");
+    	}
+    	
         final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
         return CrazyradioLink.scanChannels(connection);
     }
