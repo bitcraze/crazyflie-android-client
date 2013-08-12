@@ -40,6 +40,7 @@ import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -47,6 +48,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -568,29 +570,54 @@ public class MainActivity extends Activity {
 
     private void radioScan() {
         searchForCrazyRadio();
-        try {
-            final ConnectionData[] result = CrazyradioLink.scanChannels(mUsbManager, mDevice);
+    	new AsyncTask<UsbManager, Void, ConnectionData[]>() {
 
-            //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
-//            final CrazyradioLink.ConnectionData[] result = new ConnectionData[3];
-//            result[0] = new ConnectionData(13, 2);
-//            result[1] = new ConnectionData(15, 1);
-//            result[2] = new ConnectionData(125, 2);
+    		private Exception mException = null;
+    		private ProgressDialog mProgress;
+    		
+			@Override
+			protected void onPreExecute() {
+				mProgress = ProgressDialog.show(MainActivity.this,
+						"Radio Scan", "Searching for the Crazyflie...", true, false);
+			}
 
-            if (result != null && result.length > 0) {
-                if(result.length > 1){
-                    // let user choose connection, if there is more than one Crazyflie 
-                    showSelectConnectionDialog(result);
-                }else{
-                    // use first channel
-                    setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
-                }
-            } else {
-                Toast.makeText(this, "No connection found", Toast.LENGTH_SHORT).show();
-            }
-        } catch (IllegalStateException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+			@Override
+			protected ConnectionData[] doInBackground(UsbManager... params) {
+				try {
+					return CrazyradioLink.scanChannels(mUsbManager, mDevice);
+				} catch(IllegalStateException e) {
+					mException = e;
+					return null;
+				}
+			}
+
+			@Override
+			protected void onPostExecute(ConnectionData[] result) {
+				mProgress.dismiss();
+				
+				if(mException != null) {
+					Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
+				} else {
+					//TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
+//			        result = new ConnectionData[3];
+//			        result[0] = new ConnectionData(13, 2);
+//			        result[1] = new ConnectionData(15, 1);
+//			        result[2] = new ConnectionData(125, 2);
+					
+					if (result != null && result.length > 0) {
+		                if(result.length > 1){
+		                    // let user choose connection, if there is more than one Crazyflie 
+		                    showSelectConnectionDialog(result);
+		                }else{
+		                    // use first channel
+		                    setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
+		                }
+		            } else {
+		                Toast.makeText(MainActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
+		            }
+				}
+			}
+		}.execute();
     }
 
     private void showSelectConnectionDialog(final ConnectionData[] result) {
