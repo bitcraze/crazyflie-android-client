@@ -57,6 +57,8 @@ public class CrazyradioLink extends AbstractLink {
     private static final int REQUEST_GET_SCAN_CHANNELS = 0x21;
     private static final int REQUEST_LAUNCH_BOOTLOADER = 0xFF;
 
+    private static int TRANSFER_TIMEOUT = 100;
+
     private static final String LOG_TAG = "Crazyflie_RadioLink";
 
     private final UsbDevice mUsbDevice;
@@ -274,7 +276,7 @@ public class CrazyradioLink extends AbstractLink {
      * @param channel the new channel. Must be in range 0-125.
      */
     public void setRadioChannel(int channel) {
-        mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null, 0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null);
     }
 
     /**
@@ -283,7 +285,7 @@ public class CrazyradioLink extends AbstractLink {
      * @param rate new data rate. Possible values are in range 0-2.
      */
     public void setDataRate(int rate) {
-        mConnection.controlTransfer(0x40, REQUEST_SET_DATA_RATE, rate, 0, null, 0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_DATA_RATE, rate, 0, null);
     }
 
     /**
@@ -298,8 +300,7 @@ public class CrazyradioLink extends AbstractLink {
         if (address.length != 5) {
             throw new IllegalArgumentException("radio address must be 5 bytes long");
         }
-        mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ADDRESS, 0, 0, address, address.length,
-                100);
+        sendControlTransfer(0x40, REQUEST_SET_RADIO_ADDRESS, 0, 0, address);
     }
 
     /**
@@ -310,8 +311,7 @@ public class CrazyradioLink extends AbstractLink {
      * @param continuous <code>true</code> to enable the continuous carrier mode
      */
     public void setContinuousCarrier(boolean continuous) {
-        mConnection.controlTransfer(0x40, REQUEST_SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null,
-                0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null);
     }
 
     /**
@@ -327,8 +327,7 @@ public class CrazyradioLink extends AbstractLink {
         } else if (param > 0xF) {
             param = 0xF;
         }
-
-        mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARD, param, 0, null, 0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_RADIO_ARD, param, 0, null);
     }
 
     /**
@@ -342,7 +341,7 @@ public class CrazyradioLink extends AbstractLink {
         if (bytes < 0 || bytes > 32) {
             throw new IllegalArgumentException("payload length must be in range 0-32");
         }
-        mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARD, 0x80 | bytes, 0, null, 0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_RADIO_ARD, 0x80 | bytes, 0, null);
     }
 
     /**
@@ -357,7 +356,7 @@ public class CrazyradioLink extends AbstractLink {
         if (count < 0 || count > 15) {
             throw new IllegalArgumentException("count must be in range 0-15");
         }
-        mConnection.controlTransfer(0x40, REQUEST_SET_RADIO_ARC, count, 0, null, 0, 100);
+        sendControlTransfer(0x40, REQUEST_SET_RADIO_ARC, count, 0, null);
     }
 
     /**
@@ -381,38 +380,32 @@ public class CrazyradioLink extends AbstractLink {
 
                     byte[] receiveData = new byte[33];
                     final byte[] sendData = p.toByteArray();
-                    if (mConnection != null) {
-                        mConnection.bulkTransfer(mEpOut, sendData, sendData.length, 100);
-                        final int receivedByteCount = mConnection.bulkTransfer(mEpIn, receiveData,
-                                receiveData.length, 100);
 
-                        if (receivedByteCount >= 1) {
-                            // update link quality status
-                            if (nextLinkQualityUpdate <= 0) {
-                                final int retransmission = receiveData[0] >> 4;
-                                notifyLinkQuality(Math.max(0, (10 - retransmission) * 10));
-                                nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
-                            } else {
-                                nextLinkQualityUpdate--;
-                            }
-
-                            if ((receiveData[0] & 1) != 0) { // check if ack
-                                                             // received
-                                retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
-                                handleResponse(Arrays.copyOfRange(receiveData, 1,
-                                        1 + (receivedByteCount - 1)));
-                            } else {
-                                // count lost packets
-                                retryBeforeDisconnectRemaining--;
-                                if (retryBeforeDisconnectRemaining <= 0) {
-                                    notifyConnectionLost();
-                                    disconnect();
-                                    break;
-                                }
-                            }
+                    final int receivedByteCount = sendBulkTransfer(sendData, receiveData);
+                    if (receivedByteCount >= 1) {
+                        // update link quality status
+                        if (nextLinkQualityUpdate <= 0) {
+                            final int retransmission = receiveData[0] >> 4;
+                            notifyLinkQuality(Math.max(0, (10 - retransmission) * 10));
+                            nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
                         } else {
-                            Log.w(LOG_TAG, "CrazyradioLink comm error - didn't receive answer");
+                            nextLinkQualityUpdate--;
                         }
+
+                        if ((receiveData[0] & 1) != 0) { // check if ack received
+                            retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
+                            handleResponse(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
+                        } else {
+                            // count lost packets
+                            retryBeforeDisconnectRemaining--;
+                            if (retryBeforeDisconnectRemaining <= 0) {
+                                notifyConnectionLost();
+                                disconnect();
+                                break;
+                            }
+                        }
+                    } else {
+                        Log.w(LOG_TAG, "CrazyradioLink comm error - didn't receive answer");
                     }
                 } catch (InterruptedException e) {
                     break;
@@ -420,6 +413,26 @@ public class CrazyradioLink extends AbstractLink {
             }
         }
     };
+
+    //#Utility functions
+
+    public int sendControlTransfer(int requestType, int request, int value, int index, byte[] data){
+        if(mConnection != null){
+            int dataLength = (data == null) ? 0 : data.length;
+            return mConnection.controlTransfer(requestType, request, value, index, data, dataLength, TRANSFER_TIMEOUT);
+        }
+        return -1;
+    }
+
+    public int sendBulkTransfer(byte[] data, byte[] receiveData){
+        int returnCode = -1;
+        if(mConnection != null){
+            mConnection.bulkTransfer(mEpOut, data, data.length, TRANSFER_TIMEOUT);
+            returnCode = mConnection.bulkTransfer(mEpIn, receiveData, receiveData.length, TRANSFER_TIMEOUT);
+        }
+        return returnCode;
+    }
+
 
     public static boolean isCrazyRadio(UsbDevice device){
         return device.getVendorId() == CrazyradioLink.VENDOR_ID &&
