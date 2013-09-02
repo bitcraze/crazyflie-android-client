@@ -69,6 +69,8 @@
     <string name="preferences_reset_btn_title">Reset values</string>
     <string name="preferences_reset_btn_summary">Reset to default values</string>
     <string name="preferences_button_mapping_dialog_text">Please press a button...</string>
+    <string name="preferences_category_app_settings">App Preferences</string>
+    <string name="preferences_screen_rotation_lock_title">Screen rotation lock</string>
     <string name="select_connection_dialog_title">Select Connection</string>
     <string name="pitch">Pitch: %1$s</string>
     <string name="roll">Roll: %1$s</string>

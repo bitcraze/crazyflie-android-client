@@ -151,4 +151,11 @@
         </PreferenceScreen>
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/preferences_category_app_settings" >
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_screen_rotation_lock_bool"
+            android:title="@string/preferences_screen_rotation_lock_title" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

@@ -18,8 +18,7 @@
         <activity
             android:name="se.bitcraze.crazyfliecontrol.MainActivity"
             android:label="@string/title_activity_main"
-            android:launchMode="singleTop"
-            android:screenOrientation="sensorLandscape">
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

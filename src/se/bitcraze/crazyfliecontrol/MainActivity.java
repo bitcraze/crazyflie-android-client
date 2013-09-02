@@ -46,6 +46,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
@@ -201,6 +202,15 @@ public class MainActivity extends Activity {
         mDatarateStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
     }
 
+    private void checkScreenLock() {
+        boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
+        if(isScreenLock){
+            this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }else{
+            this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -237,6 +247,7 @@ public class MainActivity extends Activity {
         super.onResume();
         resetInputMethod();
         setControlConfig();
+        checkScreenLock();
     }
 
     @Override
