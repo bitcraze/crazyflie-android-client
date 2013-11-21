@@ -41,30 +41,30 @@ import android.widget.TextView;
  */
 public class FlightDataView extends LinearLayout {
 
-    private TextView textView_pitch;
-    private TextView textView_roll;
-    private TextView textView_thrust;
-    private TextView textView_yaw;
-    private TextView textView_linkQuality;
-    private MainActivity context;
+    private TextView mTextView_pitch;
+    private TextView mTextView_roll;
+    private TextView mTextView_thrust;
+    private TextView mTextView_yaw;
+    private TextView mTextView_linkQuality;
 
     public FlightDataView(Context context, AttributeSet attrs) {
       super(context, attrs);
 
-      this.context = (MainActivity) context;
-      
       setOrientation(LinearLayout.HORIZONTAL);
 
       LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       inflater.inflate(R.layout.view_flight_data, this, true);
       
-      textView_pitch = (TextView) findViewById(R.id.pitch);
-      textView_roll = (TextView) findViewById(R.id.roll);
-      textView_thrust = (TextView) findViewById(R.id.thrust);
-      textView_yaw = (TextView) findViewById(R.id.yaw);
-      textView_linkQuality = (TextView) findViewById(R.id.linkQuality);
+      mTextView_pitch = (TextView) findViewById(R.id.pitch);
+      mTextView_roll = (TextView) findViewById(R.id.roll);
+      mTextView_thrust = (TextView) findViewById(R.id.thrust);
+      mTextView_yaw = (TextView) findViewById(R.id.yaw);
+      mTextView_linkQuality = (TextView) findViewById(R.id.linkQuality);
       //initialize
-      updateFlightData();
+      mTextView_pitch.setText(format(R.string.pitch, 0.0));
+      mTextView_roll.setText(format(R.string.roll, 0.0));
+      mTextView_thrust.setText(format(R.string.thrust, 0.0));
+      mTextView_yaw.setText(format(R.string.yaw, 0.0));
       setLinkQualityText("n/a");
     }
 
@@ -72,11 +72,11 @@ public class FlightDataView extends LinearLayout {
       this(context, null);
     }
 
-    public void updateFlightData() {
-        textView_pitch.setText(format(R.string.pitch, round(context.getPitch() * -1))); // inverse
-        textView_roll.setText(format(R.string.roll, round(context.getRoll())));
-        textView_thrust.setText(format(R.string.thrust, round(context.getThrust())));
-        textView_yaw.setText(format(R.string.yaw, round(context.getYaw())));
+    public void updateFlightData(float pitch, float roll, float thrust, float yaw) {
+        mTextView_pitch.setText(format(R.string.pitch, round(pitch * -1))); // inverse
+        mTextView_roll.setText(format(R.string.roll, round(roll)));
+        mTextView_thrust.setText(format(R.string.thrust, round(thrust)));
+        mTextView_yaw.setText(format(R.string.yaw, round(yaw)));
     }
 
     private String format(int identifier, Object o){
@@ -90,7 +90,7 @@ public class FlightDataView extends LinearLayout {
     }
     
     public void setLinkQualityText(String quality){
-        textView_linkQuality.setText(format(R.string.linkQuality, quality));
+        mTextView_linkQuality.setText(format(R.string.linkQuality, quality));
     }
 
 }

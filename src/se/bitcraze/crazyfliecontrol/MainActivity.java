@@ -76,63 +76,24 @@ public class MainActivity extends Activity {
     private DualJoystickView mJoysticks;
     private FlightDataView mFlightDataView;
 
-    private float right_analog_x;
-    private float right_analog_y;
-    private float left_analog_x;
-    private float left_analog_y;
-    private float split_axis_yaw_right;
-    private float split_axis_yaw_left;
-
     private Link crazyflieLink;
-    public int resolution = 1000;
-    private float mMaxTrim = 0.5f;
-    private float mTrimIncrements = 0.1f; 
+    private int resolution = 1000;
 
-    SharedPreferences mPreferences;
+    private SharedPreferences mPreferences;
 
-    private int mode;
-    public float deadzone;
     private int maxRollPitchAngle;
     private int maxYawAngle;
     private int maxThrust;
     private int minThrust;
     private boolean xmode;
-    private float mRollTrim;
-    private float mPitchTrim;
 
-    private int mRightAnalogXAxis;
-    private int mRightAnalogYAxis;
-    private int mLeftAnalogXAxis;
-    private int mLeftAnalogYAxis;
-    private int mSplitAxisYawLeftAxis;
-    private int mSplitAxisYawRightAxis;
-    private int emergencyBtn;
-    private int rollTrimPlusBtn;
-    private int rollTrimMinusBtn;
-    private int pitchTrimPlusBtn;
-    private int pitchTrimMinusBtn;
-    
-    private String radioChannelDefaultValue;
-    private String radioBandwidthDefaultValue;
-    private String modeDefaultValue;
-    private String deadzoneDefaultValue;
-    private String trimDefaultValue;
+    private String mRadioChannelDefaultValue;
+    private String mRadioBandwidthDefaultValue;
 
-    private String rightAnalogXAxisDefaultValue;
-    private String rightAnalogYAxisDefaultValue;
-    private String leftAnalogXAxisDefaultValue;
-    private String leftAnalogYAxisDefaultValue;
-    private String splitAxisYawLeftAxisDefaultValue;
-    private String splitAxisYawRightAxisDefaultValue;
-    private String emergencyBtnDefaultValue;
-    private String rollTrimPlusBtnDefaultValue;
-    private String rollTrimMinusBtnDefaultValue;
-    private String pitchTrimPlusBtnDefaultValue;
-    private String pitchTrimMinusBtnDefaultValue;
-    private String maxRollPitchAngleDefaultValue;
-    private String maxYawAngleDefaultValue;
-    private String maxThrustDefaultValue;
-    private String minThrustDefaultValue;
+    private String mMaxRollPitchAngleDefaultValue;
+    private String mMaxYawAngleDefaultValue;
+    private String mMaxThrustDefaultValue;
+    private String mMinThrustDefaultValue;
 
     private UsbManager mUsbManager;
     private UsbDevice mDevice;
@@ -141,13 +102,12 @@ public class MainActivity extends Activity {
     private boolean isOnscreenControllerDisabled;
     private boolean mPermissionAsked = false;
     private boolean mDoubleBackToExitPressedOnce = false;
-    
-    private boolean mUseSplitAxisYaw = false;
 
     private Thread mSendJoystickDataThread;
 
     private String[] mDatarateStrings;
 
+    private Controls mControls;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -155,6 +115,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         setDefaultPreferenceValues();
+
+        mControls = new Controls(this, mPreferences);
+        mControls.setDefaultPreferenceValues(getResources());
 
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
         mJoysticks.setMovementRange(resolution, resolution);
@@ -175,31 +138,15 @@ public class MainActivity extends Activity {
         // Initialize preferences
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        radioChannelDefaultValue = getResources().getString(R.string.preferences_radio_channel_defaultValue);
-        radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultValue);
-        modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
-        deadzoneDefaultValue = getResources().getString(R.string.preferences_deadzone_defaultValue);
-        trimDefaultValue = getResources().getString(R.string.preferences_trim_defaultValue);
+        mRadioChannelDefaultValue = getString(R.string.preferences_radio_channel_defaultValue);
+        mRadioBandwidthDefaultValue = getString(R.string.preferences_radio_bandwidth_defaultValue);
 
-        rightAnalogXAxisDefaultValue = getResources().getString(R.string.preferences_right_analog_x_axis_defaultValue);
-        rightAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_right_analog_y_axis_defaultValue);
-        leftAnalogXAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_x_axis_defaultValue);
-        leftAnalogYAxisDefaultValue = getResources().getString(R.string.preferences_left_analog_y_axis_defaultValue);
+        mMaxRollPitchAngleDefaultValue = getString(R.string.preferences_maxRollPitchAngle_defaultValue);
+        mMaxYawAngleDefaultValue = getString(R.string.preferences_maxYawAngle_defaultValue);
+        mMaxThrustDefaultValue = getString(R.string.preferences_maxThrust_defaultValue);
+        mMinThrustDefaultValue = getString(R.string.preferences_minThrust_defaultValue);
 
-        splitAxisYawLeftAxisDefaultValue = getResources().getString(R.string.preferences_splitaxis_yaw_left_axis_defaultValue);
-        splitAxisYawRightAxisDefaultValue = getResources().getString(R.string.preferences_splitaxis_yaw_right_axis_defaultValue);
-
-        emergencyBtnDefaultValue = getResources().getString(R.string.preferences_emergency_btn_defaultValue);
-        rollTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_plus_btn_defaultValue);
-        rollTrimMinusBtnDefaultValue = getResources().getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
-        pitchTrimPlusBtnDefaultValue = getResources().getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
-        pitchTrimMinusBtnDefaultValue = getResources().getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
-        maxRollPitchAngleDefaultValue = getResources().getString(R.string.preferences_maxRollPitchAngle_defaultValue);
-        maxYawAngleDefaultValue = getResources().getString(R.string.preferences_maxYawAngle_defaultValue);
-        maxThrustDefaultValue = getResources().getString(R.string.preferences_maxThrust_defaultValue);
-        minThrustDefaultValue = getResources().getString(R.string.preferences_minThrust_defaultValue);
-
-        mDatarateStrings = this.getResources().getStringArray(R.array.radioBandwidthEntries);
+        mDatarateStrings = getResources().getStringArray(R.array.radioBandwidthEntries);
     }
 
     private void checkScreenLock() {
@@ -259,7 +206,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        resetAxisValues();
+        mControls.resetAxisValues();
         if (crazyflieLink != null) {
             linkDisconnect();
         }
@@ -289,29 +236,16 @@ public class MainActivity extends Activity {
         }, 2000);
     }
 
+    private void updateFlightData(){
+        mFlightDataView.updateFlightData(getPitch(), getRoll(), getThrust(), getYaw());
+    }
+    
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        // Check that the event came from a joystick since a generic motion event
-        // could be almost anything.
-        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0
-                && event.getAction() == MotionEvent.ACTION_MOVE) {
-
-            //Log.i(TAG, "Input device: " + event.getDevice().getName());
-
-            if (!isOnscreenControllerDisabled) {
-                disableOnscreenController();
-            }
-
-            // default axis are set to work with PS3 controller
-            right_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
-            right_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis));
-            left_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
-            left_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis));
-
-            split_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
-            split_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
-
-            mFlightDataView.updateFlightData();
+        // Check that the event came from a joystick since a generic motion event could be almost anything.
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
+            mControls.dealWithMotionEvent(event);
+            updateFlightData();
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
@@ -323,28 +257,7 @@ public class MainActivity extends Activity {
         // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
-            switch (event.getAction()) {
-                case KeyEvent.ACTION_DOWN:
-                    if(event.getKeyCode() == emergencyBtn){
-                        //quick solution
-                        resetAxisValues();
-                        if (crazyflieLink != null) {
-                            linkDisconnect();
-                        }
-                        Toast.makeText(this, "Emergency Stop", Toast.LENGTH_SHORT).show();
-                    }else if (event.getKeyCode() == rollTrimPlusBtn) {
-                        increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
-                    }else if (event.getKeyCode() == rollTrimMinusBtn) {
-                        decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
-                    }else if (event.getKeyCode() == pitchTrimPlusBtn) {
-                        increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
-                    }else if (event.getKeyCode() == pitchTrimMinusBtn) {
-                        decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
-                    }
-                    break;
-                default:
-                    break;
-            }
+            mControls.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
                 return true;
@@ -365,10 +278,14 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void disableOnscreenController() {
+    public void disableOnscreenController() {
         Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
         mJoysticks.setOnJostickMovedListener(null, null);
         this.isOnscreenControllerDisabled = true;
+    }
+
+    public boolean isOnscreenControllerDisabled() {
+        return isOnscreenControllerDisabled;
     }
 
     private void resetInputMethod() {
@@ -378,41 +295,20 @@ public class MainActivity extends Activity {
     }
 
     private void setControlConfig() {
-        this.mode = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MODE, modeDefaultValue));
-        this.deadzone = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, deadzoneDefaultValue));
-        this.mRollTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM, trimDefaultValue));
-        this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, trimDefaultValue));
-        this.mRightAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_X_AXIS, rightAnalogXAxisDefaultValue)); 
-        this.mRightAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue)); 
-        this.mLeftAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue)); 
-        this.mLeftAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue)); 
-        this.mUseSplitAxisYaw = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_BOOL, false);
-        this.mSplitAxisYawLeftAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, splitAxisYawLeftAxisDefaultValue)); 
-        this.mSplitAxisYawRightAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, splitAxisYawRightAxisDefaultValue)); 
-        this.emergencyBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue));
-        this.rollTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue));
-        this.rollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue));
-        this.pitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue));
-        this.pitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue));
+        mControls.setControlConfig();
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.maxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue));
-            this.maxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue));
-            this.maxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, maxThrustDefaultValue));
-            this.minThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, minThrustDefaultValue));
+            this.maxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
+            this.maxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
+            this.maxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
+            this.minThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
             this.xmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
         } else {
-            this.maxRollPitchAngle = Integer.parseInt(maxRollPitchAngleDefaultValue);
-            this.maxYawAngle = Integer.parseInt(maxYawAngleDefaultValue);
-            this.maxThrust = Integer.parseInt(maxThrustDefaultValue);
-            this.minThrust = Integer.parseInt(minThrustDefaultValue);
+            this.maxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
+            this.maxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
+            this.maxThrust = Integer.parseInt(mMaxThrustDefaultValue);
+            this.minThrust = Integer.parseInt(mMinThrustDefaultValue);
             this.xmode = false;
         }
-    }
-
-    private void setPreference(String pKey, String pDefaultValue) {
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putString(pKey, pDefaultValue);
-        editor.commit();
     }
 
     /**
@@ -478,9 +374,9 @@ public class MainActivity extends Activity {
         linkDisconnect();
 
         int radioChannel = Integer.parseInt(mPreferences.getString(
-                PreferencesActivity.KEY_PREF_RADIO_CHANNEL, radioChannelDefaultValue));
+                PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
         int radioBandwidth = Integer.parseInt(mPreferences.getString(
-                PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue));
+                PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, mRadioBandwidthDefaultValue));
 
         try {
             // create link
@@ -560,7 +456,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void linkDisconnect() {
+    public Link getCrazyflieLink(){
+        return crazyflieLink;
+    }
+    
+    public void linkDisconnect() {
         if (crazyflieLink != null) {
             crazyflieLink.disconnect();
             crazyflieLink = null;
@@ -651,98 +551,32 @@ public class MainActivity extends Activity {
     }
 
     public float getThrust() {
-        float thrust = ((mode == 1 || mode == 3) ? getRightAnalog_Y() : getLeftAnalog_Y());
+        float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
         thrust = thrust * -1; // invert
-        if (thrust > deadzone) {
+        if (thrust > mControls.getDeadzone()) {
             return minThrust + (thrust * getThrustFactor());
         }
         return 0;
     }
 
     public float getRoll() {
-        float roll = (mode == 1 || mode == 2) ? getRightAnalog_X() : getLeftAnalog_X();
-        return (roll + getRollTrim()) * getRollPitchFactor() * getDeadzone(roll);
-    }
-
-    private float getRollTrim() {
-        return mRollTrim;
-    }
-    
-    private void increaseTrim(String prefKey){
-        changeTrim(prefKey, true);
-    }
-
-    private void decreaseTrim(String prefKey){
-        changeTrim(prefKey, false);
-    }
-    
-    private void changeTrim(String prefKey, boolean increase){
-        float axis;
-        String axisName;
-        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
-            axisName = "Roll";
-            axis = mRollTrim;
-        }else{
-            axisName = "Pitch";
-            axis = mPitchTrim;
-        }
-        
-        if(increase && axis < mMaxTrim){
-            axis += mTrimIncrements;
-        }else if(!increase && axis > (mMaxTrim * -1)){
-           axis -= mTrimIncrements;
-        }
-
-        setPreference(prefKey, String.valueOf(axis));
-        Toast.makeText(this, axisName + " Trim: " + FlightDataView.round(axis), Toast.LENGTH_SHORT).show();
-        
-        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
-            mRollTrim = axis;
-        }else{
-            mPitchTrim = axis;
-        }
+        float roll = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getRightAnalog_X() : mControls.getLeftAnalog_X();
+        return (roll + mControls.getRollTrim()) * getRollPitchFactor() * mControls.getDeadzone(roll);
     }
 
     public float getPitch() {
-        float pitch = (mode == 1 || mode == 3) ? getLeftAnalog_Y() : getRightAnalog_Y();
-        return (pitch + getPitchTrim()) * getRollPitchFactor() * getDeadzone(pitch);
-    }
-
-    private float getPitchTrim() {
-        return mPitchTrim;
+        float pitch = (mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getLeftAnalog_Y() : mControls.getRightAnalog_Y();
+        return (pitch + mControls.getPitchTrim()) * getRollPitchFactor() * mControls.getDeadzone(pitch);
     }
 
     public float getYaw() {
         float yaw = 0;
-        if(mUseSplitAxisYaw){
-            yaw = split_axis_yaw_right - split_axis_yaw_left;
+        if(mControls.useSplitAxisYaw()){
+            yaw = mControls.getSplitAxisYawRight() - mControls.getSplitAxisYawLeft();
         }else{
-            yaw = (mode == 1 || mode == 2) ? getLeftAnalog_X() : getRightAnalog_X();
+            yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
         }
-        return yaw * getYawFactor() * getDeadzone(yaw);
-    }
-
-    private float getDeadzone(float axis) {
-        if (axis < deadzone && axis > deadzone * -1) {
-            return 0;
-        }
-        return 1;
-    }
-
-    public float getRightAnalog_X() {
-        return right_analog_x;
-    }
-
-    public float getRightAnalog_Y() {
-        return right_analog_y;
-    }
-
-    public float getLeftAnalog_X() {
-        return left_analog_x;
-    }
-
-    public float getLeftAnalog_Y() {
-        return left_analog_y;
+        return yaw * getYawFactor() * mControls.getDeadzone(yaw);
     }
 
     public float getRollPitchFactor() {
@@ -767,34 +601,27 @@ public class MainActivity extends Activity {
         return this.xmode;
     }
 
-    private void resetAxisValues() {
-        right_analog_y = 0;
-        right_analog_x = 0;
-        left_analog_y = 0;
-        left_analog_x = 0;
-    }
-
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            right_analog_y = (float) tilt / resolution;
-            right_analog_x = (float) pan / resolution;
+            mControls.setRightAnalogY((float) tilt / resolution);
+            mControls.setRightAnalogX((float) pan / resolution);
 
-            mFlightDataView.updateFlightData();
+            updateFlightData();
         }
 
         @Override
         public void OnReleased() {
             // Log.i("Joystick-Right", "Release");
-            right_analog_y = 0;
-            right_analog_x = 0;
+            mControls.setRightAnalogY(0);
+            mControls.setRightAnalogX(0);
         }
 
         public void OnReturnedToCenter() {
             // Log.i("Joystick-Right", "Center");
-            right_analog_y = 0;
-            right_analog_x = 0;
+            mControls.setRightAnalogY(0);
+            mControls.setRightAnalogX(0);
         }
     };
 
@@ -802,21 +629,21 @@ public class MainActivity extends Activity {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            left_analog_y = (float) tilt / resolution;
-            left_analog_x = (float) pan / resolution;
+            mControls.setLeftAnalogY((float) tilt / resolution);
+            mControls.setLeftAnalogX((float) pan / resolution);
 
-            mFlightDataView.updateFlightData();
+            updateFlightData();
         }
 
         @Override
         public void OnReleased() {
-            left_analog_y = 0;
-            left_analog_x = 0;
+            mControls.setLeftAnalogY(0);
+            mControls.setLeftAnalogX(0);
         }
 
         public void OnReturnedToCenter() {
-            left_analog_y = 0;
-            left_analog_x = 0;
+            mControls.setLeftAnalogY(0);
+            mControls.setLeftAnalogX(0);
         }
     };
 
