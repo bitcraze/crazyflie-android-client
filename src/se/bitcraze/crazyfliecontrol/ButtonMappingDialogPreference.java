@@ -81,7 +81,7 @@ public class ButtonMappingDialogPreference extends DialogPreference implements O
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
-        if(keyCode.equals("")) {
+        if(keyCode == null || keyCode.equals("")) {
             valueTextView.setText("No Key");
         } else {
             valueTextView.setText(keyCode);

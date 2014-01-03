@@ -44,7 +44,7 @@ import android.widget.Toast;
 
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
-    public static final String KEY_PREF_RADIO_BANDWIDTH = "pref_radiobandwidth";
+    public static final String KEY_PREF_RADIO_DATARATE = "pref_radiodatarate";
     public static final String KEY_PREF_MODE = "pref_mode";
     public static final String KEY_PREF_DEADZONE = "pref_deadzone";
     public static final String KEY_PREF_ROLLTRIM = "pref_rolltrim";
@@ -120,11 +120,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         // Set initial summaries and get default values
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
 
-        Preference radioBandwidthPref = findPreference(KEY_PREF_RADIO_BANDWIDTH);
-        String radioBandwidthDefaultValue = getResources().getString(R.string.preferences_radio_bandwidth_defaultValue);
-        String[] stringArray = getResources().getStringArray(R.array.radioBandwidthEntries);
-        String keyString = sharedPreferences.getString(KEY_PREF_RADIO_BANDWIDTH, radioBandwidthDefaultValue);
-        radioBandwidthPref.setSummary(stringArray[Integer.parseInt(keyString)]);
+        Preference radioDataratePref = findPreference(KEY_PREF_RADIO_DATARATE);
+        String radioDatarateDefaultValue = getResources().getString(R.string.preferences_radio_datarate_defaultValue);
+        String[] stringArray = getResources().getStringArray(R.array.radioDatarateEntries);
+        String keyString = sharedPreferences.getString(KEY_PREF_RADIO_DATARATE, radioDatarateDefaultValue);
+        radioDataratePref.setSummary(stringArray[Integer.parseInt(keyString)]);
 
         modeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MODE, R.string.preferences_mode_defaultValue);
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
@@ -214,11 +214,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_RADIO_CHANNEL)) {
             setSummaryInt(key, radioChannelDefaultValue, RADIOCHANNEL_UPPER_LIMIT, "Radio channel");
         }
-        if (key.equals(KEY_PREF_RADIO_BANDWIDTH)) {
-            Preference radioBandwidthPref = findPreference(key);
-            String[] stringArray = getResources().getStringArray(R.array.radioBandwidthEntries);
+        if (key.equals(KEY_PREF_RADIO_DATARATE)) {
+            Preference radioDataratePref = findPreference(key);
+            String[] stringArray = getResources().getStringArray(R.array.radioDatarateEntries);
             String keyString = sharedPreferences.getString(key, "");
-            radioBandwidthPref.setSummary(stringArray[Integer.parseInt(keyString)]);
+            radioDataratePref.setSummary(stringArray[Integer.parseInt(keyString)]);
         }
         if (key.equals(KEY_PREF_MODE)) {
             Preference modePref = findPreference(key);

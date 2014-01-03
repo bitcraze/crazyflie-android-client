@@ -12,13 +12,13 @@
             android:title="@string/preferences_radio_channel" />
 
         <ListPreference
-            android:defaultValue="@string/preferences_radio_bandwidth_defaultValue"
-            android:dialogTitle="@string/preferences_radio_bandwidth"
-            android:entries="@array/radioBandwidthEntries"
-            android:entryValues="@array/radioBandwidthEntryValues"
-            android:key="pref_radiobandwidth"
-            android:summary="@string/preferences_radio_bandwidth_summary"
-            android:title="@string/preferences_radio_bandwidth" />
+            android:defaultValue="@string/preferences_radio_datarate_defaultValue"
+            android:dialogTitle="@string/preferences_radio_datarate"
+            android:entries="@array/radioDatarateEntries"
+            android:entryValues="@array/radioDatarateEntryValues"
+            android:key="pref_radiodatarate"
+            android:summary="@string/preferences_radio_datarate_summary"
+            android:title="@string/preferences_radio_datarate" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_category_control" >
         <ListPreference

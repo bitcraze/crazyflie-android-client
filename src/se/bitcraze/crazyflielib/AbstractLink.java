@@ -9,9 +9,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.util.Log;
-
 import se.bitcraze.crazyflielib.crtp.ConsolePacket;
+import android.util.Log;
 
 /**
  * This class provides a skeletal implementation of the {@link Link} interface
@@ -26,8 +25,7 @@ public abstract class AbstractLink implements Link {
      * Create a new abstract link.
      */
     public AbstractLink() {
-        this.mConnectionListeners = Collections
-                .synchronizedList(new LinkedList<ConnectionListener>());
+        this.mConnectionListeners = Collections.synchronizedList(new LinkedList<ConnectionListener>());
         this.mDataListeners = Collections.synchronizedList(new LinkedList<DataListener>());
     }
 
@@ -85,11 +83,10 @@ public abstract class AbstractLink implements Link {
         if (data.length >= 1) {
             switch (data[0] >> 4) {
                 case ConsolePacket.PORT:
-                    final ConsolePacket p = ConsolePacket.parse(Arrays.copyOfRange(data, 1,
-                            data.length));
+                    final ConsolePacket p = ConsolePacket.parse(Arrays.copyOfRange(data, 1, data.length));
                     Log.i(AbstractLink.class.getName(), "received console packet: " + p.getText());
                     break;
-                // TODO implement other types
+                    // TODO implement other types
                 default:
                     Log.w(AbstractLink.class.getName(), "packet contains unknown port");
                     break;
@@ -155,7 +152,7 @@ public abstract class AbstractLink implements Link {
     /**
      * Notify all registered listeners about the link status.
      * 
-     * @param quality quality of the link
+     * @param quality quality of the link (0 = connection lost, 100 = good)
      * @see ConnectionListener#linkQualityUpdate(Link, int)
      */
     protected void notifyLinkQuality(int quality) {

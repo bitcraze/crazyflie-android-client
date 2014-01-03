@@ -10,9 +10,9 @@
     <string name="preferences_category_connection">Connection Preferences</string>
     <string name="preferences_radio_channel">Radio channel</string>
     <string name="preferences_radio_channel_summary">Set the radio channel</string>
-    <string name="preferences_radio_bandwidth">Radio bandwidth</string>
-    <string name="preferences_radio_bandwidth_summary">Set the radio bandwidth</string>
-    <string name="preferences_radio_bandwidth_defaultValue">0</string>
+    <string name="preferences_radio_datarate">Radio datarate</string>
+    <string name="preferences_radio_datarate_summary">Set the radio datarate</string>
+    <string name="preferences_radio_datarate_defaultValue">0</string>
     <string name="preferences_radio_channel_defaultValue">10</string>
     <string name="preferences_category_control">Control preferences</string>
     <string name="preferences_mode">Mode</string>

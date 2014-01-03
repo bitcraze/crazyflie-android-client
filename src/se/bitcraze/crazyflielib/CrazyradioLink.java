@@ -59,7 +59,7 @@ public class CrazyradioLink extends AbstractLink {
 
     private static int TRANSFER_TIMEOUT = 100;
 
-    private static final String LOG_TAG = "Crazyflie_RadioLink";
+    private static final String LOG_TAG = "Crazyflie_CrazyradioLink";
 
     private final UsbDevice mUsbDevice;
     private UsbInterface mIntf;
@@ -102,8 +102,7 @@ public class CrazyradioLink extends AbstractLink {
      *             <code>null</code>
      * @throws IOException if the device cannot be opened
      */
-    public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData)
-            throws IOException {
+    public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData) throws IOException {
         if (usbManager == null || usbDevice == null) {
             throw new IllegalArgumentException("USB manager and device must not be null");
         }
@@ -167,16 +166,15 @@ public class CrazyradioLink extends AbstractLink {
      * 
      * @param usbManager
      * @param usbDevice
-     * @return array containing the found channels and bandwidths.
+     * @return array containing the found channels and datarates.
      * @throws IllegalStateException if the CrazyRadio is not attached
      */
-    public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice)
-            throws IllegalStateException {
-    	if(usbDevice == null) {
-    		Log.d(LOG_TAG, "usbDevice is null");
+    public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
+        if (usbDevice == null) {
+            Log.d(LOG_TAG, "usbDevice is null");
             throw new IllegalStateException("CrazyRadio not attached");
-    	}
-    	
+        }
+
         final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
         return CrazyradioLink.scanChannels(connection);
     }
@@ -184,7 +182,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Scan for available channels.
      * 
-     * @return array containing the found channels and bandwidths.
+     * @return array containing the found channels and datarates.
      */
     public ConnectionData[] scanChannels() {
         return CrazyradioLink.scanChannels(mConnection);
@@ -194,7 +192,7 @@ public class CrazyradioLink extends AbstractLink {
      * Scan for available channels.
      * 
      * @param connection connection to the USB dongle.
-     * @return array containing the found channels and bandwidths.
+     * @return array containing the found channels and datarates.
      * @throws IllegalStateException if the CrazyRadio is not attached (the
      *             connection is <code>null</code>).
      */
@@ -210,11 +208,8 @@ public class CrazyradioLink extends AbstractLink {
             for (int b = 0; b < 3; b++) {
                 // set data rate
                 connection.controlTransfer(0x40, REQUEST_SET_DATA_RATE, b, 0, null, 0, 100);
-
-                connection.controlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet,
-                        packet.length, 1000);
-                final int nfound = connection.controlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0,
-                        0, rdata, rdata.length, 1000);
+                connection.controlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet, packet.length, 1000);
+                final int nfound = connection.controlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0, 0, rdata, rdata.length, 1000);
                 for (int i = 0; i < nfound; i++) {
                     result.add(new ConnectionData(rdata[i], b));
                     Log.d(LOG_TAG, "Channel found: " + rdata[i] + " Data rate: " + b);
@@ -234,7 +229,7 @@ public class CrazyradioLink extends AbstractLink {
      */
     @Override
     public void connect() throws IllegalStateException {
-        Log.d(LOG_TAG, "RadioLink start()");
+        Log.d(LOG_TAG, "connect()");
         notifyConnectionInitiated();
 
         if (mConnection != null) {
@@ -251,7 +246,7 @@ public class CrazyradioLink extends AbstractLink {
 
     @Override
     public void disconnect() {
-        Log.d(LOG_TAG, "RadioLink stop()");
+        Log.d(LOG_TAG, "disconnect()");
         if (mRadioLinkThread != null) {
             mRadioLinkThread.interrupt();
             mRadioLinkThread = null;
@@ -293,8 +288,7 @@ public class CrazyradioLink extends AbstractLink {
      * receiver for the communication to work.
      * 
      * @param address the new address with a length of 5 byte.
-     * @throws IllegalArgumentException if the length of the address doesn't
-     *             equal 5 bytes
+     * @throws IllegalArgumentException if the length of the address doesn't equal 5 bytes
      */
     public void setRadioAddress(byte[] address) {
         if (address.length != 5) {
@@ -317,8 +311,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Configure the time the radio waits for the acknowledge.
      * 
-     * @param us microseconds to wait. Will be rounded to the closest possible
-     *            value supported by the radio.
+     * @param us microseconds to wait. Will be rounded to the closest possible value supported by the radio.
      */
     public void setAutoRetryADRTime(int us) {
         int param = (int) Math.round(us / 250.0) - 1;
@@ -334,8 +327,7 @@ public class CrazyradioLink extends AbstractLink {
      * Set the length of the ACK payload.
      * 
      * @param bytes number of bytes in the payload.
-     * @throws IllegalArgumentException if the payload length is not in range
-     *             0-32.
+     * @throws IllegalArgumentException if the payload length is not in range 0-32.
      */
     public void setAutoRetryADRBytes(int bytes) {
         if (bytes < 0 || bytes > 32) {
@@ -349,8 +341,7 @@ public class CrazyradioLink extends AbstractLink {
      * received.
      * 
      * @param count the number of retries.
-     * @throws IllegalArgumentException if the number of retries is not in range
-     *             0-15.
+     * @throws IllegalArgumentException if the number of retries is not in range 0-15.
      */
     public void setAutoRetryARC(int count) {
         if (count < 0 || count > 15) {
@@ -373,8 +364,7 @@ public class CrazyradioLink extends AbstractLink {
             while (mConnection != null) {
                 try {
                     CrtpPacket p = mSendQueue.pollFirst(5, TimeUnit.MILLISECONDS);
-                    if (p == null) { // if no packet was available in the send
-                                     // queue
+                    if (p == null) { // if no packet was available in the send queue
                         p = CrtpPacket.NULL_PACKET;
                     }
 
@@ -382,6 +372,8 @@ public class CrazyradioLink extends AbstractLink {
                     final byte[] sendData = p.toByteArray();
 
                     final int receivedByteCount = sendBulkTransfer(sendData, receiveData);
+                    
+                    //TODO: extract link quality calculation
                     if (receivedByteCount >= 1) {
                         // update link quality status
                         if (nextLinkQualityUpdate <= 0) {

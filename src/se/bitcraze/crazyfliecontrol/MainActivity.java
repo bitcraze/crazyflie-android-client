@@ -70,25 +70,25 @@ public class MainActivity extends Activity {
     private static final String TAG = "CrazyflieControl";
 
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
-    
+
     private static final int MAX_THRUST = 65535;
 
     private DualJoystickView mJoysticks;
     private FlightDataView mFlightDataView;
 
-    private Link crazyflieLink;
-    private int resolution = 1000;
+    private Link mCrazyflieLink;
+    private int mResolution = 1000;
 
     private SharedPreferences mPreferences;
 
-    private int maxRollPitchAngle;
-    private int maxYawAngle;
-    private int maxThrust;
-    private int minThrust;
-    private boolean xmode;
+    private int mMaxRollPitchAngle;
+    private int mMaxYawAngle;
+    private int mMaxThrust;
+    private int mMinThrust;
+    private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
 
     private String mRadioChannelDefaultValue;
-    private String mRadioBandwidthDefaultValue;
+    private String mRadioDatarateDefaultValue;
 
     private String mMaxRollPitchAngleDefaultValue;
     private String mMaxYawAngleDefaultValue;
@@ -99,7 +99,7 @@ public class MainActivity extends Activity {
     private UsbDevice mDevice;
     private PendingIntent mPermissionIntent;
 
-    private boolean isOnscreenControllerDisabled;
+    private boolean mIsOnscreenControllerDisabled;
     private boolean mPermissionAsked = false;
     private boolean mDoubleBackToExitPressedOnce = false;
 
@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
         mControls.setDefaultPreferenceValues(getResources());
 
         mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
-        mJoysticks.setMovementRange(resolution, resolution);
+        mJoysticks.setMovementRange(mResolution, mResolution);
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
@@ -139,14 +139,14 @@ public class MainActivity extends Activity {
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         mRadioChannelDefaultValue = getString(R.string.preferences_radio_channel_defaultValue);
-        mRadioBandwidthDefaultValue = getString(R.string.preferences_radio_bandwidth_defaultValue);
+        mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
 
         mMaxRollPitchAngleDefaultValue = getString(R.string.preferences_maxRollPitchAngle_defaultValue);
         mMaxYawAngleDefaultValue = getString(R.string.preferences_maxYawAngle_defaultValue);
         mMaxThrustDefaultValue = getString(R.string.preferences_maxThrust_defaultValue);
         mMinThrustDefaultValue = getString(R.string.preferences_minThrust_defaultValue);
 
-        mDatarateStrings = getResources().getStringArray(R.array.radioBandwidthEntries);
+        mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
 
     private void checkScreenLock() {
@@ -207,7 +207,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         mControls.resetAxisValues();
-        if (crazyflieLink != null) {
+        if (mCrazyflieLink != null) {
             linkDisconnect();
         }
     }
@@ -270,44 +270,43 @@ public class MainActivity extends Activity {
         if (channel != -1 && datarate != -1) {
             SharedPreferences.Editor editor = mPreferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, String.valueOf(datarate));
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
             editor.commit();
 
-            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] +
-                           "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void disableOnscreenController() {
         Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
         mJoysticks.setOnJostickMovedListener(null, null);
-        this.isOnscreenControllerDisabled = true;
+        this.mIsOnscreenControllerDisabled = true;
     }
 
     public boolean isOnscreenControllerDisabled() {
-        return isOnscreenControllerDisabled;
+        return mIsOnscreenControllerDisabled;
     }
 
     private void resetInputMethod() {
         Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
-        this.isOnscreenControllerDisabled = false;
+        this.mIsOnscreenControllerDisabled = false;
         mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
     }
 
     private void setControlConfig() {
         mControls.setControlConfig();
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.maxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
-            this.maxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
-            this.maxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
-            this.minThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
-            this.xmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
+            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
+            this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
+            this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
+            this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
+            this.mXmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
         } else {
-            this.maxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
-            this.maxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
-            this.maxThrust = Integer.parseInt(mMaxThrustDefaultValue);
-            this.minThrust = Integer.parseInt(mMinThrustDefaultValue);
-            this.xmode = false;
+            this.mMaxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
+            this.mMaxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
+            this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
+            this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
+            this.mXmode = false;
         }
     }
 
@@ -359,7 +358,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "USB device detached ");
                 if (device != null && CrazyradioLink.isCrazyRadio(device)) {
                     Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
-                    if (crazyflieLink != null) {
+                    if (mCrazyflieLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
                         mPermissionAsked = false;
@@ -373,18 +372,15 @@ public class MainActivity extends Activity {
         // ensure previous link is disconnected
         linkDisconnect();
 
-        int radioChannel = Integer.parseInt(mPreferences.getString(
-                PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
-        int radioBandwidth = Integer.parseInt(mPreferences.getString(
-                PreferencesActivity.KEY_PREF_RADIO_BANDWIDTH, mRadioBandwidthDefaultValue));
+        int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
+        int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
         try {
             // create link
-            crazyflieLink = new CrazyradioLink(mUsbManager, mDevice,
-                    new CrazyradioLink.ConnectionData(radioChannel, radioBandwidth));
+            mCrazyflieLink = new CrazyradioLink(mUsbManager, mDevice, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
 
             // add listener for connection status
-            crazyflieLink.addConnectionListener(new ConnectionAdapter() {
+            mCrazyflieLink.addConnectionListener(new ConnectionAdapter() {
                 @Override
                 public void connectionSetupFinished(Link l) {
                     runOnUiThread(new Runnable() {
@@ -430,13 +426,12 @@ public class MainActivity extends Activity {
 
             // connect and start thread to periodically send commands containing
             // the user input
-            crazyflieLink.connect();
+            mCrazyflieLink.connect();
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (crazyflieLink != null) {
-                        crazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(),
-                                (char) (getThrust()/100 * MAX_THRUST), isXmode()));
+                    while (mCrazyflieLink != null) {
+                        mCrazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode()));
 
                         try {
                             Thread.sleep(20, 0);
@@ -457,13 +452,13 @@ public class MainActivity extends Activity {
     }
 
     public Link getCrazyflieLink(){
-        return crazyflieLink;
+        return mCrazyflieLink;
     }
     
     public void linkDisconnect() {
-        if (crazyflieLink != null) {
-            crazyflieLink.disconnect();
-            crazyflieLink = null;
+        if (mCrazyflieLink != null) {
+            mCrazyflieLink.disconnect();
+            mCrazyflieLink = null;
         }
         if (mSendJoystickDataThread != null) {
             mSendJoystickDataThread.interrupt();
@@ -481,54 +476,53 @@ public class MainActivity extends Activity {
 
     private void radioScan() {
         searchForCrazyRadio();
-    	new AsyncTask<UsbManager, Void, ConnectionData[]>() {
+        new AsyncTask<Void, Void, ConnectionData[]>() {
 
-    		private Exception mException = null;
-    		private ProgressDialog mProgress;
-    		
-			@Override
-			protected void onPreExecute() {
-				mProgress = ProgressDialog.show(MainActivity.this,
-						"Radio Scan", "Searching for the Crazyflie...", true, false);
-			}
+            private Exception mException = null;
+            private ProgressDialog mProgress;
+            
+            @Override
+            protected void onPreExecute() {
+                mProgress = ProgressDialog.show(MainActivity.this, "Radio Scan", "Searching for the Crazyflie...", true, false);
+            }
 
-			@Override
-			protected ConnectionData[] doInBackground(UsbManager... params) {
-				try {
-					return CrazyradioLink.scanChannels(mUsbManager, mDevice);
-				} catch(IllegalStateException e) {
-					mException = e;
-					return null;
-				}
-			}
+            @Override
+            protected ConnectionData[] doInBackground(Void... arg0) {
+                try {
+                    return CrazyradioLink.scanChannels(mUsbManager, mDevice);
+                } catch(IllegalStateException e) {
+                    mException = e;
+                    return null;
+                }
+            }
 
-			@Override
-			protected void onPostExecute(ConnectionData[] result) {
-				mProgress.dismiss();
-				
-				if(mException != null) {
-					Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
-				} else {
-					//TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
-//			        result = new ConnectionData[3];
-//			        result[0] = new ConnectionData(13, 2);
-//			        result[1] = new ConnectionData(15, 1);
-//			        result[2] = new ConnectionData(125, 2);
-					
-					if (result != null && result.length > 0) {
-		                if(result.length > 1){
-		                    // let user choose connection, if there is more than one Crazyflie 
-		                    showSelectConnectionDialog(result);
-		                }else{
-		                    // use first channel
-		                    setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
-		                }
-		            } else {
-		                Toast.makeText(MainActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
-		            }
-				}
-			}
-		}.execute();
+            @Override
+            protected void onPostExecute(ConnectionData[] result) {
+                mProgress.dismiss();
+                
+                if(mException != null) {
+                    Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
+//                  result = new ConnectionData[3];
+//                  result[0] = new ConnectionData(13, 2);
+//                  result[1] = new ConnectionData(15, 1);
+//                  result[2] = new ConnectionData(125, 2);
+                    
+                    if (result != null && result.length > 0) {
+                        if(result.length > 1){
+                            // let user choose connection, if there is more than one Crazyflie 
+                            showSelectConnectionDialog(result);
+                        }else{
+                            // use first channel
+                            setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }.execute();
     }
 
     private void showSelectConnectionDialog(final ConnectionData[] result) {
@@ -554,7 +548,7 @@ public class MainActivity extends Activity {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
         thrust = thrust * -1; // invert
         if (thrust > mControls.getDeadzone()) {
-            return minThrust + (thrust * getThrustFactor());
+            return mMinThrust + (thrust * getThrustFactor());
         }
         return 0;
     }
@@ -580,33 +574,33 @@ public class MainActivity extends Activity {
     }
 
     public float getRollPitchFactor() {
-        return maxRollPitchAngle;
+        return mMaxRollPitchAngle;
     }
 
     public float getYawFactor() {
-        return maxYawAngle;
+        return mMaxYawAngle;
     }
 
     public float getThrustFactor() {
         int addThrust = 0;
-        if ((maxThrust - minThrust) < 0) {
+        if ((mMaxThrust - mMinThrust) < 0) {
             addThrust = 0; // do not allow negative values
         } else {
-            addThrust = (maxThrust - minThrust);
+            addThrust = (mMaxThrust - mMinThrust);
         }
         return addThrust;
     }
 
     public boolean isXmode() {
-        return this.xmode;
+        return this.mXmode;
     }
 
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            mControls.setRightAnalogY((float) tilt / resolution);
-            mControls.setRightAnalogX((float) pan / resolution);
+            mControls.setRightAnalogY((float) tilt / mResolution);
+            mControls.setRightAnalogX((float) pan / mResolution);
 
             updateFlightData();
         }
@@ -629,8 +623,8 @@ public class MainActivity extends Activity {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            mControls.setLeftAnalogY((float) tilt / resolution);
-            mControls.setLeftAnalogX((float) pan / resolution);
+            mControls.setLeftAnalogY((float) tilt / mResolution);
+            mControls.setLeftAnalogX((float) pan / mResolution);
 
             updateFlightData();
         }

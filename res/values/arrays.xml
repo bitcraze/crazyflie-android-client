@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="radioBandwidthEntries">
+    <string-array name="radioDatarateEntries">
         <item >250 Kbit/s</item>
         <item >1 Mbit/s</item>
         <item >2 Mbit/s</item>
     </string-array>
     
-    <string-array name="radioBandwidthEntryValues">
+    <string-array name="radioDatarateEntryValues">
         <item >0</item>
         <item >1</item>
         <item >2</item>
