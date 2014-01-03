@@ -28,9 +28,7 @@
 package se.bitcraze.crazyfliecontrol;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map.Entry;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
@@ -39,7 +37,6 @@ import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -69,14 +66,12 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "CrazyflieControl";
 
-    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
-
     private static final int MAX_THRUST = 65535;
 
     private DualJoystickView mJoysticks;
     private FlightDataView mFlightDataView;
 
-    private Link mCrazyflieLink;
+    private Link mCrazyradioLink;
     private int mResolution = 1000;
 
     private SharedPreferences mPreferences;
@@ -95,12 +90,7 @@ public class MainActivity extends Activity {
     private String mMaxThrustDefaultValue;
     private String mMinThrustDefaultValue;
 
-    private UsbManager mUsbManager;
-    private UsbDevice mDevice;
-    private PendingIntent mPermissionIntent;
-
     private boolean mIsOnscreenControllerDisabled;
-    private boolean mPermissionAsked = false;
     private boolean mDoubleBackToExitPressedOnce = false;
 
     private Thread mSendJoystickDataThread;
@@ -124,10 +114,8 @@ public class MainActivity extends Activity {
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
-        mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(this.getPackageName()+".USB_PERMISSION");
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
     }
@@ -168,7 +156,6 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
-                searchForCrazyRadio();
                 try {
                     linkConnect();
                 } catch (IllegalStateException e) {
@@ -207,7 +194,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         mControls.resetAxisValues();
-        if (mCrazyflieLink != null) {
+        if (mCrazyradioLink != null) {
             linkDisconnect();
         }
     }
@@ -310,37 +297,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * Iterate over all attached USB devices and look for CrazyRadio. If
-     * CrazyRadio is found, request permission.
-     */
-    private void searchForCrazyRadio() {
-        HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
-        // Iterate over USB devices
-        for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
-            Log.i(TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
-            if (CrazyradioLink.isCrazyRadio(e.getValue())) {
-                mDevice = e.getValue();
-                break; // stop after first matching device is found
-            }
-        }
-
-        if (mDevice != null && !this.mPermissionAsked) {
-            Log.d(TAG, "Request permission");
-            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-            mUsbManager.requestPermission(mDevice, mPermissionIntent);
-            mPermissionAsked = true;
-        } else {
-            Log.d(TAG, "device == null");
-        }
-    }
-
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Log.d(TAG, "onReceive");
-            if (ACTION_USB_PERMISSION.equals(action)) {
+            if ((MainActivity.this.getPackageName()+".USB_PERMISSION").equals(action)) {
                 Log.d(TAG, "USB_PERMISSON");
                 synchronized (this) {
                     UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -358,10 +320,9 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "USB device detached ");
                 if (device != null && CrazyradioLink.isCrazyRadio(device)) {
                     Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
-                    if (mCrazyflieLink != null) {
+                    if (mCrazyradioLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
-                        mPermissionAsked = false;
                     }
                 }
             }
@@ -377,10 +338,10 @@ public class MainActivity extends Activity {
 
         try {
             // create link
-            mCrazyflieLink = new CrazyradioLink(mUsbManager, mDevice, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+            mCrazyradioLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
 
             // add listener for connection status
-            mCrazyflieLink.addConnectionListener(new ConnectionAdapter() {
+            mCrazyradioLink.addConnectionListener(new ConnectionAdapter() {
                 @Override
                 public void connectionSetupFinished(Link l) {
                     runOnUiThread(new Runnable() {
@@ -426,12 +387,12 @@ public class MainActivity extends Activity {
 
             // connect and start thread to periodically send commands containing
             // the user input
-            mCrazyflieLink.connect();
+            mCrazyradioLink.connect();
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (mCrazyflieLink != null) {
-                        mCrazyflieLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode()));
+                    while (mCrazyradioLink != null) {
+                        mCrazyradioLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode()));
 
                         try {
                             Thread.sleep(20, 0);
@@ -452,13 +413,13 @@ public class MainActivity extends Activity {
     }
 
     public Link getCrazyflieLink(){
-        return mCrazyflieLink;
+        return mCrazyradioLink;
     }
     
     public void linkDisconnect() {
-        if (mCrazyflieLink != null) {
-            mCrazyflieLink.disconnect();
-            mCrazyflieLink = null;
+        if (mCrazyradioLink != null) {
+            mCrazyradioLink.disconnect();
+            mCrazyradioLink = null;
         }
         if (mSendJoystickDataThread != null) {
             mSendJoystickDataThread.interrupt();
@@ -475,7 +436,6 @@ public class MainActivity extends Activity {
     }
 
     private void radioScan() {
-        searchForCrazyRadio();
         new AsyncTask<Void, Void, ConnectionData[]>() {
 
             private Exception mException = null;
@@ -489,7 +449,7 @@ public class MainActivity extends Activity {
             @Override
             protected ConnectionData[] doInBackground(Void... arg0) {
                 try {
-                    return CrazyradioLink.scanChannels(mUsbManager, mDevice);
+                    return CrazyradioLink.scanChannels(MainActivity.this);
                 } catch(IllegalStateException e) {
                     mException = e;
                     return null;

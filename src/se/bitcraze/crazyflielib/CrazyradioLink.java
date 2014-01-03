@@ -4,12 +4,17 @@ package se.bitcraze.crazyflielib;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
@@ -59,6 +64,9 @@ public class CrazyradioLink extends AbstractLink {
 
     private static int TRANSFER_TIMEOUT = 100;
 
+    private UsbManager mUsbManager;
+    private static PendingIntent mPermissionIntent;
+
     private static final String LOG_TAG = "Crazyflie_CrazyradioLink";
 
     private final UsbDevice mUsbDevice;
@@ -102,13 +110,13 @@ public class CrazyradioLink extends AbstractLink {
      *             <code>null</code>
      * @throws IOException if the device cannot be opened
      */
-    public CrazyradioLink(UsbManager usbManager, UsbDevice usbDevice, ConnectionData connectionData) throws IOException {
-        if (usbManager == null || usbDevice == null) {
+    public CrazyradioLink(Context context, ConnectionData connectionData) throws IOException {
+        this.mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        this.mUsbDevice = searchForCrazyRadio(context, mUsbManager);
+        if (mUsbManager == null || mUsbDevice == null) {
             throw new IllegalArgumentException("USB manager and device must not be null");
         }
-
-        this.mUsbDevice = usbDevice;
-        initDevice(usbManager);
+        initDevice();
 
         setRadioChannel(connectionData.getChannel());
         setDataRate(connectionData.getDataRate());
@@ -123,7 +131,7 @@ public class CrazyradioLink extends AbstractLink {
      * @param usbManager
      * @throws IOException if the device cannot be opened
      */
-    private void initDevice(UsbManager usbManager) throws IOException {
+    private void initDevice() throws IOException {
         Log.d(LOG_TAG, "setDevice " + this.mUsbDevice);
         // find interface
         if (this.mUsbDevice.getInterfaceCount() != 1) {
@@ -151,7 +159,7 @@ public class CrazyradioLink extends AbstractLink {
             mEpOut = mIntf.getEndpoint(0);
         }
 
-        UsbDeviceConnection connection = usbManager.openDevice(mUsbDevice);
+        UsbDeviceConnection connection = mUsbManager.openDevice(mUsbDevice);
         if (connection != null && connection.claimInterface(mIntf, true)) {
             Log.d(LOG_TAG, "open SUCCESS");
             mConnection = connection;
@@ -162,6 +170,35 @@ public class CrazyradioLink extends AbstractLink {
     }
 
     /**
+     * Iterate over all attached USB devices and look for CrazyRadio. If
+     * CrazyRadio is found, request permission.
+     */
+    private static UsbDevice searchForCrazyRadio(Context context, UsbManager usbManager) {
+        UsbDevice device = null;
+        
+        HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+        // Iterate over USB devices
+        for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
+            Log.i(LOG_TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
+            if (isCrazyRadio(e.getValue())) {
+                device = e.getValue();
+                break; // stop after first matching device is found
+            }
+        }
+
+        if (device != null && !usbManager.hasPermission(device)) {
+            Log.d(LOG_TAG, "Request permission");
+            mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(context.getPackageName()+".USB_PERMISSION"), 0);
+            usbManager.requestPermission(device, mPermissionIntent);
+        } else if (device != null && usbManager.hasPermission(device)) {
+            Log.d(LOG_TAG, "Has permission");
+        } else {
+            Log.d(LOG_TAG, "device == null");
+        }
+        return device;
+    }
+
+    /**
      * Scan for available channels.
      * 
      * @param usbManager
@@ -169,7 +206,9 @@ public class CrazyradioLink extends AbstractLink {
      * @return array containing the found channels and datarates.
      * @throws IllegalStateException if the CrazyRadio is not attached
      */
-    public static ConnectionData[] scanChannels(UsbManager usbManager, UsbDevice usbDevice) throws IllegalStateException {
+    public static ConnectionData[] scanChannels(Context context) throws IllegalStateException {
+        UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
+        UsbDevice usbDevice = searchForCrazyRadio(context, usbManager);
         if (usbDevice == null) {
             Log.d(LOG_TAG, "usbDevice is null");
             throw new IllegalStateException("CrazyRadio not attached");
