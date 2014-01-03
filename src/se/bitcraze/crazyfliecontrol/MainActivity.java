@@ -46,6 +46,9 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -99,6 +102,8 @@ public class MainActivity extends Activity {
 
     private Controls mControls;
 
+    private Ringtone mRingtone;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,8 +121,12 @@ public class MainActivity extends Activity {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
+
+        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        mRingtone = RingtoneManager.getRingtone(this, uri);
     }
 
     private void setDefaultPreferenceValues(){
@@ -202,6 +211,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mUsbReceiver);
+        mRingtone.stop();
         super.onDestroy();
     }
 
@@ -301,14 +311,14 @@ public class MainActivity extends Activity {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "onReceive");
+            Log.d(TAG, "mUsbReceiver action: " + action);
             if ((MainActivity.this.getPackageName()+".USB_PERMISSION").equals(action)) {
-                Log.d(TAG, "USB_PERMISSON");
+                //reached only when USB permission on physical connect was canceled and "Connect" or "Radio Scan" is clicked
                 synchronized (this) {
                     UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            Toast.makeText(MainActivity.this, "CrazyRadio attached", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Log.d(TAG, "permission denied for device " + device);
@@ -317,17 +327,30 @@ public class MainActivity extends Activity {
             }
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                Log.d(TAG, "USB device detached ");
-                if (device != null && CrazyradioLink.isCrazyRadio(device)) {
-                    Toast.makeText(MainActivity.this, "CrazyRadio detached", Toast.LENGTH_SHORT).show();
+                if (device != null && CrazyradioLink.isCrazyradio(device)) {
+                    Log.d(TAG, "Crazyradio detached");
+                    Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
+                    playNotificationSound();
                     if (mCrazyradioLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
                     }
                 }
             }
+            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+                UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (device != null && CrazyradioLink.isCrazyradio(device)) {
+                    Log.d(TAG, "Crazyradio attached");
+                    Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
+                    playNotificationSound();
+                }
+            }
         }
     };
+
+    private void playNotificationSound(){
+        mRingtone.play();
+    }
 
     private void linkConnect() {
         // ensure previous link is disconnected

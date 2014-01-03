@@ -26,12 +26,12 @@ import android.util.Log;
 public class CrazyradioLink extends AbstractLink {
 
     /**
-     * Vendor ID of the CrazyRadio USB dongle.
+     * Vendor ID of the Crazyradio USB dongle.
      */
     public static final int VENDOR_ID = 0x1915;
 
     /**
-     * Product ID of the CrazyRadio USB dongle.
+     * Product ID of the Crazyradio USB dongle.
      */
     public static final int PRODUCT_ID = 0x7777;
 
@@ -106,13 +106,12 @@ public class CrazyradioLink extends AbstractLink {
      * @param usbManager
      * @param usbDevice
      * @param connectionData connection data to initialize the link
-     * @throws IllegalArgumentException if usbManager or usbDevice is
-     *             <code>null</code>
+     * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
      * @throws IOException if the device cannot be opened
      */
     public CrazyradioLink(Context context, ConnectionData connectionData) throws IOException {
         this.mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
-        this.mUsbDevice = searchForCrazyRadio(context, mUsbManager);
+        this.mUsbDevice = searchForCrazyradio(context, mUsbManager);
         if (mUsbManager == null || mUsbDevice == null) {
             throw new IllegalArgumentException("USB manager and device must not be null");
         }
@@ -170,17 +169,17 @@ public class CrazyradioLink extends AbstractLink {
     }
 
     /**
-     * Iterate over all attached USB devices and look for CrazyRadio. If
-     * CrazyRadio is found, request permission.
+     * Iterate over all attached USB devices and look for Crazyradio. If
+     * Crazyradio is found, request permission.
      */
-    private static UsbDevice searchForCrazyRadio(Context context, UsbManager usbManager) {
+    private static UsbDevice searchForCrazyradio(Context context, UsbManager usbManager) {
         UsbDevice device = null;
         
         HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
         // Iterate over USB devices
         for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
             Log.i(LOG_TAG, "String: " + e.getKey() + " " + e.getValue().getVendorId() + " " + e.getValue().getProductId());
-            if (isCrazyRadio(e.getValue())) {
+            if (isCrazyradio(e.getValue())) {
                 device = e.getValue();
                 break; // stop after first matching device is found
             }
@@ -204,14 +203,14 @@ public class CrazyradioLink extends AbstractLink {
      * @param usbManager
      * @param usbDevice
      * @return array containing the found channels and datarates.
-     * @throws IllegalStateException if the CrazyRadio is not attached
+     * @throws IllegalStateException if the Crazyradio is not attached
      */
     public static ConnectionData[] scanChannels(Context context) throws IllegalStateException {
         UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
-        UsbDevice usbDevice = searchForCrazyRadio(context, usbManager);
+        UsbDevice usbDevice = searchForCrazyradio(context, usbManager);
         if (usbDevice == null) {
             Log.d(LOG_TAG, "usbDevice is null");
-            throw new IllegalStateException("CrazyRadio not attached");
+            throw new IllegalStateException("Crazyradio not attached");
         }
 
         final UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
@@ -232,8 +231,7 @@ public class CrazyradioLink extends AbstractLink {
      * 
      * @param connection connection to the USB dongle.
      * @return array containing the found channels and datarates.
-     * @throws IllegalStateException if the CrazyRadio is not attached (the
-     *             connection is <code>null</code>).
+     * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
     protected static ConnectionData[] scanChannels(UsbDeviceConnection connection) {
         List<ConnectionData> result = new ArrayList<ConnectionData>();
@@ -256,7 +254,7 @@ public class CrazyradioLink extends AbstractLink {
             }
         } else {
             Log.d(LOG_TAG, "connection is null");
-            throw new IllegalStateException("CrazyRadio not attached");
+            throw new IllegalStateException("Crazyradio not attached");
         }
         return result.toArray(new ConnectionData[result.size()]);
     }
@@ -264,7 +262,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Connect to the Crazyflie.
      * 
-     * @throws IllegalStateException if the CrazyRadio is not attached
+     * @throws IllegalStateException if the Crazyradio is not attached
      */
     @Override
     public void connect() throws IllegalStateException {
@@ -279,7 +277,7 @@ public class CrazyradioLink extends AbstractLink {
         } else {
             Log.d(LOG_TAG, "mConnection is null");
             notifyConnectionFailed();
-            throw new IllegalStateException("CrazyRadio not attached");
+            throw new IllegalStateException("Crazyradio not attached");
         }
     }
 
@@ -465,7 +463,7 @@ public class CrazyradioLink extends AbstractLink {
     }
 
 
-    public static boolean isCrazyRadio(UsbDevice device){
+    public static boolean isCrazyradio(UsbDevice device){
         return device.getVendorId() == CrazyradioLink.VENDOR_ID &&
                device.getProductId() == CrazyradioLink.PRODUCT_ID;
     }
