@@ -46,9 +46,9 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.media.SoundPool.OnLoadCompleteListener;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -102,7 +102,10 @@ public class MainActivity extends Activity {
 
     private Controls mControls;
 
-    private Ringtone mRingtone;
+    private SoundPool mSoundPool;
+    private boolean mLoaded;
+    private int mSoundConnect;
+    private int mSoundDisconnect;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,8 +128,21 @@ public class MainActivity extends Activity {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
 
-        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        mRingtone = RingtoneManager.getRingtone(this, uri);
+        initializeSounds();
+    }
+
+    private void initializeSounds() {
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        // Load sounds
+        mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        mSoundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                mLoaded = true;
+            }
+        });
+        mSoundConnect = mSoundPool.load(this, R.raw.proxima, 1);
+        mSoundDisconnect = mSoundPool.load(this, R.raw.tejat, 1);
     }
 
     private void setDefaultPreferenceValues(){
@@ -211,7 +227,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mUsbReceiver);
-        mRingtone.stop();
+        mSoundPool.release();
+        mSoundPool = null;
         super.onDestroy();
     }
 
@@ -330,7 +347,7 @@ public class MainActivity extends Activity {
                 if (device != null && CrazyradioLink.isCrazyradio(device)) {
                     Log.d(TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
-                    playNotificationSound();
+                    playSound(mSoundDisconnect);
                     if (mCrazyradioLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
@@ -342,14 +359,17 @@ public class MainActivity extends Activity {
                 if (device != null && CrazyradioLink.isCrazyradio(device)) {
                     Log.d(TAG, "Crazyradio attached");
                     Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
-                    playNotificationSound();
+                    playSound(mSoundConnect);
                 }
             }
         }
     };
 
-    private void playNotificationSound(){
-        mRingtone.play();
+    private void playSound(int sound){
+        if (mLoaded) {
+            float volume = 1.0f;
+            mSoundPool.play(sound, volume, volume, 1, 0, 1f);
+        }
     }
 
     private void linkConnect() {
