@@ -74,9 +74,9 @@ public class Controls {
 
         // default axis are set to work with PS3 controller
         mRight_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
-        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis));
+        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * -1; //invert axis
         mLeft_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
-        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis));
+        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * -1;  //invert axis
 
         mSplit_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
         mSplit_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));

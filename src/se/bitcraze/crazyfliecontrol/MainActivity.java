@@ -549,7 +549,6 @@ public class MainActivity extends Activity {
 
     public float getThrust() {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
-        thrust = thrust * -1; // invert
         if (thrust > mControls.getDeadzone()) {
             return mMinThrust + (thrust * getThrustFactor());
         }

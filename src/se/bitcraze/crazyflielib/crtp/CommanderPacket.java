@@ -52,11 +52,11 @@ public class CommanderPacket extends CrtpPacket {
         super((byte) 0x30);
 
         if (xmode) {
-            this.mPitch = 0.707f * (roll + pitch);
             this.mRoll = 0.707f * (roll - pitch);
+            this.mPitch = 0.707f * (roll + pitch);
         } else {
-            this.mPitch = pitch;
             this.mRoll = roll;
+            this.mPitch = pitch;
         }
         this.mYaw = yaw;
         this.mThrust = thrust;
@@ -65,15 +65,14 @@ public class CommanderPacket extends CrtpPacket {
     @Override
     protected void serializeData(ByteBuffer buffer) {
         buffer.putFloat(mRoll);
-        buffer.putFloat(mPitch);
+        buffer.putFloat(-mPitch); //invert axis
         buffer.putFloat(mYaw);
         buffer.putChar(mThrust);
     }
 
     @Override
     protected int getDataByteCount() {
-        return 3 * 4 + 1 * 2; // 3 floats with size 4, 1 char (= uint16_t) with
-                              // size 2
+        return 3 * 4 + 1 * 2; // 3 floats with size 4, 1 char (= uint16_t) with size 2
     }
 
 }

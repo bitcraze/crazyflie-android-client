@@ -136,7 +136,7 @@ public class JoystickView extends View {
         setMovementRange(10);
         setMoveResolution(1.0f);
         setClickThreshold(0.4f);
-        setYAxisInverted(true);
+        setYAxisInverted(false);
         setUserCoordinateSystem(COORDINATE_CARTESIAN);
         setAutoReturnToCenter(true);
     }

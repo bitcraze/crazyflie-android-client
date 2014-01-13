@@ -73,7 +73,7 @@ public class FlightDataView extends LinearLayout {
     }
 
     public void updateFlightData(float pitch, float roll, float thrust, float yaw) {
-        mTextView_pitch.setText(format(R.string.pitch, round(pitch * -1))); // inverse
+        mTextView_pitch.setText(format(R.string.pitch, round(pitch)));
         mTextView_roll.setText(format(R.string.roll, round(roll)));
         mTextView_thrust.setText(format(R.string.thrust, round(thrust)));
         mTextView_yaw.setText(format(R.string.yaw, round(yaw)));
