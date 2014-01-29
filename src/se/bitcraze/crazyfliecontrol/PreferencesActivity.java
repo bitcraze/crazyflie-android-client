@@ -164,6 +164,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue, null);
                 resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue, null);
                 resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue, null);
+                Toast.makeText(PreferencesActivity.this, "Resetting to default values...", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });

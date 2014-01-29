@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 public class Controls {
 
+    private static final String LOG_TAG = "Controls";
+
     private MainActivity mActivity;
     private SharedPreferences mPreferences;
 
@@ -66,7 +68,7 @@ public class Controls {
     }
 
     public void dealWithMotionEvent(MotionEvent event){
-        //Log.i(TAG, "Input device: " + event.getDevice().getName());
+        //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
 
         if (!mActivity.isOnscreenControllerDisabled()) {
             mActivity.disableOnscreenController();
@@ -74,12 +76,24 @@ public class Controls {
 
         // default axis are set to work with PS3 controller
         mRight_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
-        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * -1; //invert axis
+        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * (needsInverting(mRightAnalogYAxis) ? -1 : 1);
         mLeft_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
-        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * -1;  //invert axis
+        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * (needsInverting(mLeftAnalogYAxis) ? -1 : 1);
 
         mSplit_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
         mSplit_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
+    }
+
+    /**
+     * Only invert if axis is not analog R1 (Brake) or analog R2 (Gas) shoulder button
+     * 
+     * TODO: might need to be improved to work for other controllers
+     * 
+     * @param axis
+     * @return
+     */
+    private boolean needsInverting(int axis) {
+        return !(axis == MotionEvent.AXIS_BRAKE || axis == MotionEvent.AXIS_GAS);
     }
 
     public void dealWithKeyEvent(KeyEvent event){
