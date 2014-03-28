@@ -47,6 +47,9 @@ public class Controls {
     private int mPitchTrimPlusBtn;
     private int mPitchTrimMinusBtn;
     
+    private int mRightAnalogYAxisInvertFactor = -1;
+    private int mLeftAnalogYAxisInvertFactor = -1;
+
     //Default gamepad axis/buttons
     private String mRightAnalogXAxisDefaultValue;
     private String mRightAnalogYAxisDefaultValue;
@@ -73,27 +76,20 @@ public class Controls {
         if (!mActivity.isOnscreenControllerDisabled()) {
             mActivity.disableOnscreenController();
         }
+        
+        /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,
+        this is necessary for analog R1 (Brake) or analog R2 (Gas) shoulder buttons on PS3 controller*/
+        mRightAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
+        mLeftAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
 
         // default axis are set to work with PS3 controller
         mRight_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
-        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * (needsInverting(mRightAnalogYAxis) ? -1 : 1);
+        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * mRightAnalogYAxisInvertFactor;
         mLeft_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
-        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * (needsInverting(mLeftAnalogYAxis) ? -1 : 1);
+        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * mLeftAnalogYAxisInvertFactor;
 
         mSplit_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
         mSplit_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
-    }
-
-    /**
-     * Only invert if axis is not analog R1 (Brake) or analog R2 (Gas) shoulder button
-     * 
-     * TODO: might need to be improved to work for other controllers
-     * 
-     * @param axis
-     * @return
-     */
-    private boolean needsInverting(int axis) {
-        return !(axis == MotionEvent.AXIS_BRAKE || axis == MotionEvent.AXIS_GAS);
     }
 
     public void dealWithKeyEvent(KeyEvent event){
