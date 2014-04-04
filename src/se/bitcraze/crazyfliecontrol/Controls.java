@@ -1,11 +1,16 @@
 package se.bitcraze.crazyfliecontrol;
 
+import se.bitcraze.crazyfliecontrol.R;
+import se.bitcraze.crazyfliecontrol.R.string;
+import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+
+//TODO: rename Class
 public class Controls {
 
     private static final String LOG_TAG = "Controls";
@@ -64,6 +69,18 @@ public class Controls {
     private String mPitchTrimMinusBtnDefaultValue;
 
     private boolean mUseSplitAxisYaw = false;
+    
+    private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
+    
+    private int mMaxRollPitchAngle;
+    private int mMaxYawAngle;
+    private int mMaxThrust;
+    private int mMinThrust;
+    
+    private String mMaxRollPitchAngleDefaultValue;
+    private String mMaxYawAngleDefaultValue;
+    private String mMaxThrustDefaultValue;
+    private String mMinThrustDefaultValue;
 
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
@@ -73,8 +90,8 @@ public class Controls {
     public void dealWithMotionEvent(MotionEvent event){
         //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
 
-        if (!mActivity.isOnscreenControllerDisabled()) {
-            mActivity.disableOnscreenController();
+        if (!((TouchController) mActivity.getController()).isDisabled()) {
+        	((TouchController) mActivity.getController()).disable();
         }
         
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,
@@ -136,6 +153,11 @@ public class Controls {
         mRollTrimMinusBtnDefaultValue = res.getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
         mPitchTrimPlusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
         mPitchTrimMinusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
+        
+        mMaxRollPitchAngleDefaultValue = res.getString(R.string.preferences_maxRollPitchAngle_defaultValue);
+        mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
+        mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
+        mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
     }
     
     public void setControlConfig() {
@@ -156,6 +178,20 @@ public class Controls {
         this.mRollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue));
         this.mPitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue));
         this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));
+        
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
+            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
+            this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
+            this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
+            this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
+            this.mXmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
+        } else {
+            this.mMaxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
+            this.mMaxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
+            this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
+            this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
+            this.mXmode = false;
+        }
     }
     
     public float getRollTrim() {
@@ -245,6 +281,8 @@ public class Controls {
         return mLeft_analog_y;
     }
 
+    //TODO: move methods to AbstractController?
+    
     public void setRightAnalogX(float right_analog_x) {
         this.mRight_analog_x = right_analog_x;
     }
@@ -272,4 +310,24 @@ public class Controls {
     public float getSplitAxisYawLeft() {
         return mSplit_axis_yaw_left;
     }
+    
+    public boolean isXmode() {
+        return this.mXmode;
+    }
+
+	public int getMaxRollPitchAngle() {
+		return mMaxRollPitchAngle;
+	}
+
+	public int getMaxYawAngle() {
+		return mMaxYawAngle;
+	}
+
+	public int getMaxThrust() {
+		return mMaxThrust;
+	}
+
+	public int getMinThrust() {
+		return mMinThrust;
+	}
 }
