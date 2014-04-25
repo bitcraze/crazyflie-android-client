@@ -32,6 +32,7 @@ import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
+import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
@@ -81,6 +82,7 @@ public class MainActivity extends Activity {
     private SharedPreferences mPreferences;
     
     private IController mController;
+    private GamepadController mGamepadController;
 
     private String mRadioChannelDefaultValue;
     private String mRadioDatarateDefaultValue;
@@ -108,8 +110,14 @@ public class MainActivity extends Activity {
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
+        //Default controller
         mDualJoystickView = (DualJoystickView) findViewById(R.id.joysticks);
         mController = new TouchController(mControls, this, mDualJoystickView);
+        
+        //initialize gamepad controller
+        mGamepadController = new GamepadController(mControls, this, mPreferences);
+        mGamepadController.setDefaultPreferenceValues(getResources());
+        
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
         IntentFilter filter = new IntentFilter();
@@ -190,7 +198,9 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         resetInputMethod();
+        //TODO: improve
         mControls.setControlConfig();
+        mGamepadController.setControlConfig();
         checkScreenLock();
     }
 
@@ -244,7 +254,10 @@ public class MainActivity extends Activity {
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
-            mControls.dealWithMotionEvent(event);
+        	if(!(mController instanceof GamepadController)){
+        		changeToGamepadController();
+        	}
+            mGamepadController.dealWithMotionEvent(event);
             updateFlightData();
             return true;
         } else {
@@ -257,13 +270,25 @@ public class MainActivity extends Activity {
         // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
-            mControls.dealWithKeyEvent(event);
+        	if(!(mController instanceof GamepadController)){
+        		changeToGamepadController();
+        	}
+            mGamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
                 return true;
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    //TODO: improve
+    private void changeToGamepadController(){
+        if (!((TouchController) getController()).isDisabled()) {
+        	((TouchController) getController()).disable();
+        }
+        mController = mGamepadController;
+        ((GamepadController) mController).enable();
     }
 
     private void setRadioChannelAndDatarate(int channel, int datarate) {

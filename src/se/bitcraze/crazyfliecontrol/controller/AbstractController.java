@@ -56,11 +56,7 @@ public abstract class AbstractController implements IController {
 
     public float getYaw() {
         float yaw = 0;
-        if(mControls.useSplitAxisYaw()){
-            yaw = mControls.getSplitAxisYawRight() - mControls.getSplitAxisYawLeft();
-        }else{
-            yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
-        }
+        yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
         return yaw * getYawFactor() * mControls.getDeadzone(yaw);
     }
 
