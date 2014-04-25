@@ -1,8 +1,9 @@
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyfliecontrol.controller;
 
+import se.bitcraze.crazyfliecontrol.FlightDataView;
+import se.bitcraze.crazyfliecontrol.MainActivity;
+import se.bitcraze.crazyfliecontrol.PreferencesActivity;
 import se.bitcraze.crazyfliecontrol.R;
-import se.bitcraze.crazyfliecontrol.R.string;
-import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.KeyEvent;

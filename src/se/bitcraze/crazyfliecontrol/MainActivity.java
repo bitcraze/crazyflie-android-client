@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
+import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
