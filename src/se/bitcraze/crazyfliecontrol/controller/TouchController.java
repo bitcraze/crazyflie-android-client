@@ -2,38 +2,38 @@ package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol.Controls;
 import se.bitcraze.crazyfliecontrol.MainActivity;
-import android.widget.Toast;
 
+import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
 public class TouchController extends AbstractController {
 
 	private int mResolution = 1000;
-	private boolean mIsDisabled;
-	private MainActivity mActivity;
+
+	private DualJoystickView dualJoystickView;
 	
-	public TouchController(Controls controls, MainActivity activity) {
-		super(controls);
-		mActivity = activity;
-        mActivity.getJoysticksView().setMovementRange(mResolution, mResolution);
+	public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
+		super(controls, activity);
+		this.dualJoystickView = dualJoystickview;
+        this.dualJoystickView.setMovementRange(mResolution, mResolution);
         enable();
 	}
 
+	@Override
 	public void enable(){
-		this.mIsDisabled = false;
-        mActivity.getJoysticksView().setOnJostickMovedListener(_listenerLeft, _listenerRight);
-        Toast.makeText(mActivity, "Using on-screen controller", Toast.LENGTH_SHORT).show();
+		super.enable();
+		this.dualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
 	}
 	
+	@Override
     public void disable() {
-        Toast.makeText(mActivity, "Using external controller", Toast.LENGTH_SHORT).show();
-        mActivity.getJoysticksView().setOnJostickMovedListener(null, null);
-        this.mIsDisabled = true;
+    	super.disable();
+    	this.dualJoystickView.setOnJostickMovedListener(null, null);
     }
-
-    public boolean isDisabled() {
-        return mIsDisabled;
-    }	
+	
+    public String getControllerName(){
+    	return "touch controller";
+    }
 	
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
@@ -42,7 +42,7 @@ public class TouchController extends AbstractController {
             mControls.setRightAnalogY((float) tilt / mResolution);
             mControls.setRightAnalogX((float) pan / mResolution);
 
-            mActivity.updateFlightData();
+            updateFlightData();
         }
 
         @Override
@@ -66,7 +66,7 @@ public class TouchController extends AbstractController {
             mControls.setLeftAnalogY((float) tilt / mResolution);
             mControls.setLeftAnalogX((float) pan / mResolution);
 
-            mActivity.updateFlightData();
+            updateFlightData();
         }
 
         @Override

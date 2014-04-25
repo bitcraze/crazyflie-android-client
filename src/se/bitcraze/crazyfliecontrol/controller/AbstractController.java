@@ -1,16 +1,42 @@
 package se.bitcraze.crazyfliecontrol.controller;
 
+import android.widget.Toast;
 import se.bitcraze.crazyfliecontrol.Controls;
+import se.bitcraze.crazyfliecontrol.MainActivity;
 
 
-public class AbstractController implements IController {
+public abstract class AbstractController implements IController {
 
 	protected Controls mControls;
+	protected boolean mIsDisabled;
+	protected MainActivity mActivity;
 
-	public AbstractController(Controls controls) {
+	public AbstractController(Controls controls, MainActivity activity) {
 		mControls = controls;
+		mActivity = activity;
+	}
+
+	public void enable(){
+		mIsDisabled = false;
+        Toast.makeText(mActivity, "Using " + getControllerName(), Toast.LENGTH_SHORT).show();
 	}
 	
+    public void disable() {
+        mIsDisabled = true;
+    }
+
+    public boolean isDisabled() {
+        return mIsDisabled;
+    }
+
+    public String getControllerName(){
+    	return "unknown controller";
+    }
+    
+    public void updateFlightData() {
+        mActivity.updateFlightData();		
+	}
+    
     public float getThrust() {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
         if (thrust > mControls.getDeadzone()) {

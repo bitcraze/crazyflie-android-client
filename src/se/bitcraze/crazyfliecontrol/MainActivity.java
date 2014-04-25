@@ -72,7 +72,7 @@ public class MainActivity extends Activity {
 
     private static final int MAX_THRUST = 65535;
 
-    private DualJoystickView mJoysticksView;
+    private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
     private Link mCrazyradioLink;
@@ -107,8 +107,8 @@ public class MainActivity extends Activity {
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
-        mJoysticksView = (DualJoystickView) findViewById(R.id.joysticks);
-        mController = new TouchController(mControls, this);
+        mDualJoystickView = (DualJoystickView) findViewById(R.id.joysticks);
+        mController = new TouchController(mControls, this, mDualJoystickView);
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
         IntentFilter filter = new IntentFilter();
@@ -278,7 +278,7 @@ public class MainActivity extends Activity {
 
     private void resetInputMethod() {
         //TODO: reuse existing touch controller?
-        mController = new TouchController(mControls, this);
+        mController = new TouchController(mControls, this, mDualJoystickView);
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -504,10 +504,6 @@ public class MainActivity extends Activity {
         selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
     }
     
-    public DualJoystickView getJoysticksView(){
-    	return mJoysticksView;
-    }
-
     public IController getController(){
     	return mController;
     }
