@@ -5,35 +5,42 @@ import se.bitcraze.crazyfliecontrol.MainActivity;
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
+/**
+ * The TouchController uses the on-screen joysticks to control the roll, pitch, yaw and thrust values.
+ * The mapping of the axes can be changed with the "mode" setting in the preferences.
+ * 
+ * For example, mode 3 (default) maps roll to the left X-Axis, pitch to the left Y-Axis,
+ * yaw to the right X-Axis and thrust to the right Y-Axis.
+ * 
+ */
 public class TouchController extends AbstractController {
 
-	private int mResolution = 1000;
+    protected int mResolution = 1000;
 
-	private DualJoystickView dualJoystickView;
-	
-	public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
-		super(controls, activity);
-		this.dualJoystickView = dualJoystickview;
+    protected DualJoystickView dualJoystickView;
+
+    public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
+        super(controls, activity);
+        this.dualJoystickView = dualJoystickview;
         this.dualJoystickView.setMovementRange(mResolution, mResolution);
-        enable();
-	}
+    }
 
-	@Override
-	public void enable(){
-		super.enable();
-		this.dualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-	}
-	
-	@Override
+    @Override
+    public void enable() {
+        super.enable();
+        this.dualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+    }
+
+    @Override
     public void disable() {
-    	super.disable();
-    	this.dualJoystickView.setOnJostickMovedListener(null, null);
+        super.disable();
+        this.dualJoystickView.setOnJostickMovedListener(null, null);
     }
-	
-    public String getControllerName(){
-    	return "touch controller";
+
+    public String getControllerName() {
+        return "touch controller";
     }
-	
+
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
@@ -79,5 +86,5 @@ public class TouchController extends AbstractController {
             mControls.setLeftAnalogX(0);
         }
     };
-	
+
 }

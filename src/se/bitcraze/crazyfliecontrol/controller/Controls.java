@@ -9,7 +9,11 @@ import android.content.res.Resources;
 import android.widget.Toast;
 
 
-//TODO: rename Class
+/**
+ * This class encapsulates the common preferences for all types of controllers. 
+ *
+ * TODO: rename Class
+ */
 public class Controls {
 
     private static final String LOG_TAG = "Controls";
@@ -48,6 +52,8 @@ public class Controls {
     private String mMaxThrustDefaultValue;
     private String mMinThrustDefaultValue;
 
+    private boolean mUseGyro;
+
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
         this.mPreferences = preferences;
@@ -71,6 +77,8 @@ public class Controls {
 
         this.mRollTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM, mTrimDefaultValue));
         this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, mTrimDefaultValue));
+
+        this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
 
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
             this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
@@ -156,6 +164,10 @@ public class Controls {
     
     public float getDeadzone() {
         return mDeadzone;
+    }
+
+    public boolean isUseGyro() {
+        return mUseGyro;
     }
 
     public float getRightAnalog_X() {

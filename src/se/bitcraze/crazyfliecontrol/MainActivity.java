@@ -33,6 +33,7 @@ import java.util.Locale;
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
+import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
@@ -48,6 +49,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -157,7 +159,7 @@ public class MainActivity extends Activity {
 
     private void checkScreenLock() {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
-        if(isScreenLock){
+        if(isScreenLock || mController instanceof GyroscopeController){
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }else{
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
@@ -197,10 +199,10 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        resetInputMethod();
         //TODO: improve
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
+        resetInputMethod();
         checkScreenLock();
     }
 
@@ -288,7 +290,7 @@ public class MainActivity extends Activity {
         	((TouchController) getController()).disable();
         }
         mController = mGamepadController;
-        ((GamepadController) mController).enable();
+        mController.enable();
     }
 
     private void setRadioChannelAndDatarate(int channel, int datarate) {
@@ -303,8 +305,15 @@ public class MainActivity extends Activity {
     }
 
     private void resetInputMethod() {
-        //TODO: reuse existing touch controller?
-        mController = new TouchController(mControls, this, mDualJoystickView);
+        // TODO: reuse existing touch controller?
+
+        // Use GyroscopeController if activated in the preferences
+        if (mControls.isUseGyro()) {
+            mController = new GyroscopeController(mControls, this, mDualJoystickView, (SensorManager) getSystemService(Context.SENSOR_SERVICE));
+        } else {
+            mController = new TouchController(mControls, this, mDualJoystickView);
+        }
+        mController.enable();
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {

@@ -4,6 +4,10 @@ import android.widget.Toast;
 import se.bitcraze.crazyfliecontrol.MainActivity;
 
 
+/**
+ * The AbstractController implements the basic methods of IController class
+ *
+ */
 public abstract class AbstractController implements IController {
 
 	protected Controls mControls;
@@ -33,7 +37,7 @@ public abstract class AbstractController implements IController {
     }
     
     public void updateFlightData() {
-        mActivity.updateFlightData();		
+        mActivity.updateFlightData();
 	}
     
     public float getThrust() {

@@ -9,10 +9,16 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
+/**
+ * The GamepadController deals with external controllers (e.g. a PS3 or XBox game pad).
+ * When the split axis yaw setting is activated, the shoulder buttons of the game pads
+ * can be used to control the yaw axis.
+ *
+ */
 public class GamepadController extends AbstractController {
 
-	private SharedPreferences mPreferences;
-	
+    private SharedPreferences mPreferences;
+
     //Gamepad axis/buttons
     private int mRightAnalogXAxis;
     private int mRightAnalogYAxis;
@@ -46,16 +52,16 @@ public class GamepadController extends AbstractController {
     private String mRollTrimMinusBtnDefaultValue;
     private String mPitchTrimPlusBtnDefaultValue;
     private String mPitchTrimMinusBtnDefaultValue;
-	
-	public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
-		super(controls, activity);
-		this.mPreferences = preferences;
-	}
-	
+
+    public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
+        super(controls, activity);
+        this.mPreferences = preferences;
+    }
+
     public String getControllerName(){
     	return "gamepad controller";
     }
-	
+
     public void dealWithMotionEvent(MotionEvent event){
         //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,

@@ -55,6 +55,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_MAX_YAW_ANGLE = "pref_maxyawangle";
     public static final String KEY_PREF_MAX_THRUST = "pref_maxthrust";
     public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
+    public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
@@ -251,6 +252,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
         }
 
+        if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
+        }
+        
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
         }
