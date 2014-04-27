@@ -60,12 +60,12 @@ public class GyroscopeController extends TouchController implements SensorEventL
     // overwrite getRoll() and getPitch() to only use values from gyro sensors
     public float getRoll() {
         float roll = mSensorRoll;
-        return (roll + mControls.getRollTrim()) * getRollPitchFactor() * mControls.getDeadzone(roll);
+        return (roll + mControls.getRollTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(roll);
     }
 
     public float getPitch() {
         float pitch = mSensorPitch;
-        return (pitch + mControls.getPitchTrim()) * getRollPitchFactor() * mControls.getDeadzone(pitch);
+        return (pitch + mControls.getPitchTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(pitch);
     }
 
 }

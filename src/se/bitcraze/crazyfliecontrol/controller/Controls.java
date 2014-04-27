@@ -8,10 +8,9 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.widget.Toast;
 
-
 /**
- * This class encapsulates the common preferences for all types of controllers. 
- *
+ * This class encapsulates the common preferences for all types of controllers.
+ * 
  * TODO: rename Class
  */
 public class Controls {
@@ -21,32 +20,32 @@ public class Controls {
     private MainActivity mActivity;
     private SharedPreferences mPreferences;
 
-    //Raw input values
+    // Raw input values
     private float mRight_analog_x;
     private float mRight_analog_y;
     private float mLeft_analog_x;
     private float mLeft_analog_y;
 
-    //Trim values
+    // Trim values
     private float mRollTrim;
     private float mPitchTrim;
     private float mMaxTrim = 0.5f;
     private float mTrimIncrements = 0.1f;
     private String mTrimDefaultValue;
 
-    private int mMode;      //Controller axis mapping (Mode 1-4)
+    private int mMode; // Controller axis mapping (Mode 1-4)
     private float mDeadzone;
 
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
 
-    private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
-    
+    private boolean mXmode; // determines Crazyflie flight configuration (false = +, true = x)
+
     private int mMaxRollPitchAngle;
     private int mMaxYawAngle;
     private int mMaxThrust;
     private int mMinThrust;
-    
+
     private String mMaxRollPitchAngleDefaultValue;
     private String mMaxYawAngleDefaultValue;
     private String mMaxThrustDefaultValue;
@@ -59,18 +58,18 @@ public class Controls {
         this.mPreferences = preferences;
     }
 
-    public void setDefaultPreferenceValues(Resources res){
+    public void setDefaultPreferenceValues(Resources res) {
         mModeDefaultValue = res.getString(R.string.preferences_mode_defaultValue);
         mDeadzoneDefaultValue = res.getString(R.string.preferences_deadzone_defaultValue);
 
         mTrimDefaultValue = res.getString(R.string.preferences_trim_defaultValue);
-        
+
         mMaxRollPitchAngleDefaultValue = res.getString(R.string.preferences_maxRollPitchAngle_defaultValue);
         mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
         mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
         mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
     }
-    
+
     public void setControlConfig() {
         this.mMode = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MODE, mModeDefaultValue));
         this.mDeadzone = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_DEADZONE, mDeadzoneDefaultValue));
@@ -81,7 +80,8 @@ public class Controls {
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
 
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
+            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE,
+                    mMaxRollPitchAngleDefaultValue));
             this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
             this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
             this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
@@ -94,7 +94,7 @@ public class Controls {
             this.mXmode = false;
         }
     }
-    
+
     public float getRollTrim() {
         return mRollTrim;
     }
@@ -103,37 +103,37 @@ public class Controls {
         return mPitchTrim;
     }
 
-    public void increaseTrim(String prefKey){
+    public void increaseTrim(String prefKey) {
         changeTrim(prefKey, true);
     }
 
-    public void decreaseTrim(String prefKey){
+    public void decreaseTrim(String prefKey) {
         changeTrim(prefKey, false);
     }
-    
-    private void changeTrim(String prefKey, boolean increase){
+
+    private void changeTrim(String prefKey, boolean increase) {
         float axis;
         String axisName;
-        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
+        if (PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)) {
             axisName = "Roll";
             axis = mRollTrim;
-        }else{
+        } else {
             axisName = "Pitch";
             axis = mPitchTrim;
         }
-        
-        if(increase && axis < mMaxTrim){
+
+        if (increase && axis < mMaxTrim) {
             axis += mTrimIncrements;
-        }else if(!increase && axis > (mMaxTrim * -1)){
-           axis -= mTrimIncrements;
+        } else if (!increase && axis > (mMaxTrim * -1)) {
+            axis -= mTrimIncrements;
         }
 
         setPreference(prefKey, String.valueOf(axis));
         Toast.makeText(mActivity, axisName + " Trim: " + FlightDataView.round(axis), Toast.LENGTH_SHORT).show();
-        
-        if(PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)){
+
+        if (PreferencesActivity.KEY_PREF_ROLLTRIM.equals(prefKey)) {
             mRollTrim = axis;
-        }else{
+        } else {
             mPitchTrim = axis;
         }
     }
@@ -151,7 +151,7 @@ public class Controls {
         mLeft_analog_x = 0;
     }
 
-    public int getMode(){
+    public int getMode() {
         return mMode;
     }
 
@@ -161,7 +161,7 @@ public class Controls {
         }
         return 1;
     }
-    
+
     public float getDeadzone() {
         return mDeadzone;
     }
@@ -186,8 +186,8 @@ public class Controls {
         return mLeft_analog_y;
     }
 
-    //TODO: move methods to AbstractController?
-    
+    // TODO: move methods to AbstractController?
+
     public void setRightAnalogX(float right_analog_x) {
         this.mRight_analog_x = right_analog_x;
     }
@@ -208,19 +208,38 @@ public class Controls {
         return this.mXmode;
     }
 
-	public int getMaxRollPitchAngle() {
-		return mMaxRollPitchAngle;
-	}
+    public int getMaxRollPitchAngle() {
+        return mMaxRollPitchAngle;
+    }
 
-	public int getMaxYawAngle() {
-		return mMaxYawAngle;
-	}
+    public int getMaxYawAngle() {
+        return mMaxYawAngle;
+    }
 
-	public int getMaxThrust() {
-		return mMaxThrust;
-	}
+    public int getMaxThrust() {
+        return mMaxThrust;
+    }
 
-	public int getMinThrust() {
-		return mMinThrust;
-	}
+    public int getMinThrust() {
+        return mMinThrust;
+    }
+
+    // TODO: move methods to Controls?
+    public float getRollPitchFactor() {
+        return getMaxRollPitchAngle();
+    }
+
+    public float getYawFactor() {
+        return getMaxYawAngle();
+    }
+
+    public float getThrustFactor() {
+        int addThrust = 0;
+        if ((getMaxThrust() - getMinThrust()) < 0) {
+            addThrust = 0; // do not allow negative values
+        } else {
+            addThrust = (getMaxThrust() - getMinThrust());
+        }
+        return addThrust;
+    }
 }

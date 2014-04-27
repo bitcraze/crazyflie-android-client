@@ -152,7 +152,7 @@ public class GamepadController extends AbstractController {
         }else{
             yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
         }
-        return yaw * getYawFactor() * mControls.getDeadzone(yaw);
+        return yaw * mControls.getYawFactor() * mControls.getDeadzone(yaw);
     }
 
 }
