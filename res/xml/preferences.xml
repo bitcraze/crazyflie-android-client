@@ -24,7 +24,7 @@
         <ListPreference
             android:defaultValue="@string/preferences_mode_defaultValue"
             android:dialogTitle="@string/preferences_mode"
-            android:entries="@array/modeValues"
+            android:entries="@array/modeEntries"
             android:entryValues="@array/modeValues"
             android:key="pref_mode"
             android:title="@string/preferences_mode" />

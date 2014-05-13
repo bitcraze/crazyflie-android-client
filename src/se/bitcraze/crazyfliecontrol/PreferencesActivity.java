@@ -1,6 +1,6 @@
 /**
- *    ||          ____  _ __                           
- * +------+      / __ )(_) /_______________ _____  ___ 
+ *    ||          ____  _ __
+ * +------+      / __ )(_) /_______________ _____  ___
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -13,7 +13,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -120,13 +120,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         // Set initial summaries and get default values
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
 
-        Preference radioDataratePref = findPreference(KEY_PREF_RADIO_DATARATE);
-        String radioDatarateDefaultValue = getResources().getString(R.string.preferences_radio_datarate_defaultValue);
-        String[] stringArray = getResources().getStringArray(R.array.radioDatarateEntries);
-        String keyString = sharedPreferences.getString(KEY_PREF_RADIO_DATARATE, radioDatarateDefaultValue);
-        radioDataratePref.setSummary(stringArray[Integer.parseInt(keyString)]);
+        setSummaryArray(KEY_PREF_RADIO_DATARATE, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
 
-        modeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MODE, R.string.preferences_mode_defaultValue);
+        setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
+
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
         trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
         setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
@@ -146,7 +143,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         rollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
         pitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
         pitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
-        
+
         findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
             @Override
@@ -168,7 +165,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 return true;
             }
         });
-        
+
         findPreference(KEY_PREF_AFC_SCREEN).setEnabled(sharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
 
         maxRollPitchAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_ROLLPITCH_ANGLE, R.string.preferences_maxRollPitchAngle_defaultValue);
@@ -216,14 +213,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             setSummaryInt(key, radioChannelDefaultValue, RADIOCHANNEL_UPPER_LIMIT, "Radio channel");
         }
         if (key.equals(KEY_PREF_RADIO_DATARATE)) {
-            Preference radioDataratePref = findPreference(key);
-            String[] stringArray = getResources().getStringArray(R.array.radioDatarateEntries);
-            String keyString = sharedPreferences.getString(key, "");
-            radioDataratePref.setSummary(stringArray[Integer.parseInt(keyString)]);
+            setSummaryArray(key, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
         }
         if (key.equals(KEY_PREF_MODE)) {
-            Preference modePref = findPreference(key);
-            modePref.setSummary(sharedPreferences.getString(key, modeDefaultValue));
+            setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
         }
         if (key.equals(KEY_PREF_DEADZONE)) {
             Preference deadzonePref = findPreference(key);
@@ -250,14 +243,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_LEFT_ANALOG_Y_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogYAxisDefaultValue));
         }
-        
+
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_BOOL)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
             findPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
             findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
         }
-        
+
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
         }
@@ -292,7 +285,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_PITCHTRIM_MINUS_BTN)) {
             findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimMinusBtnDefaultValue));
         }
-        
+
         if (key.equals(KEY_PREF_AFC_BOOL)) {
             Preference afcScreenPref = findPreference(KEY_PREF_AFC_SCREEN);
             afcScreenPref.setEnabled(sharedPreferences.getBoolean(key, false));
@@ -344,6 +337,14 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             resetPreference(key, pDefaultValue, pValueName + " must be an integer value between 0 and " + pUpperLimit + ".");
         }
         pref.setSummary(sharedPreferences.getString(key, ""));
+    }
+
+    private void setSummaryArray(String key, int pRDefaultValue, int pRArray, int arrayOffset){
+        Preference pref = findPreference(key);
+        String preDefaultValue = getResources().getString(pRDefaultValue);
+        String[] stringArray = getResources().getStringArray(pRArray);
+        String keyString = sharedPreferences.getString(key, preDefaultValue);
+        pref.setSummary(stringArray[Integer.parseInt(keyString) + arrayOffset]);
     }
 
     private void resetPreference(String pKey, String pDefaultValue, String pErrorMessage) {
