@@ -5,17 +5,28 @@
         <item >1 Mbit/s</item>
         <item >2 Mbit/s</item>
     </string-array>
-    
+
     <string-array name="radioDatarateEntryValues">
         <item >0</item>
         <item >1</item>
         <item >2</item>
     </string-array>
 
+    <string-array name="modeEntries">
+        <item >Touch joystick 1</item>
+        <item >Touch joystick 2</item>
+        <item >Touch joystick 3</item>
+        <item >Touch joystick 4</item>
+        <item >External controller</item>
+        <item >Gyroscope</item>
+    </string-array>
+
     <string-array name="modeValues">
+        <item >0</item>
         <item >1</item>
         <item >2</item>
         <item >3</item>
         <item >4</item>
+        <item >5</item>
     </string-array>
 </resources>

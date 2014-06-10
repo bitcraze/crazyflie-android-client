@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
+import se.bitcraze.crazyfliecontrollers.Controller;
+import se.bitcraze.crazyfliecontrollers.*;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
@@ -55,45 +57,34 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.InputDevice;
+
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
+
 import android.widget.Toast;
+import android.hardware.SensorManager;
+
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
-import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements FlyingDataEvent {
 
     private static final String TAG = "CrazyflieControl";
 
+    //Todo: ez mit is csinal?
     private static final int MAX_THRUST = 65535;
-
-    private DualJoystickView mJoysticks;
+   
+    private Controller controller;
     private FlightDataView mFlightDataView;
 
-    private Link mCrazyradioLink;
-    private int mResolution = 1000;
+    private Link mCrazyradioLink;    
 
     private SharedPreferences mPreferences;
-
-    private int mMaxRollPitchAngle;
-    private int mMaxYawAngle;
-    private int mMaxThrust;
-    private int mMinThrust;
-    private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
 
     private String mRadioChannelDefaultValue;
     private String mRadioDatarateDefaultValue;
 
-    private String mMaxRollPitchAngleDefaultValue;
-    private String mMaxYawAngleDefaultValue;
-    private String mMaxThrustDefaultValue;
-    private String mMinThrustDefaultValue;
-
-    private boolean mIsOnscreenControllerDisabled;
     private boolean mDoubleBackToExitPressedOnce = false;
 
     private Thread mSendJoystickDataThread;
@@ -117,9 +108,7 @@ public class MainActivity extends Activity {
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
-        mJoysticks = (DualJoystickView) findViewById(R.id.joysticks);
-        mJoysticks.setMovementRange(mResolution, mResolution);
-
+        
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
         IntentFilter filter = new IntentFilter();
@@ -153,11 +142,6 @@ public class MainActivity extends Activity {
 
         mRadioChannelDefaultValue = getString(R.string.preferences_radio_channel_defaultValue);
         mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
-
-        mMaxRollPitchAngleDefaultValue = getString(R.string.preferences_maxRollPitchAngle_defaultValue);
-        mMaxYawAngleDefaultValue = getString(R.string.preferences_maxYawAngle_defaultValue);
-        mMaxThrustDefaultValue = getString(R.string.preferences_maxThrust_defaultValue);
-        mMinThrustDefaultValue = getString(R.string.preferences_minThrust_defaultValue);
 
         mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
@@ -204,8 +188,31 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        resetInputMethod();
-        setControlConfig();
+        mControls.setControlConfig();
+        Log.d("Chopter: ","in on resume and the mod is"+Integer.toString(mControls.getMode()));
+        switch(mControls.getMode()){
+            case(0):
+                controller = new TouchJoystick1(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                break;
+            case(1):
+                controller = new TouchJoystick2(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                break;
+            case(2):
+                controller = new TouchJoystick3(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                break;
+            case(3):
+                controller = new TouchJoystick4(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                break;
+            case(4):
+                controller = new Joystick(mControls);
+                break;
+            case(5):
+                controller = new Gyroscope(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
+                break;
+        }
+
+        controller.setOnFlyingDataListener(this);
+        controller.enable();
         checkScreenLock();
     }
 
@@ -218,10 +225,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mControls.resetAxisValues();
         if (mCrazyradioLink != null) {
             linkDisconnect();
         }
+        controller.disable();
     }
 
     @Override
@@ -250,21 +257,18 @@ public class MainActivity extends Activity {
         }, 2000);
     }
 
-    private void updateFlightData(){
-        mFlightDataView.updateFlightData(getPitch(), getRoll(), getThrust(), getYaw());
-    }
-    
+    /*
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
             mControls.dealWithMotionEvent(event);
-            updateFlightData();
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
         }
     }
+    */
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
@@ -288,39 +292,6 @@ public class MainActivity extends Activity {
             editor.commit();
 
             Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void disableOnscreenController() {
-        Toast.makeText(this, "Using external controller", Toast.LENGTH_SHORT).show();
-        mJoysticks.setOnJostickMovedListener(null, null);
-        this.mIsOnscreenControllerDisabled = true;
-    }
-
-    public boolean isOnscreenControllerDisabled() {
-        return mIsOnscreenControllerDisabled;
-    }
-
-    private void resetInputMethod() {
-        Toast.makeText(this, "Using on-screen controller", Toast.LENGTH_SHORT).show();
-        this.mIsOnscreenControllerDisabled = false;
-        mJoysticks.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-    }
-
-    private void setControlConfig() {
-        mControls.setControlConfig();
-        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
-            this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
-            this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
-            this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
-            this.mXmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
-        } else {
-            this.mMaxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
-            this.mMaxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
-            this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
-            this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
-            this.mXmode = false;
         }
     }
 
@@ -435,8 +406,8 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode()));
-
+                        mCrazyradioLink.send(new CommanderPacket(controller.getRoll(), controller.getPitch(), controller.getYaw(), (char) (controller.getThrust()/100 * MAX_THRUST), mControls.getXmode()));
+                        
                         try {
                             Thread.sleep(20, 0);
                         } catch (InterruptedException e) {
@@ -547,100 +518,9 @@ public class MainActivity extends Activity {
         selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
     }
 
-    public float getThrust() {
-        float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
-        if (thrust > mControls.getDeadzone()) {
-            return mMinThrust + (thrust * getThrustFactor());
-        }
-        return 0;
-    }
 
-    public float getRoll() {
-        float roll = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getRightAnalog_X() : mControls.getLeftAnalog_X();
-        return (roll + mControls.getRollTrim()) * getRollPitchFactor() * mControls.getDeadzone(roll);
-    }
-
-    public float getPitch() {
-        float pitch = (mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getLeftAnalog_Y() : mControls.getRightAnalog_Y();
-        return (pitch + mControls.getPitchTrim()) * getRollPitchFactor() * mControls.getDeadzone(pitch);
-    }
-
-    public float getYaw() {
-        float yaw = 0;
-        if(mControls.useSplitAxisYaw()){
-            yaw = mControls.getSplitAxisYawRight() - mControls.getSplitAxisYawLeft();
-        }else{
-            yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
-        }
-        return yaw * getYawFactor() * mControls.getDeadzone(yaw);
-    }
-
-    public float getRollPitchFactor() {
-        return mMaxRollPitchAngle;
-    }
-
-    public float getYawFactor() {
-        return mMaxYawAngle;
-    }
-
-    public float getThrustFactor() {
-        int addThrust = 0;
-        if ((mMaxThrust - mMinThrust) < 0) {
-            addThrust = 0; // do not allow negative values
-        } else {
-            addThrust = (mMaxThrust - mMinThrust);
-        }
-        return addThrust;
-    }
-
-    public boolean isXmode() {
-        return this.mXmode;
-    }
-
-    private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
-
-        @Override
-        public void OnMoved(int pan, int tilt) {
-            mControls.setRightAnalogY((float) tilt / mResolution);
-            mControls.setRightAnalogX((float) pan / mResolution);
-
-            updateFlightData();
-        }
-
-        @Override
-        public void OnReleased() {
-            // Log.i("Joystick-Right", "Release");
-            mControls.setRightAnalogY(0);
-            mControls.setRightAnalogX(0);
-        }
-
-        public void OnReturnedToCenter() {
-            // Log.i("Joystick-Right", "Center");
-            mControls.setRightAnalogY(0);
-            mControls.setRightAnalogX(0);
-        }
-    };
-
-    private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
-
-        @Override
-        public void OnMoved(int pan, int tilt) {
-            mControls.setLeftAnalogY((float) tilt / mResolution);
-            mControls.setLeftAnalogX((float) pan / mResolution);
-
-            updateFlightData();
-        }
-
-        @Override
-        public void OnReleased() {
-            mControls.setLeftAnalogY(0);
-            mControls.setLeftAnalogX(0);
-        }
-
-        public void OnReturnedToCenter() {
-            mControls.setLeftAnalogY(0);
-            mControls.setLeftAnalogX(0);
-        }
-    };
-
+	@Override
+	public void flyingDataEvent(float pitch, float roll, float thrust, float yaw) {
+		mFlightDataView.updateFlightData(pitch, roll, thrust, yaw);
+	}
 }

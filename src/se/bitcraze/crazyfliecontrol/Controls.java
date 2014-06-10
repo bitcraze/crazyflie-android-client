@@ -8,19 +8,22 @@ import android.widget.Toast;
 
 public class Controls {
 
-    private static final String LOG_TAG = "Controls";
-
     private MainActivity mActivity;
     private SharedPreferences mPreferences;
 
-    //Raw input values
-    private float mRight_analog_x;
-    private float mRight_analog_y;
-    private float mLeft_analog_x;
-    private float mLeft_analog_y;
-    private float mSplit_axis_yaw_right;
-    private float mSplit_axis_yaw_left;
+    //Advanced flight control
+    private int mMaxRollPitchAngle;
+    private int mMaxYawAngle;
+    private int mMaxThrust;
+    private int mMinThrust;
+    private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
 
+    //Advanced flight control default rules
+    private String mMaxRollPitchAngleDefaultValue;
+    private String mMaxYawAngleDefaultValue;
+    private String mMaxThrustDefaultValue;
+    private String mMinThrustDefaultValue;
+    
     //Trim values
     private float mRollTrim;
     private float mPitchTrim;
@@ -67,41 +70,13 @@ public class Controls {
         this.mPreferences = preferences;
     }
 
-    public void dealWithMotionEvent(MotionEvent event){
-        //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
-
-        if (!mActivity.isOnscreenControllerDisabled()) {
-            mActivity.disableOnscreenController();
-        }
-
-        // default axis are set to work with PS3 controller
-        mRight_analog_x = (float) (event.getAxisValue(mRightAnalogXAxis));
-        mRight_analog_y = (float) (event.getAxisValue(mRightAnalogYAxis)) * (needsInverting(mRightAnalogYAxis) ? -1 : 1);
-        mLeft_analog_x = (float) (event.getAxisValue(mLeftAnalogXAxis));
-        mLeft_analog_y = (float) (event.getAxisValue(mLeftAnalogYAxis)) * (needsInverting(mLeftAnalogYAxis) ? -1 : 1);
-
-        mSplit_axis_yaw_right = (float) (event.getAxisValue(mSplitAxisYawRightAxis));
-        mSplit_axis_yaw_left = (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
-    }
-
-    /**
-     * Only invert if axis is not analog R1 (Brake) or analog R2 (Gas) shoulder button
-     * 
-     * TODO: might need to be improved to work for other controllers
-     * 
-     * @param axis
-     * @return
-     */
-    private boolean needsInverting(int axis) {
-        return !(axis == MotionEvent.AXIS_BRAKE || axis == MotionEvent.AXIS_GAS);
-    }
-
     public void dealWithKeyEvent(KeyEvent event){
         switch (event.getAction()) {
         case KeyEvent.ACTION_DOWN:
             if(event.getKeyCode() == mEmergencyBtn){
                 //quick solution
-                resetAxisValues();
+                //Todo: check this method
+                //resetAxisValues();
                 if (mActivity.getCrazyflieLink() != null) {
                     mActivity.linkDisconnect();
                 }
@@ -140,6 +115,12 @@ public class Controls {
         mRollTrimMinusBtnDefaultValue = res.getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
         mPitchTrimPlusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
         mPitchTrimMinusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
+        
+        //Advanced flight control
+        mMaxRollPitchAngleDefaultValue = res.getString(R.string.preferences_maxRollPitchAngle_defaultValue);
+        mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
+        mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
+        mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
     }
     
     public void setControlConfig() {
@@ -160,16 +141,23 @@ public class Controls {
         this.mRollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue));
         this.mPitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue));
         this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));
+        
+        //Advanced flight control
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
+            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
+            this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
+            this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
+            this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));
+            this.mXmode = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_XMODE, false);
+        } else {
+            this.mMaxRollPitchAngle = Integer.parseInt(mMaxRollPitchAngleDefaultValue);
+            this.mMaxYawAngle = Integer.parseInt(mMaxYawAngleDefaultValue);
+            this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
+            this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
+            this.mXmode = false;
+        }
     }
     
-    public float getRollTrim() {
-        return mRollTrim;
-    }
-
-    public float getPitchTrim() {
-        return mPitchTrim;
-    }
-
     private void increaseTrim(String prefKey){
         changeTrim(prefKey, true);
     }
@@ -211,13 +199,6 @@ public class Controls {
         editor.commit();
     }
 
-    public void resetAxisValues() {
-        mRight_analog_y = 0;
-        mRight_analog_x = 0;
-        mLeft_analog_y = 0;
-        mLeft_analog_x = 0;
-    }
-
     public int getMode(){
         return mMode;
     }
@@ -229,51 +210,46 @@ public class Controls {
         return 1;
     }
     
+    public float getMinThrust(){
+    	return mMinThrust;
+    }
+
+    public float getMaxThrust(){
+    	return mMaxThrust;
+    }
+    
+    public boolean getXmode(){
+    	return mXmode;
+    }
+    
     public float getDeadzone() {
         return mDeadzone;
     }
 
-    public float getRightAnalog_X() {
-        return mRight_analog_x;
+    public int getRightAnalogXAxis() { return mRightAnalogXAxis; }
+    public int getRightAnalogYAxis() { return mRightAnalogYAxis; }
+    public int getLeftAnalogXAxis() { return mLeftAnalogXAxis; }
+    public int getLeftAnalogYAxis() { return mLeftAnalogYAxis; }
+
+    public boolean useSplitAxisYaw() { return mUseSplitAxisYaw; }
+
+    public int getSplitAxisYawLeftAxis() { return mSplitAxisYawLeftAxis; }
+    public int getSplitAxisYawRightAxis() { return mSplitAxisYawRightAxis; }
+
+    public float getRollTrim() {
+        return mRollTrim;
     }
 
-    public float getRightAnalog_Y() {
-        return mRight_analog_y;
+    public float getPitchTrim() {
+        return mPitchTrim;
     }
 
-    public float getLeftAnalog_X() {
-        return mLeft_analog_x;
+    public float getMaxRollPitchAngle() {
+        return mMaxRollPitchAngle;
+    }
+    
+    public float getMaxYawAngle() {
+    	return mMaxYawAngle;
     }
 
-    public float getLeftAnalog_Y() {
-        return mLeft_analog_y;
-    }
-
-    public void setRightAnalogX(float right_analog_x) {
-        this.mRight_analog_x = right_analog_x;
-    }
-
-    public void setRightAnalogY(float right_analog_y) {
-        this.mRight_analog_y = right_analog_y;
-    }
-
-    public void setLeftAnalogX(float left_analog_x) {
-        this.mLeft_analog_x = left_analog_x;
-    }
-
-    public void setLeftAnalogY(float left_analog_y) {
-        this.mLeft_analog_y = left_analog_y;
-    }
-
-    public boolean useSplitAxisYaw(){
-        return mUseSplitAxisYaw;
-    }
-
-    public float getSplitAxisYawRight() {
-        return mSplit_axis_yaw_right;
-    }
-
-    public float getSplitAxisYawLeft() {
-        return mSplit_axis_yaw_left;
-    }
 }

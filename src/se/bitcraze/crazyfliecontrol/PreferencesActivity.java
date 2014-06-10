@@ -126,7 +126,12 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         String keyString = sharedPreferences.getString(KEY_PREF_RADIO_DATARATE, radioDatarateDefaultValue);
         radioDataratePref.setSummary(stringArray[Integer.parseInt(keyString)]);
 
-        modeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MODE, R.string.preferences_mode_defaultValue);
+        Preference modePref = findPreference(KEY_PREF_MODE);
+        String modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
+        stringArray = getResources().getStringArray(R.array.modeEntries);
+        keyString = sharedPreferences.getString(KEY_PREF_MODE, modeDefaultValue);
+        modePref.setSummary(stringArray[Integer.parseInt(keyString)]);
+
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
         trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
         setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
@@ -164,7 +169,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue, null);
                 resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue, null);
                 resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue, null);
-                Toast.makeText(PreferencesActivity.this, "Resetting to default values...", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -223,7 +227,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
         if (key.equals(KEY_PREF_MODE)) {
             Preference modePref = findPreference(key);
-            modePref.setSummary(sharedPreferences.getString(key, modeDefaultValue));
+            String[] stringArray = getResources().getStringArray(R.array.modeEntries);
+            String keyString = sharedPreferences.getString(key, "");
+            modePref.setSummary(stringArray[Integer.parseInt(keyString)]);
         }
         if (key.equals(KEY_PREF_DEADZONE)) {
             Preference deadzonePref = findPreference(key);
