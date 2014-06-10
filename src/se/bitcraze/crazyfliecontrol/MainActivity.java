@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
-import se.bitcraze.crazyfliecontrollers.Controller;
 import se.bitcraze.crazyfliecontrollers.*;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
@@ -57,23 +56,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.view.MotionEvent;
 import android.widget.Toast;
 import android.hardware.SensorManager;
-
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
 public class MainActivity extends Activity implements FlyingDataEvent {
 
     private static final String TAG = "CrazyflieControl";
-
-    //Todo: ez mit is csinal?
-    private static final int MAX_THRUST = 65535;
    
     private Controller controller;
     private FlightDataView mFlightDataView;
@@ -257,18 +252,16 @@ public class MainActivity extends Activity implements FlyingDataEvent {
         }, 2000);
     }
 
-    /*
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
-        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
-            mControls.dealWithMotionEvent(event);
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE && mControls.getMode() == 4) {
+        	((Joystick) controller).dealWithMotionEvent(event);
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
         }
     }
-    */
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
@@ -406,7 +399,7 @@ public class MainActivity extends Activity implements FlyingDataEvent {
                 @Override
                 public void run() {
                     while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(controller.getRoll(), controller.getPitch(), controller.getYaw(), (char) (controller.getThrust()/100 * MAX_THRUST), mControls.getXmode()));
+                        mCrazyradioLink.send(new CommanderPacket(controller.getRoll(), controller.getPitch(), controller.getYaw(), (char) (controller.getThrust()), mControls.getXmode()));
                         
                         try {
                             Thread.sleep(20, 0);
@@ -477,11 +470,6 @@ public class MainActivity extends Activity implements FlyingDataEvent {
                 if(mException != null) {
                     Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
                 } else {
-                    //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
-//                  result = new ConnectionData[3];
-//                  result[0] = new ConnectionData(13, 2);
-//                  result[1] = new ConnectionData(15, 1);
-//                  result[2] = new ConnectionData(125, 2);
                     
                     if (result != null && result.length > 0) {
                         if(result.length > 1){

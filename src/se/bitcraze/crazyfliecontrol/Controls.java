@@ -11,6 +11,8 @@ public class Controls {
     private MainActivity mActivity;
     private SharedPreferences mPreferences;
 
+    public static final int MAX_THRUST = 65535;
+    
     //Advanced flight control
     private int mMaxRollPitchAngle;
     private int mMaxYawAngle;

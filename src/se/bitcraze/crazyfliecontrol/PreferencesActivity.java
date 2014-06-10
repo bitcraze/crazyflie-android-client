@@ -83,7 +83,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private SharedPreferences sharedPreferences;
 
     private String radioChannelDefaultValue;
-    private String modeDefaultValue;
     private String deadzoneDefaultValue;
     private String trimDefaultValue;
     private String maxRollPitchAngleDefaultValue;

@@ -4,7 +4,6 @@ import se.bitcraze.crazyfliecontrol.Controls;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
-import android.util.Log;
 
 public class TouchJoystick2 extends Controller {	
 	

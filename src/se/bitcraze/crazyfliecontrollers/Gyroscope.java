@@ -1,23 +1,19 @@
 package se.bitcraze.crazyfliecontrollers;
 
-import android.view.MotionEvent;
 import se.bitcraze.crazyfliecontrol.Controls;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
-import android.util.Log;
 
 public class Gyroscope extends Controller implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private DualJoystickView joystickView;
-
-    private int AMPLIFICATION = 2;
-
     private int resolution = 1000;
 
     public Gyroscope(Controls controls, SensorManager sensorManager, DualJoystickView dualJoystickView) {
@@ -25,12 +21,13 @@ public class Gyroscope extends Controller implements SensorEventListener {
         this.joystickView = dualJoystickView;
         this.joystickView.setMovementRange(resolution, resolution);
         mSensorManager = sensorManager;
+        Log.d("e: ","inited");
     }
 
     @Override
     public void enable() {
         joystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -46,9 +43,9 @@ public class Gyroscope extends Controller implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // amplifying the sensitivity.
-        roll = event.values[0]*AMPLIFICATION;
-        pitch = event.values[1]*AMPLIFICATION;
+        // amplifying the sensitivity.    	
+        pitch = (event.values[0] / 10 ) * -1;
+        roll = event.values[1] / 10;       
         updateFlightData();
     }
 
@@ -56,7 +53,7 @@ public class Gyroscope extends Controller implements SensorEventListener {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            yaw = (float) tilt / resolution;
+            yaw = (float) pan / resolution;
             updateFlightData();
         }
 

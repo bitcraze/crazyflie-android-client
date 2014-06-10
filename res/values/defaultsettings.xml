@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="preferences_radio_datarate_defaultValue">0</string>
+    <string name="preferences_radio_channel_defaultValue">10</string>
+    <string name="preferences_mode_defaultValue">3</string>
+    <string name="preferences_deadzone_defaultValue">0.1</string>
+    <string name="preferences_trim_defaultValue">0.0</string>
+    <string name="preferences_maxRollPitchAngle_defaultValue">20</string>
+    <string name="preferences_maxYawAngle_defaultValue">150</string>
+    <string name="preferences_maxThrust_defaultValue">80</string>
+    <string name="preferences_minThrust_defaultValue">25</string>
+    <string name="preferences_reset_afc_summary">Reset to default values</string>
+    <string name="preferences_right_analog_x_axis_defaultValue">AXIS_Z</string>
+    <string name="preferences_right_analog_y_axis_defaultValue">AXIS_RZ</string>
+    <string name="preferences_left_analog_x_axis_defaultValue">AXIS_X</string>
+    <string name="preferences_left_analog_y_axis_defaultValue">AXIS_Y</string>
+    <string name="preferences_splitaxis_yaw_left_axis_defaultValue">AXIS_BRAKE</string>
+    <string name="preferences_splitaxis_yaw_right_axis_defaultValue">AXIS_GAS</string>
+    <string name="preferences_emergency_btn_defaultValue">KEYCODE_BUTTON_B</string>
+    <string name="preferences_rolltrim_plus_btn_defaultValue">KEYCODE_DPAD_RIGHT</string>
+    <string name="preferences_rolltrim_minus_btn_defaultValue">KEYCODE_DPAD_LEFT</string>
+    <string name="preferences_pitchtrim_plus_btn_defaultValue">KEYCODE_DPAD_UP</string>
+    <string name="preferences_pitchtrim_minus_btn_defaultValue">KEYCODE_DPAD_DOWN</string>
+    <bool name="preferences_splitaxis_yaw_bool">False</bool>    
+</resources>

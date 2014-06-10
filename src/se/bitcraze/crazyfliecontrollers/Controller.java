@@ -41,6 +41,7 @@ public abstract class Controller {
 	}
 
     public float getThrust() {
+    	//thrust >= 0 and thrust <= 1
         if (thrust > controls.getDeadzone()) {
            float addThrust = 0;
            if ((controls.getMaxThrust() - controls.getMinThrust()) < 0) {
@@ -48,8 +49,7 @@ public abstract class Controller {
            } else {
                addThrust = (controls.getMaxThrust() - controls.getMinThrust());
            }
-           return controls.getMinThrust() + (thrust * addThrust);
-
+           return (controls.getMinThrust() + (thrust * addThrust))/100 * controls.MAX_THRUST;
         } else {
             return 0;
         }
