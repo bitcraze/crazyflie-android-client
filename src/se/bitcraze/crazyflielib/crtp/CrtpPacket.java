@@ -12,6 +12,19 @@ import java.nio.ByteOrder;
 public abstract class CrtpPacket {
 
     /**
+     *Lists the available ports for the CRTP. 
+     */
+    public final static byte CONSOLE = 0x00;
+    public final static byte PARAM = 0x02;
+    public final static byte COMMANDER = 0x03;
+    public final static byte LOGGING = 0x05;
+    public final static byte DEBUGDRIVER = 0x0e;
+    public final static byte LINKCTRL = 0x0f;
+    public final static byte ALL = (byte) 0xff;
+
+    private byte PORT;
+
+    /**
      * Byte order used when serializing/deserializing packets.
      */
     public static final ByteOrder BYTE_ORDER = ByteOrder.LITTLE_ENDIAN;
@@ -19,7 +32,7 @@ public abstract class CrtpPacket {
     /**
      * NULL packet. Header is 0xFF without any data.
      */
-    public static final CrtpPacket NULL_PACKET = new CrtpPacket((byte) 0xff) {
+    public static final CrtpPacket NULL_PACKET = new CrtpPacket(ALL) {
         @Override
         protected void serializeData(ByteBuffer buffer) {
         }
@@ -41,6 +54,7 @@ public abstract class CrtpPacket {
      */
     public CrtpPacket(int channel, int port) {
         this((byte) (((port & 0x0F) << 4) | (channel & 0x03)));
+        PORT = (byte) port;
     }
 
     /**
@@ -60,6 +74,10 @@ public abstract class CrtpPacket {
      */
     public byte getHeader() {
         return mPacketHeader;
+    }
+
+    public byte getPort() {
+        return PORT;
     }
 
     /**

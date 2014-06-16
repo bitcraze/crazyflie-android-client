@@ -61,19 +61,22 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 import android.hardware.SensorManager;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
-public class MainActivity extends Activity implements FlyingDataEvent {
+public class MainActivity extends Activity implements FlyingDataEvent, OnCheckedChangeListener {
 
     private static final String TAG = "CrazyflieControl";
    
     private Controller controller;
     private FlightDataView mFlightDataView;
 
-    private Link mCrazyradioLink;    
+    private CrazyradioLink mCrazyradioLink;
 
     private SharedPreferences mPreferences;
 
@@ -105,6 +108,8 @@ public class MainActivity extends Activity implements FlyingDataEvent {
 
         
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
+
+        ((ToggleButton) findViewById(R.id.hovermode)).setOnCheckedChangeListener(this);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
@@ -510,5 +515,11 @@ public class MainActivity extends Activity implements FlyingDataEvent {
 	@Override
 	public void flyingDataEvent(float pitch, float roll, float thrust, float yaw) {
 		mFlightDataView.updateFlightData(pitch, roll, thrust, yaw);
+	}
+
+	@Override
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		mCrazyradioLink.param.setHoverMode(isChecked);
+
 	}
 }
