@@ -519,7 +519,10 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
 
 	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		mCrazyradioLink.param.setHoverMode(isChecked);
-
+		if(mCrazyradioLink != null) {
+				mCrazyradioLink.param.setHoverMode(isChecked);
+		} else {
+			((ToggleButton) findViewById(R.id.hovermode)).setChecked(false);
+		}
 	}
 }

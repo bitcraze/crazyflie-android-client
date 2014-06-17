@@ -9,7 +9,8 @@ public class Param {
 	}
 	
 	public void setHoverMode(boolean enable ) {
-		if (cf.isConnected())
-			cf.send(new HoverParamPacket(enable));	
+		if (cf.isConnected()){
+			cf.send(new HoverParamPacket(enable));
+		}
 	}
 }
