@@ -58,7 +58,7 @@ public class DualJoystickView extends LinearLayout {
         removeView(padding);
         removeView(stickR);
 
-        int joyHeight = getMeasuredHeight();
+        int joyHeight = Math.round(getMeasuredHeight() *0.8f);
         int joyWidth = joyHeight;
         int paddingWidth = getMeasuredWidth() - (joyWidth * 2);
 
@@ -89,6 +89,7 @@ public class DualJoystickView extends LinearLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
+        stickL.setTouchOffset(stickL.getLeft(), stickL.getTop());
         stickR.setTouchOffset(stickR.getLeft(), stickR.getTop());
     }
 
