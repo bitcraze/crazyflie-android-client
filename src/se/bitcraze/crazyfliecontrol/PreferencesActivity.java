@@ -27,10 +27,15 @@
 
 package se.bitcraze.crazyfliecontrol;
 
+import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
+import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -45,6 +50,7 @@ import android.widget.Toast;
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
     public static final String KEY_PREF_RADIO_DATARATE = "pref_radiodatarate";
+    public static final String KEY_PREF_RADIO_SCAN = "pref_radio_scan";
     public static final String KEY_PREF_MODE = "pref_mode";
     public static final String KEY_PREF_DEADZONE = "pref_deadzone";
     public static final String KEY_PREF_ROLLTRIM = "pref_rolltrim";
@@ -84,7 +90,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private SharedPreferences sharedPreferences;
 
     private String radioChannelDefaultValue;
-    private String modeDefaultValue;
     private String deadzoneDefaultValue;
     private String trimDefaultValue;
     private String maxRollPitchAngleDefaultValue;
@@ -104,6 +109,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private String pitchTrimPlusBtnDefaultValue;
     private String pitchTrimMinusBtnDefaultValue;
 
+    private String[] mDatarateStrings;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,13 +122,22 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         setInitialSummaries();
 
         setupActionBar();
+
+        mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
 
     private void setInitialSummaries() {
         // Set initial summaries and get default values
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
-
         setSummaryArray(KEY_PREF_RADIO_DATARATE, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
+        findPreference(KEY_PREF_RADIO_SCAN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                radioScan();
+                return true;
+            }
+        });
 
         setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
 
@@ -256,7 +272,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
         }
-        
+
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
         }
@@ -380,4 +396,85 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    private void radioScan() {
+        new AsyncTask<Void, Void, ConnectionData[]>() {
+
+            private Exception mException = null;
+            private ProgressDialog mProgress;
+
+            @Override
+            protected void onPreExecute() {
+                mProgress = ProgressDialog.show(PreferencesActivity.this, "Radio Scan", "Searching for the Crazyflie...", true, false);
+            }
+
+            @Override
+            protected ConnectionData[] doInBackground(Void... arg0) {
+                try {
+                    //For testing purposes only
+//                    return new ConnectionData[0];
+                    return CrazyradioLink.scanChannels(PreferencesActivity.this);
+                } catch(IllegalStateException e) {
+                    mException = e;
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(ConnectionData[] result) {
+                mProgress.dismiss();
+
+                if(mException != null) {
+                    Toast.makeText(PreferencesActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
+//                  result = new ConnectionData[3];
+//                  result[0] = new ConnectionData(13, 2);
+//                  result[1] = new ConnectionData(15, 1);
+//                  result[2] = new ConnectionData(125, 2);
+
+                    if (result != null && result.length > 0) {
+                        if(result.length > 1){
+                            // let user choose connection, if there is more than one Crazyflie
+                            showSelectConnectionDialog(result);
+                        }else{
+                            // use first channel
+                            setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
+                        }
+                    } else {
+                        Toast.makeText(PreferencesActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }.execute();
+    }
+
+    private void showSelectConnectionDialog(final ConnectionData[] result) {
+        SelectConnectionDialogFragment selectConnectionDialogFragment = new SelectConnectionDialogFragment();
+        //supply list of Crazyflie connections as arguments
+        Bundle args = new Bundle();
+        String[] crazyflieArray = new String[result.length];
+        for(int i = 0; i < result.length; i++){
+            crazyflieArray[i] = i + ": Channel " + result[i].getChannel() + ", Data rate " + mDatarateStrings[result[i].getDataRate()];
+        }
+        args.putStringArray("connection_array", crazyflieArray);
+        selectConnectionDialogFragment.setArguments(args);
+        selectConnectionDialogFragment.setListener(new SelectCrazyflieDialogListener(){
+            @Override
+            public void onClick(int which) {
+                setRadioChannelAndDatarate(result[which].getChannel(), result[which].getDataRate());
+            }
+        });
+        selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
+    }
+
+    private void setRadioChannelAndDatarate(int channel, int datarate) {
+        if (channel != -1 && datarate != -1) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
+            editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
+            editor.commit();
+
+            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

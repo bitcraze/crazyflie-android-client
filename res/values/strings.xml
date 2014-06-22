@@ -4,16 +4,18 @@
     <string name="title_activity_main">Crazyflie Control</string>
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
-    <string name="menu_radio_scan">Radio Scan</string>
     <string name="menu_preferences">Preferences</string>
     <string name="preferences_title">Crazyflie Control Preferences</string>
     <string name="preferences_category_connection">Connection Preferences</string>
     <string name="preferences_radio_channel">Radio channel</string>
     <string name="preferences_radio_channel_summary">Set the radio channel</string>
+    <string name="preferences_radio_channel_defaultValue">10</string>
     <string name="preferences_radio_datarate">Radio datarate</string>
     <string name="preferences_radio_datarate_summary">Set the radio datarate</string>
     <string name="preferences_radio_datarate_defaultValue">0</string>
-    <string name="preferences_radio_channel_defaultValue">10</string>
+    <string name="preferences_radio_scan">Radio Scan</string>
+    <string name="preferences_radio_scan_summary">Initiate radio scan to find Crazyflie</string>
+
     <string name="preferences_category_control">Control preferences</string>
     <string name="preferences_mode">Mode</string>
     <string name="preferences_mode_defaultValue">3</string>

@@ -1,6 +1,6 @@
 /**
- *    ||          ____  _ __                           
- * +------+      / __ )(_) /_______________ _____  ___ 
+ *    ||          ____  _ __
+ * +------+      / __ )(_) /_______________ _____  ___
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -13,7 +13,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -30,7 +30,6 @@ package se.bitcraze.crazyfliecontrol;
 import java.io.IOException;
 import java.util.Locale;
 
-import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
@@ -38,11 +37,9 @@ import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +52,6 @@ import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -80,9 +76,9 @@ public class MainActivity extends Activity {
     private FlightDataView mFlightDataView;
 
     private Link mCrazyradioLink;
-    
+
     private SharedPreferences mPreferences;
-    
+
     private IController mController;
     private GamepadController mGamepadController;
 
@@ -92,8 +88,6 @@ public class MainActivity extends Activity {
     private boolean mDoubleBackToExitPressedOnce = false;
 
     private Thread mSendJoystickDataThread;
-
-    private String[] mDatarateStrings;
 
     private Controls mControls;
 
@@ -115,11 +109,11 @@ public class MainActivity extends Activity {
         //Default controller
         mDualJoystickView = (DualJoystickView) findViewById(R.id.joysticks);
         mController = new TouchController(mControls, this, mDualJoystickView);
-        
+
         //initialize gamepad controller
         mGamepadController = new GamepadController(mControls, this, mPreferences);
         mGamepadController.setDefaultPreferenceValues(getResources());
-        
+
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
         IntentFilter filter = new IntentFilter();
@@ -153,8 +147,6 @@ public class MainActivity extends Activity {
 
         mRadioChannelDefaultValue = getString(R.string.preferences_radio_channel_defaultValue);
         mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
-
-        mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
 
     private void checkScreenLock() {
@@ -184,9 +176,6 @@ public class MainActivity extends Activity {
                 break;
             case R.id.menu_disconnect:
                 linkDisconnect();
-                break;
-            case R.id.menu_radio_scan:
-                radioScan();
                 break;
             case R.id.preferences:
                 Intent intent = new Intent(this, PreferencesActivity.class);
@@ -251,7 +240,7 @@ public class MainActivity extends Activity {
     public void updateFlightData(){
         mFlightDataView.updateFlightData(mController.getPitch(), mController.getRoll(), mController.getThrust(), mController.getYaw());
     }
-    
+
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
@@ -291,17 +280,6 @@ public class MainActivity extends Activity {
         }
         mController = mGamepadController;
         mController.enable();
-    }
-
-    private void setRadioChannelAndDatarate(int channel, int datarate) {
-        if (channel != -1 && datarate != -1) {
-            SharedPreferences.Editor editor = mPreferences.edit();
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
-            editor.commit();
-
-            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void resetInputMethod() {
@@ -450,7 +428,7 @@ public class MainActivity extends Activity {
     public Link getCrazyflieLink(){
         return mCrazyradioLink;
     }
-    
+
     public void linkDisconnect() {
         if (mCrazyradioLink != null) {
             mCrazyradioLink.disconnect();
@@ -460,7 +438,7 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread.interrupt();
             mSendJoystickDataThread = null;
         }
-        
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -470,77 +448,8 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void radioScan() {
-        new AsyncTask<Void, Void, ConnectionData[]>() {
-
-            private Exception mException = null;
-            private ProgressDialog mProgress;
-            
-            @Override
-            protected void onPreExecute() {
-                mProgress = ProgressDialog.show(MainActivity.this, "Radio Scan", "Searching for the Crazyflie...", true, false);
-            }
-
-            @Override
-            protected ConnectionData[] doInBackground(Void... arg0) {
-                try {
-                    return CrazyradioLink.scanChannels(MainActivity.this);
-                } catch(IllegalStateException e) {
-                    mException = e;
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(ConnectionData[] result) {
-                mProgress.dismiss();
-                
-                if(mException != null) {
-                    Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
-                } else {
-                    //TEST DATA for debugging SelectionConnectionDialogFragment (replace with test!)
-//                  result = new ConnectionData[3];
-//                  result[0] = new ConnectionData(13, 2);
-//                  result[1] = new ConnectionData(15, 1);
-//                  result[2] = new ConnectionData(125, 2);
-                    
-                    if (result != null && result.length > 0) {
-                        if(result.length > 1){
-                            // let user choose connection, if there is more than one Crazyflie 
-                            showSelectConnectionDialog(result);
-                        }else{
-                            // use first channel
-                            setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }.execute();
-    }
-
-    private void showSelectConnectionDialog(final ConnectionData[] result) {
-        SelectConnectionDialogFragment selectConnectionDialogFragment = new SelectConnectionDialogFragment();
-        //supply list of Crazyflie connections as arguments
-        Bundle args = new Bundle();
-        String[] crazyflieArray = new String[result.length];
-        for(int i = 0; i < result.length; i++){
-            crazyflieArray[i] = i + ": Channel " + result[i].getChannel() + ", Data rate " + mDatarateStrings[result[i].getDataRate()];
-        }
-        args.putStringArray("connection_array", crazyflieArray);
-        selectConnectionDialogFragment.setArguments(args);
-        selectConnectionDialogFragment.setListener(new SelectCrazyflieDialogListener(){
-            @Override
-            public void onClick(int which) {
-                setRadioChannelAndDatarate(result[which].getChannel(), result[which].getDataRate());
-            }
-        });
-        selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
-    }
-    
     public IController getController(){
     	return mController;
     }
-    
+
 }
