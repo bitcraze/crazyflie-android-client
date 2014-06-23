@@ -165,17 +165,28 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(final Menu menu) {
+        if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
+            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_disconnect);
+        } else {
+            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_connect);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
                 try {
-                    linkConnect();
+                    if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
+                        linkDisconnect();
+                    } else {
+                        linkConnect();
+                    }
                 } catch (IllegalStateException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-                break;
-            case R.id.menu_disconnect:
-                linkDisconnect();
                 break;
             case R.id.preferences:
                 Intent intent = new Intent(this, PreferencesActivity.class);
