@@ -2,9 +2,10 @@ package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol.FlyingDataEvent;
 
-public abstract class Controller {
+public abstract class Controller implements IController {
 	private FlyingDataEvent flyingDataEvent;
 	protected Controls controls;
+	protected boolean mIsDisabled;
 
 	public Controller(Controls controls) {
 		this.controls = controls;		
@@ -15,9 +16,6 @@ public abstract class Controller {
 	public float yaw;
 	public float thrust;
 	
-	public abstract void enable();
-	public abstract void disable();
-	
 	public void setOnFlyingDataListener(FlyingDataEvent flyingDataListener) {
 		flyingDataEvent = flyingDataListener;
 	}
@@ -25,6 +23,14 @@ public abstract class Controller {
     void updateFlightData() {
         flyingDataEvent.flyingDataEvent(getPitch(), getRoll(), getThrust(), getYaw());		
 	}
+    
+    public void enable(){
+		mIsDisabled = false;        
+	}
+
+    public void disable() {
+        mIsDisabled = true;
+    }
     
     public float getRoll() {
         return (roll + controls.getRollTrim()) * controls.getMaxRollPitchAngle() * controls.getDeadzone(roll);
