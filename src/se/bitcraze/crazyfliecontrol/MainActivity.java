@@ -33,12 +33,12 @@ import java.util.Locale;
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol.controller.Controller;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
-import se.bitcraze.crazyfliecontrol.controller.Gyroscope;
-import se.bitcraze.crazyfliecontrol.controller.Joystick;
-import se.bitcraze.crazyfliecontrol.controller.TouchJoystick1;
-import se.bitcraze.crazyfliecontrol.controller.TouchJoystick2;
-import se.bitcraze.crazyfliecontrol.controller.TouchJoystick3;
-import se.bitcraze.crazyfliecontrol.controller.TouchJoystick4;
+import se.bitcraze.crazyfliecontrol.controller.GamepadController;
+import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
+import se.bitcraze.crazyfliecontrol.controller.Touch1Controller;
+import se.bitcraze.crazyfliecontrol.controller.Touch2Controller;
+import se.bitcraze.crazyfliecontrol.controller.Touch3Controller;
+import se.bitcraze.crazyfliecontrol.controller.Touch4Controller;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
@@ -199,22 +199,22 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         Log.d("Chopter: ","in on resume and the mod is"+Integer.toString(mControls.getMode()));
         switch(mControls.getMode()){
             case(0):
-                controller = new TouchJoystick1(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                controller = new Touch1Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
                 break;
             case(1):
-                controller = new TouchJoystick2(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                controller = new Touch2Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
                 break;
             case(2):
-                controller = new TouchJoystick3(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                controller = new Touch3Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
                 break;
             case(3):
-                controller = new TouchJoystick4(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+                controller = new Touch4Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
                 break;
             case(4):
-                controller = new Joystick(mControls);
+                controller = new GamepadController(mControls);
                 break;
             case(5):
-                controller = new Gyroscope(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
+                controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
                 break;
         }
 
@@ -268,7 +268,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE && mControls.getMode() == 4) {
-        	((Joystick) controller).dealWithMotionEvent(event);
+        	((GamepadController) controller).dealWithMotionEvent(event);
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);

@@ -2,9 +2,9 @@ package se.bitcraze.crazyfliecontrol.controller;
 
 import android.view.MotionEvent;
 
-public class Joystick extends Controller {
+public class GamepadController extends Controller {
 	
-	public Joystick(Controls controls) {
+	public GamepadController(Controls controls) {
 		super(controls);
 	}
 	

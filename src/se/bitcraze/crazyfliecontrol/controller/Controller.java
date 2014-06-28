@@ -37,7 +37,7 @@ public abstract class Controller implements IController {
     }
 
     public float getPitch() {
-
+    	
         return (pitch + controls.getPitchTrim()) * controls.getMaxRollPitchAngle() * controls.getDeadzone(pitch);
     }
     

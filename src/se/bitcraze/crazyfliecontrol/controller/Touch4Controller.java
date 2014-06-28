@@ -3,13 +3,13 @@ package se.bitcraze.crazyfliecontrol.controller;
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
-public class TouchJoystick2 extends Controller {	
+public class Touch4Controller extends Controller {	
 	
 	private int mResolution = 1000;
 	
 	private DualJoystickView joystickView;
 	 
-	public TouchJoystick2(Controls controls, DualJoystickView joystickView) {
+	public Touch4Controller(Controls controls, DualJoystickView joystickView) {
 		super(controls);
 		this.joystickView = joystickView;
 		this.joystickView.setMovementRange(mResolution, mResolution);
@@ -30,44 +30,44 @@ public class TouchJoystick2 extends Controller {
         @Override
         public void OnMoved(int pan, int tilt) {
             thrust = (float) tilt / mResolution;
-            yaw = (float) pan / mResolution;
+            roll = (float) pan / mResolution;
             updateFlightData();
         }
 
         @Override
         public void OnReleased() {
             thrust = 0;
-            yaw = 0;
+            roll = 0;
             updateFlightData();
         }
 
         public void OnReturnedToCenter() {
             thrust = 0;
-            yaw = 0;
+            roll = 0;
             updateFlightData();
         }
     };
-
+	
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
         public void OnMoved(int pan, int tilt) {
         	pitch = (float) tilt / mResolution;
-            roll = (float) pan / mResolution;
+            yaw = (float) pan / mResolution;
             updateFlightData();
         }
 
 		@Override
         public void OnReleased() {
-        	roll = 0;
+        	yaw = 0;
             pitch = 0;
             updateFlightData();
         }
 
         public void OnReturnedToCenter() {
-            roll = 0;
+            yaw = 0;
             pitch = 0;
             updateFlightData();
         }
     };
-}
+} 

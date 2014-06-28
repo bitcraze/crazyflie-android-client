@@ -9,13 +9,13 @@ import android.util.Log;
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
-public class Gyroscope extends Controller implements SensorEventListener {
+public class GyroscopeController extends Controller implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private DualJoystickView joystickView;
     private int resolution = 1000;
 
-    public Gyroscope(Controls controls, SensorManager sensorManager, DualJoystickView dualJoystickView) {
+    public GyroscopeController(Controls controls, SensorManager sensorManager, DualJoystickView dualJoystickView) {
         super(controls);
         this.joystickView = dualJoystickView;
         this.joystickView.setMovementRange(resolution, resolution);
