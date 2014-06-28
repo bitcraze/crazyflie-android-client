@@ -1,7 +1,6 @@
 package se.bitcraze.crazyfliecontrollers;
 
 import android.view.MotionEvent;
-import se.bitcraze.crazyfliecontrol.Controls;
 
 public class Joystick extends Controller {
 	

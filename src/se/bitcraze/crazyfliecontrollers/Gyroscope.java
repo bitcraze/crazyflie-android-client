@@ -1,6 +1,5 @@
 package se.bitcraze.crazyfliecontrollers;
 
-import se.bitcraze.crazyfliecontrol.Controls;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;

@@ -1,6 +1,5 @@
 package se.bitcraze.crazyfliecontrollers;
 
-import se.bitcraze.crazyfliecontrol.Controls;
 import se.bitcraze.crazyfliecontrol.FlyingDataEvent;
 
 public abstract class Controller {
