@@ -31,7 +31,14 @@ import java.io.IOException;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
-import se.bitcraze.crazyfliecontrollers.*;
+import se.bitcraze.crazyfliecontrol.controller.Controller;
+import se.bitcraze.crazyfliecontrol.controller.Controls;
+import se.bitcraze.crazyfliecontrol.controller.Gyroscope;
+import se.bitcraze.crazyfliecontrol.controller.Joystick;
+import se.bitcraze.crazyfliecontrol.controller.TouchJoystick1;
+import se.bitcraze.crazyfliecontrol.controller.TouchJoystick2;
+import se.bitcraze.crazyfliecontrol.controller.TouchJoystick3;
+import se.bitcraze.crazyfliecontrol.controller.TouchJoystick4;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;

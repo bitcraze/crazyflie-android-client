@@ -1,4 +1,4 @@
-package se.bitcraze.crazyfliecontrollers;
+package se.bitcraze.crazyfliecontrol.controller;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;

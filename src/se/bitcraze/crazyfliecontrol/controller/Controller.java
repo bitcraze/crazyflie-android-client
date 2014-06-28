@@ -1,4 +1,4 @@
-package se.bitcraze.crazyfliecontrollers;
+package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol.FlyingDataEvent;
 
