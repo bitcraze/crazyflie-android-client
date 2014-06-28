@@ -4,7 +4,6 @@ import se.bitcraze.crazyfliecontrol.FlightDataView;
 import se.bitcraze.crazyfliecontrol.MainActivity;
 import se.bitcraze.crazyfliecontrol.PreferencesActivity;
 import se.bitcraze.crazyfliecontrol.R;
-import se.bitcraze.crazyfliecontrol.R.string;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.KeyEvent;
