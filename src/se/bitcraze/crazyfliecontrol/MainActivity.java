@@ -30,7 +30,6 @@ package se.bitcraze.crazyfliecontrol;
 import java.io.IOException;
 import java.util.Locale;
 
-import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
@@ -38,11 +37,9 @@ import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,7 +51,6 @@ import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -92,8 +88,6 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     private boolean mDoubleBackToExitPressedOnce = false;
 
     private Thread mSendJoystickDataThread;
-
-    private String[] mDatarateStrings;
 
     private Controls mControls;
 
@@ -151,8 +145,6 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
 
         mRadioChannelDefaultValue = getString(R.string.preferences_radio_channel_defaultValue);
         mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
-
-        mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
 
     private void checkScreenLock() {
@@ -174,17 +166,15 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
-                try {
-                    linkConnect();
+            	try {
+                    if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
+                        linkDisconnect();
+                    } else {
+                        linkConnect();
+                    }
                 } catch (IllegalStateException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-                break;
-            case R.id.menu_disconnect:
-                linkDisconnect();
-                break;
-            case R.id.menu_radio_scan:
-                radioScan();
                 break;
             case R.id.preferences:
                 Intent intent = new Intent(this, PreferencesActivity.class);
@@ -289,17 +279,6 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         }
         controller = gamepadController;
         controller.enable();
-    }
-
-    private void setRadioChannelAndDatarate(int channel, int datarate) {
-        if (channel != -1 && datarate != -1) {
-            SharedPreferences.Editor editor = mPreferences.edit();
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
-            editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
-            editor.commit();
-
-            Toast.makeText(this,"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -455,71 +434,6 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
             }
         });
     }
-
-    private void radioScan() {
-        new AsyncTask<Void, Void, ConnectionData[]>() {
-
-            private Exception mException = null;
-            private ProgressDialog mProgress;
-            
-            @Override
-            protected void onPreExecute() {
-                mProgress = ProgressDialog.show(MainActivity.this, "Radio Scan", "Searching for the Crazyflie...", true, false);
-            }
-
-            @Override
-            protected ConnectionData[] doInBackground(Void... arg0) {
-                try {
-                    return CrazyradioLink.scanChannels(MainActivity.this);
-                } catch(IllegalStateException e) {
-                    mException = e;
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(ConnectionData[] result) {
-                mProgress.dismiss();
-                
-                if(mException != null) {
-                    Toast.makeText(MainActivity.this, mException.getMessage(), Toast.LENGTH_SHORT).show();
-                } else {
-                    
-                    if (result != null && result.length > 0) {
-                        if(result.length > 1){
-                            // let user choose connection, if there is more than one Crazyflie 
-                            showSelectConnectionDialog(result);
-                        }else{
-                            // use first channel
-                            setRadioChannelAndDatarate(result[0].getChannel(), result[0].getDataRate());
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "No connection found", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }.execute();
-    }
-
-    private void showSelectConnectionDialog(final ConnectionData[] result) {
-        SelectConnectionDialogFragment selectConnectionDialogFragment = new SelectConnectionDialogFragment();
-        //supply list of Crazyflie connections as arguments
-        Bundle args = new Bundle();
-        String[] crazyflieArray = new String[result.length];
-        for(int i = 0; i < result.length; i++){
-            crazyflieArray[i] = i + ": Channel " + result[i].getChannel() + ", Data rate " + mDatarateStrings[result[i].getDataRate()];
-        }
-        args.putStringArray("connection_array", crazyflieArray);
-        selectConnectionDialogFragment.setArguments(args);
-        selectConnectionDialogFragment.setListener(new SelectCrazyflieDialogListener(){
-            @Override
-            public void onClick(int which) {
-                setRadioChannelAndDatarate(result[which].getChannel(), result[which].getDataRate());
-            }
-        });
-        selectConnectionDialogFragment.show(getFragmentManager(), "select_crazyflie");
-    }
-
 
 	@Override
 	public void flyingDataEvent(float pitch, float roll, float thrust, float yaw) {
