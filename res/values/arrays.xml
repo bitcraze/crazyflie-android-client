@@ -5,7 +5,7 @@
         <item >1 Mbit/s</item>
         <item >2 Mbit/s</item>
     </string-array>
-    
+
     <string-array name="radioDatarateEntryValues">
         <item >0</item>
         <item >1</item>

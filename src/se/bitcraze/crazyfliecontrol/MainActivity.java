@@ -1,6 +1,6 @@
 /**
- *    ||          ____  _ __
- * +------+      / __ )(_) /_______________ _____  ___
+ *    ||          ____  _ __                           
+ * +------+      / __ )(_) /_______________ _____  ___ 
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -13,7 +13,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -66,21 +66,18 @@ import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements FlyingDataEvent {
 
     private static final String TAG = "CrazyflieControl";
-
-    private static final int MAX_THRUST = 65535;
-
-    private DualJoystickView mDualJoystickView;
+   
+    private IController controller;
+    private GamepadController gamepadController;
+    
     private FlightDataView mFlightDataView;
 
-    private Link mCrazyradioLink;
+    private CrazyradioLink mCrazyradioLink;
 
     private SharedPreferences mPreferences;
-
-    private IController mController;
-    private GamepadController mGamepadController;
 
     private String mRadioChannelDefaultValue;
     private String mRadioDatarateDefaultValue;
@@ -103,18 +100,15 @@ public class MainActivity extends Activity {
 
         setDefaultPreferenceValues();
 
+		//Default controller
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
-        //Default controller
-        mDualJoystickView = (DualJoystickView) findViewById(R.id.joysticks);
-        mController = new TouchController(mControls, this, mDualJoystickView);
-
         //initialize gamepad controller
-        mGamepadController = new GamepadController(mControls, this, mPreferences);
-        mGamepadController.setDefaultPreferenceValues(getResources());
+        gamepadController = new GamepadController(mControls, this, mPreferences);
+        gamepadController.setDefaultPreferenceValues(getResources());
 
-        mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
+        mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);      
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
@@ -151,7 +145,7 @@ public class MainActivity extends Activity {
 
     private void checkScreenLock() {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
-        if(isScreenLock || mController instanceof GyroscopeController){
+        if(isScreenLock){
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }else{
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
@@ -165,20 +159,10 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(final Menu menu) {
-        if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
-            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_disconnect);
-        } else {
-            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_connect);
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
-                try {
+            	try {
                     if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
                         linkDisconnect();
                     } else {
@@ -199,10 +183,16 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        //TODO: improve
         mControls.setControlConfig();
-        mGamepadController.setControlConfig();
-        resetInputMethod();
+        
+        if (mControls.isUseGyro()) {
+        	controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
+        } else {
+            controller = new TouchController(mControls, (DualJoystickView) findViewById(R.id.joysticks));
+        }
+        controller.setOnFlyingDataListener(this);
+        controller.enable();
+        gamepadController.setControlConfig();
         checkScreenLock();
     }
 
@@ -215,10 +205,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mControls.resetAxisValues();
         if (mCrazyradioLink != null) {
             linkDisconnect();
         }
+        controller.disable();
     }
 
     @Override
@@ -247,20 +237,14 @@ public class MainActivity extends Activity {
         }, 2000);
     }
 
-    //TODO: fix indirection
-    public void updateFlightData(){
-        mFlightDataView.updateFlightData(mController.getPitch(), mController.getRoll(), mController.getThrust(), mController.getYaw());
-    }
-
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
-        	if(!(mController instanceof GamepadController)){
+        	if(!(controller instanceof GamepadController)){
         		changeToGamepadController();
         	}
-            mGamepadController.dealWithMotionEvent(event);
-            updateFlightData();
+        	gamepadController.dealWithMotionEvent(event);
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
@@ -272,10 +256,10 @@ public class MainActivity extends Activity {
         // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
-        	if(!(mController instanceof GamepadController)){
+        	if(!(controller instanceof GamepadController)){
         		changeToGamepadController();
         	}
-            mGamepadController.dealWithKeyEvent(event);
+            gamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
                 return true;
@@ -283,26 +267,14 @@ public class MainActivity extends Activity {
         }
         return super.dispatchKeyEvent(event);
     }
-
+    
     //TODO: improve
     private void changeToGamepadController(){
-        if (!((TouchController) getController()).isDisabled()) {
-        	((TouchController) getController()).disable();
+        if (!((TouchController) controller).isDisabled()) {
+        	((TouchController) controller).disable();
         }
-        mController = mGamepadController;
-        mController.enable();
-    }
-
-    private void resetInputMethod() {
-        // TODO: reuse existing touch controller?
-
-        // Use GyroscopeController if activated in the preferences
-        if (mControls.isUseGyro()) {
-            mController = new GyroscopeController(mControls, this, mDualJoystickView, (SensorManager) getSystemService(Context.SENSOR_SERVICE));
-        } else {
-            mController = new TouchController(mControls, this, mDualJoystickView);
-        }
-        mController.enable();
+        controller = gamepadController;
+        controller.enable();
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
@@ -416,8 +388,8 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()/100 * MAX_THRUST), mControls.isXmode()));
-
+                        mCrazyradioLink.send(new CommanderPacket(controller.getRoll(), controller.getPitch(), controller.getYaw(), (char) (controller.getThrust()), mControls.getXmode()));
+                        
                         try {
                             Thread.sleep(20, 0);
                         } catch (InterruptedException e) {
@@ -439,7 +411,7 @@ public class MainActivity extends Activity {
     public Link getCrazyflieLink(){
         return mCrazyradioLink;
     }
-
+    
     public void linkDisconnect() {
         if (mCrazyradioLink != null) {
             mCrazyradioLink.disconnect();
@@ -449,7 +421,7 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread.interrupt();
             mSendJoystickDataThread = null;
         }
-
+        
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -459,8 +431,8 @@ public class MainActivity extends Activity {
         });
     }
 
-    public IController getController(){
-    	return mController;
-    }
-
+	@Override
+	public void flyingDataEvent(float pitch, float roll, float thrust, float yaw) {
+		mFlightDataView.updateFlightData(pitch, roll, thrust, yaw);
+	}
 }

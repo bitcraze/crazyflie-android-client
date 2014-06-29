@@ -1,71 +1,86 @@
 package se.bitcraze.crazyfliecontrol.controller;
 
-import se.bitcraze.crazyfliecontrol.MainActivity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
-/**
- * The GyroscopeController extends the TouchController and uses the gyroscope sensors 
- * of the device to control the roll and pitch values.
- * The yaw and thrust values are still controlled by the touch controls according
- * to the chosen "mode" setting.
- * 
- */
-public class GyroscopeController extends TouchController implements SensorEventListener {
+public class GyroscopeController extends Controller implements SensorEventListener {
 
     private SensorManager mSensorManager;
+    private DualJoystickView joystickView;
+    private int resolution = 1000;
 
-    private int AMPLIFICATION = 2;
-
-    private float mSensorRoll = 0;;
-    private float mSensorPitch = 0;;
-
-    public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView, SensorManager sensorManager) {
-        super(controls, activity, dualJoystickView);
+    public GyroscopeController(Controls controls, SensorManager sensorManager, DualJoystickView dualJoystickView) {
+        super(controls);
+        this.joystickView = dualJoystickView;
+        this.joystickView.setMovementRange(resolution, resolution);
         mSensorManager = sensorManager;
     }
 
     @Override
     public void enable() {
-        super.enable();
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+        joystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        //TODO: implement the TYPE_ROTATION_VECTOR solution too
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
     public void disable() {
-        super.disable();
         mSensorManager.unregisterListener(this);
-    }
-
-    public String getControllerName() {
-        return "gyroscope controller";
+        joystickView.setOnJostickMovedListener(null, null);
     }
 
     @Override
     public void onAccuracyChanged(Sensor arg0, int arg1) {
+
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // amplifying the sensitivity.
-        mSensorRoll = event.values[0] * AMPLIFICATION;
-        mSensorPitch = event.values[1] * AMPLIFICATION;
+        // amplifying the sensitivity.    	
+        pitch = (event.values[0] / 10 ) * -1;
+        roll = event.values[1] / 10;       
         updateFlightData();
     }
 
-    // overwrite getRoll() and getPitch() to only use values from gyro sensors
-    public float getRoll() {
-        float roll = mSensorRoll;
-        return (roll + mControls.getRollTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(roll);
-    }
+    private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
-    public float getPitch() {
-        float pitch = mSensorPitch;
-        return (pitch + mControls.getPitchTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(pitch);
-    }
+        @Override
+        public void OnMoved(int pan, int tilt) {
+            yaw = (float) pan / resolution;
+            updateFlightData();
+        }
+
+        @Override
+        public void OnReleased() {
+            yaw=0;
+        }
+
+        public void OnReturnedToCenter() {
+            yaw=0;
+        }
+    };
+
+    private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
+
+        @Override
+        public void OnMoved(int pan, int tilt) {
+            thrust = (float) tilt / resolution;
+            updateFlightData();
+        }
+
+        @Override
+        public void OnReleased() {
+            thrust = 0;
+        }
+
+        public void OnReturnedToCenter() {
+            thrust = 0;
+        }
+    };
 
 }

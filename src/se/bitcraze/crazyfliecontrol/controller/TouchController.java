@@ -1,7 +1,5 @@
 package se.bitcraze.crazyfliecontrol.controller;
 
-import se.bitcraze.crazyfliecontrol.MainActivity;
-
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
@@ -13,78 +11,93 @@ import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
  * yaw to the right X-Axis and thrust to the right Y-Axis.
  * 
  */
-public class TouchController extends AbstractController {
+public class TouchController extends Controller {
 
-    protected int mResolution = 1000;
+	private int resolution = 1000;
 
-    protected DualJoystickView dualJoystickView;
+	private DualJoystickView joystickView;
+	
+	private float leftX;
+	private float leftY;
+	private float rightX;
+	private float rightY;
 
-    public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
-        super(controls, activity);
-        this.dualJoystickView = dualJoystickview;
-        this.dualJoystickView.setMovementRange(mResolution, mResolution);
-    }
+	public TouchController(Controls controls, DualJoystickView joystickView) {
+		super(controls);
+		this.joystickView = joystickView;
+		this.joystickView.setMovementRange(resolution, resolution);
+	}
 
-    @Override
-    public void enable() {
-        super.enable();
-        this.dualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
-    }
+	@Override
+	public void enable() {
+		joystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+	}
 
-    @Override
-    public void disable() {
-        super.disable();
-        this.dualJoystickView.setOnJostickMovedListener(null, null);
-    }
-
+	@Override
+	public void disable() {
+		joystickView.setOnJostickMovedListener(null, null);
+	}
+	
     public String getControllerName() {
         return "touch controller";
     }
+    
+	private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
 
-    private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
+		@Override
+		public void OnMoved(int pan, int tilt) {
+			leftX = (float) pan / resolution;
+			leftY = (float) tilt / resolution;
+			moved();
+		}
 
-        @Override
-        public void OnMoved(int pan, int tilt) {
-            mControls.setRightAnalogY((float) tilt / mResolution);
-            mControls.setRightAnalogX((float) pan / mResolution);
+		@Override
+		public void OnReleased() {
+			leftX = 0;
+			leftY = 0;
+			moved();
+		}
 
-            updateFlightData();
-        }
+		public void OnReturnedToCenter() {
+			leftX = 0;
+			leftY = 0;
+			moved();
+		}
+	};
 
-        @Override
-        public void OnReleased() {
-            // Log.i("Joystick-Right", "Release");
-            mControls.setRightAnalogY(0);
-            mControls.setRightAnalogX(0);
-        }
+	private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
-        public void OnReturnedToCenter() {
-            // Log.i("Joystick-Right", "Center");
-            mControls.setRightAnalogY(0);
-            mControls.setRightAnalogX(0);
-        }
-    };
+		@Override
+		public void OnMoved(int pan, int tilt) {
+			rightX = (float) pan / resolution;
+			rightY = (float) tilt / resolution;
+			moved();
+		}
 
-    private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
+		@Override
+		public void OnReleased() {
+			rightX = 0;
+			rightY = 0;
+			moved();
+		}
 
-        @Override
-        public void OnMoved(int pan, int tilt) {
-            mControls.setLeftAnalogY((float) tilt / mResolution);
-            mControls.setLeftAnalogX((float) pan / mResolution);
+		public void OnReturnedToCenter() {
+			rightX = 0;
+			rightY = 0;
+			moved();
+		}
+	};
 
-            updateFlightData();
-        }
+	private void moved() {
+		thrust = (controls.getMode() == 1 || controls.getMode() == 3) ? rightY
+				: leftY;
+		roll = (controls.getMode() == 1 || controls.getMode() == 2) ? rightX
+				: leftX;
+		pitch = (controls.getMode() == 1 || controls.getMode() == 3) ? leftY
+				: rightY;
+		yaw = (controls.getMode() == 1 || controls.getMode() == 2) ? leftX
+				: rightX;
 
-        @Override
-        public void OnReleased() {
-            mControls.setLeftAnalogY(0);
-            mControls.setLeftAnalogX(0);
-        }
-
-        public void OnReturnedToCenter() {
-            mControls.setLeftAnalogY(0);
-            mControls.setLeftAnalogX(0);
-        }
-    };
-
+		updateFlightData();
+	}
 }

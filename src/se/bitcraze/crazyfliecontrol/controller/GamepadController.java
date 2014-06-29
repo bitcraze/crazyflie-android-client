@@ -9,16 +9,11 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-/**
- * The GamepadController deals with external controllers (e.g. a PS3 or XBox game pad).
- * When the split axis yaw setting is activated, the shoulder buttons of the game pads
- * can be used to control the yaw axis.
- *
- */
-public class GamepadController extends AbstractController {
-
-    private SharedPreferences mPreferences;
-
+public class GamepadController extends Controller {
+	
+	private SharedPreferences mPreferences;
+	private MainActivity mActivity;
+	
     //Gamepad axis/buttons
     private int mRightAnalogXAxis;
     private int mRightAnalogYAxis;
@@ -30,17 +25,14 @@ public class GamepadController extends AbstractController {
     private int mRollTrimPlusBtn;
     private int mRollTrimMinusBtn;
     private int mPitchTrimPlusBtn;
-    private int mPitchTrimMinusBtn;
+    private int mPitchTrimMinusBtn;     
     
     private int mRightAnalogYAxisInvertFactor = -1;
     private int mLeftAnalogYAxisInvertFactor = -1;
-    
-    //Split axis
-    private float mSplit_axis_yaw_right;
-    private float mSplit_axis_yaw_left;
+        
     private boolean mUseSplitAxisYaw = false;
-
-    //Default gamepad axis/buttons
+    
+	//Default gamepad axis/buttons
     private String mRightAnalogXAxisDefaultValue;
     private String mRightAnalogYAxisDefaultValue;
     private String mLeftAnalogXAxisDefaultValue;
@@ -52,51 +44,64 @@ public class GamepadController extends AbstractController {
     private String mRollTrimMinusBtnDefaultValue;
     private String mPitchTrimPlusBtnDefaultValue;
     private String mPitchTrimMinusBtnDefaultValue;
-
-    public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
-        super(controls, activity);
-        this.mPreferences = preferences;
-    }
-
-    public String getControllerName(){
+       
+	private float leftX;
+	private float leftY;
+	private float rightX;
+	private float rightY;
+	private float mSplit_axis_yaw_right;
+	private float mSplit_axis_yaw_left;
+	
+	public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
+		super(controls);
+		this.mActivity = activity;
+		this.mPreferences = preferences;
+	}
+	
+	public String getControllerName(){
     	return "gamepad controller";
     }
-
-    public void dealWithMotionEvent(MotionEvent event){
+    
+	public void dealWithMotionEvent(MotionEvent event){
         //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,
         this is necessary for analog R1 (Brake) or analog R2 (Gas) shoulder buttons on PS3 controller*/
         mRightAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
         mLeftAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
-
+                
         // default axis are set to work with PS3 controller
-        mControls.setRightAnalogX((float) event.getAxisValue(mRightAnalogXAxis));
-        mControls.setRightAnalogY((float) (event.getAxisValue(mRightAnalogYAxis)) * mRightAnalogYAxisInvertFactor);
-        mControls.setLeftAnalogX((float) event.getAxisValue(mLeftAnalogXAxis));
-        mControls.setLeftAnalogY((float) (event.getAxisValue(mLeftAnalogYAxis)) * mLeftAnalogYAxisInvertFactor);
-
+        rightX = (float) (event.getAxisValue(mRightAnalogXAxis));
+        rightY = (float) (event.getAxisValue(mRightAnalogYAxis) * mRightAnalogYAxisInvertFactor);
+        leftX = (float) event.getAxisValue(mLeftAnalogXAxis);
+        leftY = (float) (event.getAxisValue(mLeftAnalogYAxis) * mLeftAnalogYAxisInvertFactor);
+        
         mSplit_axis_yaw_right = (float) event.getAxisValue(mSplitAxisYawRightAxis);
         mSplit_axis_yaw_left = (float) event.getAxisValue(mSplitAxisYawLeftAxis);
+        
+        moved();
     }
-
+	
     public void dealWithKeyEvent(KeyEvent event){
         switch (event.getAction()) {
         case KeyEvent.ACTION_DOWN:
             if(event.getKeyCode() == mEmergencyBtn){
                 //quick solution
-                mControls.resetAxisValues();
+            	roll = 0;
+            	thrust = 0;
+            	pitch = 0;
+            	yaw = 0;            	
                 if (mActivity.getCrazyflieLink() != null) {
                     mActivity.linkDisconnect();
                 }
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             }else if (event.getKeyCode() == mRollTrimPlusBtn) {
-                mControls.increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
+                controls.increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
             }else if (event.getKeyCode() == mRollTrimMinusBtn) {
-            	mControls.decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
+                controls.decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
             }else if (event.getKeyCode() == mPitchTrimPlusBtn) {
-            	mControls.increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                controls.increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
             }else if (event.getKeyCode() == mPitchTrimMinusBtn) {
-            	mControls.decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                controls.decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
             }
             break;
         default:
@@ -117,9 +122,9 @@ public class GamepadController extends AbstractController {
         mRollTrimPlusBtnDefaultValue = res.getString(R.string.preferences_rolltrim_plus_btn_defaultValue);
         mRollTrimMinusBtnDefaultValue = res.getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
         mPitchTrimPlusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
-        mPitchTrimMinusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);        
+        mPitchTrimMinusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
     }
-
+    
     public void setControlConfig() {
         this.mRightAnalogXAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_X_AXIS, mRightAnalogXAxisDefaultValue)); 
         this.mRightAnalogYAxis = MotionEvent.axisFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_RIGHT_ANALOG_Y_AXIS, mRightAnalogYAxisDefaultValue)); 
@@ -132,27 +137,23 @@ public class GamepadController extends AbstractController {
         this.mRollTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_PLUS_BTN, mRollTrimPlusBtnDefaultValue));
         this.mRollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue));
         this.mPitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue));
-        this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));
+        this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));        
     }
+    
+	private void moved() {
+		thrust = (controls.getMode() == 1 || controls.getMode() == 3) ? rightY
+				: leftY;
+		roll = (controls.getMode() == 1 || controls.getMode() == 2) ? rightX
+				: leftX;
+		pitch = (controls.getMode() == 1 || controls.getMode() == 3) ? leftY
+				: rightY;
 
-    private boolean useSplitAxisYaw(){
-        return mUseSplitAxisYaw;
-    }
-
-    /* 
-     * Handles split axis
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyfliecontrol.controller.AbstractController#getYaw()
-     */
-    @Override
-    public float getYaw() {
-        float yaw = 0;
-        if(useSplitAxisYaw()){
+        if(mUseSplitAxisYaw){
             yaw = mSplit_axis_yaw_right - mSplit_axis_yaw_left;
         }else{
-            yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
+            yaw = (controls.getMode() == 1 || controls.getMode() == 2) ? leftX : rightX;
         }
-        return yaw * mControls.getYawFactor() * mControls.getDeadzone(yaw);
-    }
-
+        
+		updateFlightData();
+	}
 }
