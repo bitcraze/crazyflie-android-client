@@ -78,6 +78,8 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     private static final String TAG = "CrazyflieControl";
    
     private IController controller;
+    private GamepadController gamepadController;
+    
     private FlightDataView mFlightDataView;
 
     private CrazyradioLink mCrazyradioLink;
@@ -110,6 +112,9 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
+        //initialize gamepad controller
+        gamepadController = new GamepadController(mControls, this, mPreferences);
+        gamepadController.setDefaultPreferenceValues(getResources());
         
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
@@ -193,7 +198,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     public void onResume() {
         super.onResume();
         mControls.setControlConfig();
-        Log.d("Chopter: ","in on resume and the mod is"+Integer.toString(mControls.getMode()));
+        
         if (mControls.isUseGyro()) {
         	controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
         } else {
@@ -201,6 +206,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         }
         controller.setOnFlyingDataListener(this);
         controller.enable();
+        gamepadController.setControlConfig();
         checkScreenLock();
     }
 
@@ -248,8 +254,11 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
-        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE && mControls.getMode() == 4) {
-        	((GamepadController) controller).dealWithMotionEvent(event);
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
+        	if(!(controller instanceof GamepadController)){
+        		changeToGamepadController();
+        	}
+        	gamepadController.dealWithMotionEvent(event);
             return true;
         } else {
             return super.dispatchGenericMotionEvent(event);
@@ -262,14 +271,24 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
         	if(!(controller instanceof GamepadController)){
-        		((GamepadController) controller).dealWithKeyEvent(event);        		
-        	}        
+        		changeToGamepadController();
+        	}
+            gamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
                 return true;
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+    
+    //TODO: improve
+    private void changeToGamepadController(){
+        if (!((TouchController) controller).isDisabled()) {
+        	((TouchController) controller).disable();
+        }
+        controller = gamepadController;
+        controller.enable();
     }
 
     private void setRadioChannelAndDatarate(int channel, int datarate) {

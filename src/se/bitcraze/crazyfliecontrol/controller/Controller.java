@@ -34,6 +34,10 @@ public abstract class Controller implements IController {
         mIsDisabled = true;
     }
     
+    public boolean isDisabled() {
+        return mIsDisabled;
+    }
+    
     public float getRoll() {
         return (roll + controls.getRollTrim()) * controls.getMaxRollPitchAngle() * controls.getDeadzone(roll);
     }
