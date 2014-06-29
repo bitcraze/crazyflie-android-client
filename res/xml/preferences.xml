@@ -107,6 +107,13 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="pref_use_gyro_bool"
+            android:summaryOff="@string/preferences_use_gyro_bool_summary_off"
+            android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
+            android:title="@string/preferences_use_gyro_bool_title" />
+        
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="pref_afc_bool"
             android:summaryOff="@string/preferences_afc_bool_summary_off"
             android:summaryOn="@string/preferences_afc_bool_summary_on"

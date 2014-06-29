@@ -13,20 +13,16 @@
     </string-array>
 
     <string-array name="modeEntries">
-        <item >Touch joystick 1</item>
-        <item >Touch joystick 2</item>
-        <item >Touch joystick 3</item>
-        <item >Touch joystick 4</item>
-        <item >External controller</item>
-        <item >Gyroscope</item>
+        <item >Mode 1 (Left: Pitch &amp; Yaw, Right: Thrust &amp; Roll)</item>
+        <item >Mode 2 (Left: Thrust &amp; Yaw, Right: Pitch &amp; Roll)</item>
+        <item >Mode 3 (Left: Pitch &amp; Roll, Right: Thrust &amp; Yaw)</item>
+        <item >Mode 4 (Left: Thrust &amp; Roll, Right: Pitch &amp; Yaw)</item>
     </string-array>
 
     <string-array name="modeValues">
-        <item >0</item>
         <item >1</item>
         <item >2</item>
         <item >3</item>
         <item >4</item>
-        <item >5</item>
     </string-array>
 </resources>

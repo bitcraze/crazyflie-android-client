@@ -26,6 +26,9 @@
     <string name="preferences_reset_afc_title">Reset values</string>
     <string name="preferences_afc_bool_summary_on">Crazy mode. Use at your own risk!</string>
     <string name="preferences_afc_bool_summary_off">Normal mode</string>
+    <string name="preferences_use_gyro_bool_summary_on">Use gyroscope sensors for roll and pitch</string>
+    <string name="preferences_use_gyro_bool_summary_off">Do not use gyroscope sensors for roll and pitch</string>
+    <string name="preferences_use_gyro_bool_title">Use gyroscope sensors</string>
     <string name="preferences_xmode_title">X-Mode</string>
     <string name="preferences_xmode_summary">Client X-mode</string>
     <string name="preferences_btn_title">Gamepad axis and button mapping</string>
