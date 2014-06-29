@@ -44,7 +44,14 @@ public class GamepadController extends Controller {
     private String mRollTrimMinusBtnDefaultValue;
     private String mPitchTrimPlusBtnDefaultValue;
     private String mPitchTrimMinusBtnDefaultValue;
-    
+       
+	private float leftX;
+	private float leftY;
+	private float rightX;
+	private float rightY;
+	private float mSplit_axis_yaw_right;
+	private float mSplit_axis_yaw_left;
+	
 	public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
 		super(controls);
 		this.mActivity = activity;
@@ -57,22 +64,17 @@ public class GamepadController extends Controller {
         this is necessary for analog R1 (Brake) or analog R2 (Gas) shoulder buttons on PS3 controller*/
         mRightAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
         mLeftAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
-        
+                
         // default axis are set to work with PS3 controller
-        roll = (float) (event.getAxisValue(mRightAnalogXAxis));
-        thrust = (float) (event.getAxisValue(mRightAnalogYAxis) * mRightAnalogYAxisInvertFactor);                
-        pitch = (float) (event.getAxisValue(mLeftAnalogYAxis) * mLeftAnalogYAxisInvertFactor);
+        rightX = (float) (event.getAxisValue(mRightAnalogXAxis));
+        rightY = (float) (event.getAxisValue(mRightAnalogYAxis) * mRightAnalogYAxisInvertFactor);
+        leftX = (float) event.getAxisValue(mLeftAnalogXAxis);
+        leftY = (float) (event.getAxisValue(mLeftAnalogYAxis) * mLeftAnalogYAxisInvertFactor);
         
-        if(mUseSplitAxisYaw){
-            yaw = (float) (event.getAxisValue(mSplitAxisYawRightAxis)) - (float) (event.getAxisValue(mSplitAxisYawLeftAxis));
-        }else{
-            //TODO:
-        	//yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
-        	
-        	//TODO: with the mLeftAnagolXAxis's value should do *-1? 
-            yaw = (float) (event.getAxisValue(mLeftAnalogXAxis));
-        }
-        updateFlightData();
+        mSplit_axis_yaw_right = (float) event.getAxisValue(mSplitAxisYawRightAxis);
+        mSplit_axis_yaw_left = (float) event.getAxisValue(mSplitAxisYawLeftAxis);
+        
+        moved();
     }
 	
     public void dealWithKeyEvent(KeyEvent event){
@@ -83,7 +85,7 @@ public class GamepadController extends Controller {
             	roll = 0;
             	thrust = 0;
             	pitch = 0;
-            	yaw = 0;
+            	yaw = 0;            	
                 if (mActivity.getCrazyflieLink() != null) {
                     mActivity.linkDisconnect();
                 }
@@ -132,5 +134,22 @@ public class GamepadController extends Controller {
         this.mRollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue));
         this.mPitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue));
         this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));        
-    }    
+    }
+    
+	private void moved() {
+		thrust = (controls.getMode() == 1 || controls.getMode() == 3) ? rightY
+				: leftY;
+		roll = (controls.getMode() == 1 || controls.getMode() == 2) ? rightX
+				: leftX;
+		pitch = (controls.getMode() == 1 || controls.getMode() == 3) ? leftY
+				: rightY;
+
+        if(mUseSplitAxisYaw){
+            yaw = mSplit_axis_yaw_right - mSplit_axis_yaw_left;
+        }else{
+            yaw = (controls.getMode() == 1 || controls.getMode() == 2) ? leftX : rightX;
+        }
+        
+		updateFlightData();
+	}
 }

@@ -8,6 +8,7 @@ public class TouchController extends Controller {
 	private int resolution = 1000;
 
 	private DualJoystickView joystickView;
+	
 	private float leftX;
 	private float leftY;
 	private float rightX;
