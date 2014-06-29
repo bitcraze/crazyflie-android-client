@@ -39,6 +39,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -115,7 +116,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
         setupActionBar();
     }
-
+    
     private void setInitialSummaries() {
         // Set initial summaries and get default values
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
@@ -129,8 +130,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         Preference modePref = findPreference(KEY_PREF_MODE);
         String modeDefaultValue = getResources().getString(R.string.preferences_mode_defaultValue);
         stringArray = getResources().getStringArray(R.array.modeEntries);
+        Log.d("TEST: ",Integer.toString(stringArray.length));
+        Log.d("TEST: ",Integer.toString(stringArray.length));
         keyString = sharedPreferences.getString(KEY_PREF_MODE, modeDefaultValue);
-        modePref.setSummary(stringArray[Integer.parseInt(keyString)]);
+        modePref.setSummary(stringArray[Integer.parseInt(keyString) - 1]);
 
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
         trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);

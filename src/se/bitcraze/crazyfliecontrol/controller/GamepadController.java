@@ -58,6 +58,10 @@ public class GamepadController extends Controller {
 		this.mPreferences = preferences;
 	}
 	
+	public String getControllerName(){
+    	return "gamepad controller";
+    }
+    
 	public void dealWithMotionEvent(MotionEvent event){
         //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,

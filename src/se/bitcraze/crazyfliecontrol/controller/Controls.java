@@ -8,11 +8,16 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.widget.Toast;
 
+/**
+ * This class encapsulates the common preferences for all types of controllers.
+ * 
+ * TODO: rename Class
+ */
 public class Controls {
 
     private MainActivity mActivity;
     private SharedPreferences mPreferences;
-    
+
     //Trim values
     private float mRollTrim;
     private float mPitchTrim;
@@ -27,15 +32,15 @@ public class Controls {
     
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
-    
+
     private boolean mXmode; //determines Crazyflie flight configuration (false = +, true = x)
-    
+
     //Advanced flight control
     private int mMaxRollPitchAngle;
     private int mMaxYawAngle;
     private int mMaxThrust;
     private int mMinThrust;
-    
+
     //Advanced flight control default rules
     private String mMaxRollPitchAngleDefaultValue;
     private String mMaxYawAngleDefaultValue;

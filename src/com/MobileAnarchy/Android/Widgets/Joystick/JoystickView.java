@@ -122,13 +122,14 @@ public class JoystickView extends View {
         dbgPaint2.setStyle(Paint.Style.STROKE);
 
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(Color.GRAY);
-        bgPaint.setStrokeWidth(1);
-        bgPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        bgPaint.setColor(Color.BLACK);
+        bgPaint.setStrokeWidth(2);
+        bgPaint.setStyle(Paint.Style.STROKE);
 
         handlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        handlePaint.setColor(Color.DKGRAY);
+        handlePaint.setColor(Color.GRAY);
         handlePaint.setStrokeWidth(1);
+        handlePaint.setAlpha(100);
         handlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         innerPadding = 10;
@@ -181,7 +182,7 @@ public class JoystickView extends View {
 
     /**
      * Set the pressure sensitivity for registering a click
-     * 
+     *
      * @param clickThreshold
      *            threshold 0...1.0f inclusive. 0 will cause clicks to never be reported, 1.0 is a very hard click
      */
@@ -249,7 +250,7 @@ public class JoystickView extends View {
         cY = d / 2;
 
         bgRadius = dimX / 2 - innerPadding;
-        handleRadius = (int) (d * 0.25);
+        handleRadius = (int) (d * 0.20);
         handleInnerBoundaries = handleRadius;
         movementRadius = Math.min(cX, cY) - handleInnerBoundaries;
     }

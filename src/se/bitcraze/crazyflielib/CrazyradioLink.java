@@ -79,7 +79,6 @@ public class CrazyradioLink extends AbstractLink {
 
     private final BlockingDeque<CrtpPacket> mSendQueue;
 
-    public Param param;
     /**
      * Holds information about a specific connection.
      */
@@ -122,8 +121,6 @@ public class CrazyradioLink extends AbstractLink {
         setDataRate(connectionData.getDataRate());
 
         this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
-
-        param = new Param(this);
     }
 
     /**
@@ -410,6 +407,7 @@ public class CrazyradioLink extends AbstractLink {
 
                     byte[] receiveData = new byte[33];
                     final byte[] sendData = p.toByteArray();
+
                     final int receivedByteCount = sendBulkTransfer(sendData, receiveData);
                     
                     //TODO: extract link quality calculation

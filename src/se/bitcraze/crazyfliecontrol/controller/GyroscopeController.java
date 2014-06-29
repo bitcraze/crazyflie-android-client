@@ -24,6 +24,7 @@ public class GyroscopeController extends Controller implements SensorEventListen
     @Override
     public void enable() {
         joystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        //TODO: implement the TYPE_ROTATION_VECTOR solution too
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
     }
 

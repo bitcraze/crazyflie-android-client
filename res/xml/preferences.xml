@@ -20,6 +20,11 @@
             android:key="pref_radiodatarate"
             android:summary="@string/preferences_radio_datarate_summary"
             android:title="@string/preferences_radio_datarate" />
+
+        <Preference
+                android:key="pref_radio_scan"
+                android:summary="@string/preferences_radio_scan_summary"
+                android:title="@string/preferences_radio_scan" />
     </PreferenceCategory>
     <!-- Control preferences -->
     <PreferenceCategory android:title="@string/preferences_category_control" >

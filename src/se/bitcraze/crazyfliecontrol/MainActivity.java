@@ -100,13 +100,14 @@ public class MainActivity extends Activity implements FlyingDataEvent {
 
         setDefaultPreferenceValues();
 
+		//Default controller
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
 
         //initialize gamepad controller
         gamepadController = new GamepadController(mControls, this, mPreferences);
         gamepadController.setDefaultPreferenceValues(getResources());
-        
+
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);      
 
         IntentFilter filter = new IntentFilter();

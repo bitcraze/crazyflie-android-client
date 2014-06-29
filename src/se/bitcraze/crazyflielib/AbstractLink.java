@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import se.bitcraze.crazyflielib.crtp.ConsolePacket;
-import se.bitcraze.crazyflielib.crtp.HoverParamPacket;
 import android.util.Log;
 
 /**
@@ -88,9 +87,6 @@ public abstract class AbstractLink implements Link {
                     Log.i(AbstractLink.class.getName(), "received console packet: " + p.getText());
                     break;
                     // TODO implement other types
-                case HoverParamPacket.PORT:
-                    HoverParamPacket.parse(Arrays.copyOfRange(data, 1, data.length));
-                    break;
                 default:
                     Log.w(AbstractLink.class.getName(), "packet contains unknown port");
                     break;
