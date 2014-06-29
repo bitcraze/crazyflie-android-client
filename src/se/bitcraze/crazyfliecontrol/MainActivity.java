@@ -211,7 +211,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
                 controller = new Touch4Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
                 break;
             case(4):
-                controller = new GamepadController(mControls);
+                controller = new GamepadController(mControls, this, mPreferences);
                 break;
             case(5):
                 controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
@@ -280,7 +280,9 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
         if (event.getSource() == 1281) {
-            mControls.dealWithKeyEvent(event);
+        	if(!(controller instanceof GamepadController)){
+        		((GamepadController) controller).dealWithKeyEvent(event);        		
+        	}        
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
                 return true;

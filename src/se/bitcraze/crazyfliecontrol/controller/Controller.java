@@ -6,9 +6,11 @@ public abstract class Controller implements IController {
 	private FlyingDataEvent flyingDataEvent;
 	protected Controls controls;
 	protected boolean mIsDisabled;
+    
+	private final int MAX_THRUST = 65535;
 
 	public Controller(Controls controls) {
-		this.controls = controls;		
+		this.controls = controls;
 	}
 	
 	public float roll;
@@ -24,7 +26,7 @@ public abstract class Controller implements IController {
         flyingDataEvent.flyingDataEvent(getPitch(), getRoll(), getThrust(), getYaw());		
 	}
     
-    public void enable(){
+    public void enable() {
 		mIsDisabled = false;        
 	}
 
@@ -36,8 +38,7 @@ public abstract class Controller implements IController {
         return (roll + controls.getRollTrim()) * controls.getMaxRollPitchAngle() * controls.getDeadzone(roll);
     }
 
-    public float getPitch() {
-    	
+    public float getPitch() {    	
         return (pitch + controls.getPitchTrim()) * controls.getMaxRollPitchAngle() * controls.getDeadzone(pitch);
     }
     
@@ -54,7 +55,7 @@ public abstract class Controller implements IController {
            } else {
                addThrust = (controls.getMaxThrust() - controls.getMinThrust());
            }
-           return (controls.getMinThrust() + (thrust * addThrust))/100 * controls.MAX_THRUST;
+           return (controls.getMinThrust() + (thrust * addThrust))/100 * MAX_THRUST;
         } else {
             return 0;
         }
