@@ -23,6 +23,8 @@ public class Controls {
     private int mMode;      //Controller axis mapping (Mode 1-4)
     private float mDeadzone;
 
+    private boolean mUseGyro;
+    
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
     
@@ -64,7 +66,9 @@ public class Controls {
 
         this.mRollTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM, mTrimDefaultValue));
         this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, mTrimDefaultValue));
-        
+
+        this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
+
         //Advanced flight control
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
             this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
@@ -126,6 +130,10 @@ public class Controls {
         return mMode;
     }
 
+	public boolean isUseGyro() {
+		return mUseGyro;
+	}
+	
     public float getDeadzone(float axis) {
         if (axis < mDeadzone && axis > mDeadzone * -1) {
             return 0;

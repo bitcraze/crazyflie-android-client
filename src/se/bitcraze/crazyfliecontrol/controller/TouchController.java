@@ -3,13 +3,17 @@ package se.bitcraze.crazyfliecontrol.controller;
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 
-public class Touch1Controller extends Controller {	
+public class TouchController extends Controller {
 	
 	private int resolution = 1000;
 	
 	private DualJoystickView joystickView;
-	 
-	public Touch1Controller(Controls controls, DualJoystickView joystickView) {
+	private float leftX;
+	private float leftY;
+	private float rightX;
+	private float rightY;
+	
+	public TouchController(Controls controls, DualJoystickView joystickView) {
 		super(controls);
 		this.joystickView = joystickView;
 		this.joystickView.setMovementRange(resolution, resolution);
@@ -23,29 +27,28 @@ public class Touch1Controller extends Controller {
 	@Override
 	public void disable() {
 		joystickView.setOnJostickMovedListener(null, null);
-		
 	}
 
     private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
-
+    
         @Override
         public void OnMoved(int pan, int tilt) {
-            pitch = (float) tilt / resolution;
-            yaw = (float) pan / resolution;
-            updateFlightData();
+        	leftX = (float) pan / resolution;
+        	leftY = (float) tilt / resolution;
+        	moved();
         }
 
         @Override
         public void OnReleased() {
-            pitch = 0;
-            yaw = 0;
-            updateFlightData();
+        	leftX = 0;
+        	leftY = 0;
+            moved();
         }
 
         public void OnReturnedToCenter() {
-            pitch = 0;
-            yaw = 0;
-            updateFlightData();
+        	leftX = 0;
+        	leftY = 0;
+        	moved();
         }
     };
 
@@ -53,22 +56,31 @@ public class Touch1Controller extends Controller {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            thrust = (float) tilt / resolution;
-            roll = (float) pan / resolution;
-            updateFlightData();
+            rightX = (float) pan / resolution;
+            rightY = (float) tilt / resolution;
+            moved();
         }
 
 		@Override
         public void OnReleased() {
-        	thrust = 0;
-            roll = 0;
-            updateFlightData();
+			rightX = 0;
+			rightY = 0;
+			moved();
         }
 
         public void OnReturnedToCenter() {
-            thrust = 0;
-            roll = 0;
-            updateFlightData();
+        	rightX = 0;
+            rightY = 0;
+            moved();
         }
     };
+    
+    private void moved(){
+        thrust = (controls.getMode() == 1 || controls.getMode() == 3) ? rightY : leftY;
+        roll = (controls.getMode() == 1 || controls.getMode() == 2) ? rightX : leftX;
+        pitch = (controls.getMode() == 1 || controls.getMode() == 3) ? leftY : rightY;
+        yaw = (controls.getMode() == 1 || controls.getMode() == 2) ? leftX : rightX;
+
+    	updateFlightData();
+    }   
 }

@@ -35,10 +35,7 @@ import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
-import se.bitcraze.crazyfliecontrol.controller.Touch1Controller;
-import se.bitcraze.crazyfliecontrol.controller.Touch2Controller;
-import se.bitcraze.crazyfliecontrol.controller.Touch3Controller;
-import se.bitcraze.crazyfliecontrol.controller.Touch4Controller;
+import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
@@ -197,27 +194,11 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         super.onResume();
         mControls.setControlConfig();
         Log.d("Chopter: ","in on resume and the mod is"+Integer.toString(mControls.getMode()));
-        switch(mControls.getMode()){
-            case(0):
-                controller = new Touch1Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
-                break;
-            case(1):
-                controller = new Touch2Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
-                break;
-            case(2):
-                controller = new Touch3Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
-                break;
-            case(3):
-                controller = new Touch4Controller(mControls, (DualJoystickView) findViewById(R.id.joysticks));
-                break;
-            case(4):
-                controller = new GamepadController(mControls, this, mPreferences);
-                break;
-            case(5):
-                controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
-                break;
+        if (mControls.isUseGyro()) {
+        	controller = new GyroscopeController(mControls,  (SensorManager) getSystemService(Context.SENSOR_SERVICE), (DualJoystickView) findViewById(R.id.joysticks));
+        } else {
+            controller = new TouchController(mControls, (DualJoystickView) findViewById(R.id.joysticks));
         }
-
         controller.setOnFlyingDataListener(this);
         controller.enable();
         checkScreenLock();
