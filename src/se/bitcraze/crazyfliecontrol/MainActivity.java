@@ -31,10 +31,10 @@ import java.io.IOException;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
-import se.bitcraze.crazyfliecontrol.controller.Controller;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
+import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.Touch1Controller;
 import se.bitcraze.crazyfliecontrol.controller.Touch2Controller;
 import se.bitcraze.crazyfliecontrol.controller.Touch3Controller;
@@ -80,7 +80,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
 
     private static final String TAG = "CrazyflieControl";
    
-    private Controller controller;
+    private IController controller;
     private FlightDataView mFlightDataView;
 
     private CrazyradioLink mCrazyradioLink;
