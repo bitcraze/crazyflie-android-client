@@ -11,5 +11,5 @@
         android:showAsAction="ifRoom"
         android:title="@string/menu_preferences"
         android:icon="@drawable/ic_action_settings"/>
-
+    
 </menu>
