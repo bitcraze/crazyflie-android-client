@@ -46,6 +46,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -61,15 +62,11 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Toast;
-import android.widget.ToggleButton;
-import android.hardware.SensorManager;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
-public class MainActivity extends Activity implements FlyingDataEvent, OnCheckedChangeListener {
+public class MainActivity extends Activity implements FlyingDataEvent {
 
     private static final String TAG = "CrazyflieControl";
    
@@ -110,9 +107,7 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
         gamepadController = new GamepadController(mControls, this, mPreferences);
         gamepadController.setDefaultPreferenceValues(getResources());
         
-        mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
-
-        ((ToggleButton) findViewById(R.id.hovermode)).setOnCheckedChangeListener(this);
+        mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);      
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
@@ -438,14 +433,5 @@ public class MainActivity extends Activity implements FlyingDataEvent, OnChecked
 	@Override
 	public void flyingDataEvent(float pitch, float roll, float thrust, float yaw) {
 		mFlightDataView.updateFlightData(pitch, roll, thrust, yaw);
-	}
-
-	@Override
-	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		if(mCrazyradioLink != null) {
-				mCrazyradioLink.param.setHoverMode(isChecked);
-		} else {
-			((ToggleButton) findViewById(R.id.hovermode)).setChecked(false);
-		}
 	}
 }

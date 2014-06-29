@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android" >
+<?xml version="1.0" encoding="utf-8"?><merge xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <TextView
         android:id="@+id/pitch"
@@ -40,11 +39,5 @@
         android:layout_weight="1"
         android:text="@string/yaw"
         android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <ToggleButton
-        android:id="@+id/hovermode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hover" />
 
 </merge>
