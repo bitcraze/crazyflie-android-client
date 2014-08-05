@@ -36,22 +36,24 @@ public class Controls {
     private int mMode; // Controller axis mapping (Mode 1-4)
     private float mDeadzone;
 
+    private boolean mUseGyro;
+
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
 
     private boolean mXmode; // determines Crazyflie flight configuration (false = +, true = x)
 
+    //Advanced flight control
     private int mMaxRollPitchAngle;
     private int mMaxYawAngle;
     private int mMaxThrust;
     private int mMinThrust;
 
+    //Advanced flight control default values
     private String mMaxRollPitchAngleDefaultValue;
     private String mMaxYawAngleDefaultValue;
     private String mMaxThrustDefaultValue;
     private String mMinThrustDefaultValue;
-
-    private boolean mUseGyro;
 
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
@@ -64,6 +66,7 @@ public class Controls {
 
         mTrimDefaultValue = res.getString(R.string.preferences_trim_defaultValue);
 
+        //Advanced flight control
         mMaxRollPitchAngleDefaultValue = res.getString(R.string.preferences_maxRollPitchAngle_defaultValue);
         mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
         mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
@@ -79,9 +82,9 @@ public class Controls {
 
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
 
+        //Advanced flight control
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
-            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE,
-                    mMaxRollPitchAngleDefaultValue));
+            this.mMaxRollPitchAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue));
             this.mMaxYawAngle = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue));
             this.mMaxThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue));
             this.mMinThrust = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_MIN_THRUST, mMinThrustDefaultValue));

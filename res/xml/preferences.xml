@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/preferences_title" >
-
+    <!-- Connection preferences -->
     <PreferenceCategory android:title="@string/preferences_category_connection" >
         <EditTextPreference
             android:defaultValue="@string/preferences_radio_channel_defaultValue"
             android:dialogTitle="@string/preferences_radio_channel"
             android:inputType="number"
+            android:maxLength="4"
             android:key="pref_radiochannel"
             android:summary="@string/preferences_radio_channel_summary"
             android:title="@string/preferences_radio_channel" />
@@ -25,6 +26,7 @@
                 android:summary="@string/preferences_radio_scan_summary"
                 android:title="@string/preferences_radio_scan" />
     </PreferenceCategory>
+    <!-- Control preferences -->
     <PreferenceCategory android:title="@string/preferences_category_control" >
         <ListPreference
             android:defaultValue="@string/preferences_mode_defaultValue"
@@ -54,7 +56,7 @@
             android:inputType="numberDecimal|numberSigned"
             android:key="pref_pitchtrim"
             android:title="@string/preferences_pitchtrim" />
-
+        <!-- Gampepad and button mapping -->
         <PreferenceScreen 
             android:key="pref_btn_screen"
             android:title="@string/preferences_btn_title">
@@ -124,7 +126,8 @@
 
         <PreferenceScreen
             android:key="pref_afc_screen"
-            android:title="@string/preferences_afc_title" >
+            android:title="@string/preferences_afc_title"
+            android:dependency="pref_afc_bool" >
             <EditTextPreference
                 android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
                 android:dialogTitle="@string/preferences_maxRollPitchAngle_title"

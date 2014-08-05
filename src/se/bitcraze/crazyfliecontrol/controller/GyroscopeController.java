@@ -32,6 +32,7 @@ public class GyroscopeController extends TouchController implements SensorEventL
     @Override
     public void enable() {
         super.enable();
+        //TODO: check which sensor is available
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
     }
 

@@ -268,11 +268,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(key, false));
         }
 
-        if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
-            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
-            pref.setChecked(sharedPreferences.getBoolean(key, false));
-        }
-
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
         }
@@ -306,6 +301,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
         if (key.equals(KEY_PREF_PITCHTRIM_MINUS_BTN)) {
             findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimMinusBtnDefaultValue));
+        }
+
+        if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
         }
 
         if (key.equals(KEY_PREF_AFC_BOOL)) {

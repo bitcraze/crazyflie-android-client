@@ -70,8 +70,6 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "CrazyflieControl";
 
-    private static final int MAX_THRUST = 65535;
-
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
@@ -416,7 +414,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()/100 * MAX_THRUST), mControls.isXmode()));
+                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20, 0);
