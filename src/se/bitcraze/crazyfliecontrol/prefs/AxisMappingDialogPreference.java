@@ -1,7 +1,8 @@
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyfliecontrol.prefs;
 
 import java.util.List;
 
+import se.bitcraze.crazyfliecontrol.R;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -67,7 +68,7 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
 
         return layout;
     }
-    
+
     @Override
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
         super.onSetInitialValue(restorePersistedValue, defaultValue);

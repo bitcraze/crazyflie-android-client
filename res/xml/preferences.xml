@@ -61,16 +61,16 @@
             android:key="pref_btn_screen"
             android:title="@string/preferences_btn_title">
             <PreferenceCategory android:title="@string/preferences_category_axes" >
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_right_analog_x_axis"
                     android:title="@string/preferences_right_analog_x_axis_title"/>
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_right_analog_y_axis"
                     android:title="@string/preferences_right_analog_y_axis_title"/>
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_left_analog_x_axis"
                     android:title="@string/preferences_left_analog_x_axis_title"/>
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_left_analog_y_axis"
                     android:title="@string/preferences_left_analog_y_axis_title"/>
                <CheckBoxPreference
@@ -78,29 +78,29 @@
                     android:key="pref_splitaxis_yaw_bool"
                     android:summary="@string/preferences_splitaxis_yaw_bool_summary"
                     android:title="@string/preferences_splitaxis_yaw_bool_title" />
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_splitaxis_yaw_left_axis"
                     android:title="@string/preferences_splitaxis_yaw_left_axis_title"
                     android:defaultValue="@string/preferences_splitaxis_yaw_left_axis_defaultValue"/>
-               <se.bitcraze.crazyfliecontrol.AxisMappingDialogPreference 
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
                     android:key="pref_splitaxis_yaw_right_axis"
                     android:title="@string/preferences_splitaxis_yaw_right_axis_title"
                     android:defaultValue="@string/preferences_splitaxis_yaw_right_axis_defaultValue"/>
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/preferences_category_buttons" >
-                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_emergency_btn"
                     android:title="@string/preferences_emergency_btn_title"/>
-                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_rolltrim_plus_btn"
                     android:title="@string/preferences_rolltrim_plus_btn_title"/>
-                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_rolltrim_minus_btn"
                     android:title="@string/preferences_rolltrim_minus_btn_title"/>
-                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_pitchtrim_plus_btn"
                     android:title="@string/preferences_pitchtrim_plus_btn_title"/>
-                <se.bitcraze.crazyfliecontrol.ButtonMappingDialogPreference 
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_pitchtrim_minus_btn"
                     android:title="@string/preferences_pitchtrim_minus_btn_title"/>
             </PreferenceCategory>

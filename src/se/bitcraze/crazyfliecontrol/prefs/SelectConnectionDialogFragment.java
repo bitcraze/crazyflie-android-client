@@ -1,5 +1,6 @@
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyfliecontrol.prefs;
 
+import se.bitcraze.crazyfliecontrol.R;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
