@@ -2,11 +2,16 @@
 
     <string name="app_name">Crazyflie Client</string>
     <string name="title_activity_main">Crazyflie Client</string>
+
+    <!-- Menu -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_preferences">Preferences</string>
-    <string name="preferences_title">Crazyflie Control Preferences</string>
-    <string name="preferences_category_connection">Connection Preferences</string>
+
+    <string name="preferences_title">CrazyflieControl settings</string>
+
+    <!-- Connection settings -->
+    <string name="preferences_radio_title">Connection settings</string>
     <string name="preferences_radio_channel">Radio channel</string>
     <string name="preferences_radio_channel_summary">Set the radio channel</string>
     <string name="preferences_radio_channel_defaultValue">10</string>
@@ -16,7 +21,8 @@
     <string name="preferences_radio_scan">Radio Scan</string>
     <string name="preferences_radio_scan_summary">Initiate radio scan to find Crazyflie</string>
 
-    <string name="preferences_category_control">Control preferences</string>
+    <!-- Flight control settings -->
+    <string name="preferences_flightcontrol_title">Flight control settings</string>
     <string name="preferences_mode">Mode</string>
     <string name="preferences_mode_defaultValue">3</string>
     <string name="preferences_deadzone">Deadzone</string>
@@ -38,11 +44,14 @@
     <string name="preferences_reset_afc_summary">Reset to default values</string>
     <string name="preferences_afc_bool_summary_on">Crazy mode. Use at your own risk!</string>
     <string name="preferences_afc_bool_summary_off">Normal mode</string>
+    <string name="preferences_xmode_title">X-Mode</string>
+    <string name="preferences_xmode_summary">Client X-mode</string>
+
+    <!-- Controller settings -->
+    <string name="preferences_controller_title">Controller settings</string>
     <string name="preferences_use_gyro_bool_summary_on">Use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_summary_off">Do not use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_title">Use gyroscope sensors</string>
-    <string name="preferences_xmode_title">X-Mode</string>
-    <string name="preferences_xmode_summary">Client X-mode</string>
     <string name="preferences_btn_title">Gamepad axis and button mapping</string>
     <string name="preferences_category_axes">Axes</string>
     <string name="preferences_right_analog_x_axis_title">Right analog X axis</string>
@@ -74,9 +83,13 @@
     <string name="preferences_reset_btn_title">Reset values</string>
     <string name="preferences_reset_btn_summary">Reset to default values</string>
     <string name="preferences_button_mapping_dialog_text">Please press a button&#8230;</string>
-    <string name="preferences_category_app_settings">App Preferences</string>
+
+    <!-- App settings -->
+    <string name="preferences_app_title">App settings</string>
     <string name="preferences_screen_rotation_lock_title">Screen rotation lock</string>
     <string name="select_connection_dialog_title">Select Connection</string>
+    
+    <!-- FlightDataView -->
     <string name="pitch">Pitch: %1$s</string>
     <string name="roll">Roll: %1$s</string>
     <string name="thrust">Thrust: %1$s</string>

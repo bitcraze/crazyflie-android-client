@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/preferences_title" >
-    <!-- Connection preferences -->
-    <PreferenceCategory android:title="@string/preferences_category_connection" >
+
+    <!-- Connection settings -->
+    <PreferenceScreen 
+        android:key="pref_radio_screen"
+        android:title="@string/preferences_radio_title">
+
         <EditTextPreference
             android:defaultValue="@string/preferences_radio_channel_defaultValue"
             android:dialogTitle="@string/preferences_radio_channel"
@@ -25,9 +29,15 @@
                 android:key="pref_radio_scan"
                 android:summary="@string/preferences_radio_scan_summary"
                 android:title="@string/preferences_radio_scan" />
-    </PreferenceCategory>
-    <!-- Control preferences -->
-    <PreferenceCategory android:title="@string/preferences_category_control" >
+
+    </PreferenceScreen>
+
+    <!-- Flight control settings -->
+    
+    <PreferenceScreen 
+        android:key="pref_flightcontrol_screen"
+        android:title="@string/preferences_flightcontrol_title">
+
         <ListPreference
             android:defaultValue="@string/preferences_mode_defaultValue"
             android:dialogTitle="@string/preferences_mode"
@@ -56,6 +66,62 @@
             android:inputType="numberDecimal|numberSigned"
             android:key="pref_pitchtrim"
             android:title="@string/preferences_pitchtrim" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_afc_bool"
+            android:summaryOff="@string/preferences_afc_bool_summary_off"
+            android:summaryOn="@string/preferences_afc_bool_summary_on"
+            android:title="@string/preferences_advancedflightcontrol" />
+
+        <PreferenceScreen
+            android:key="pref_afc_screen"
+            android:title="@string/preferences_afc_title"
+            android:dependency="pref_afc_bool" >
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
+                android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
+                android:inputType="number"
+                android:key="pref_maxrollpitchangle"
+                android:title="@string/preferences_maxRollPitchAngle_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
+                android:dialogTitle="@string/preferences_maxYawAngle_title"
+                android:inputType="number"
+                android:key="pref_maxyawangle"
+                android:title="@string/preferences_maxYawAngle_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxThrust_defaultValue"
+                android:dialogTitle="@string/preferences_maxThrust_title"
+                android:inputType="number"
+                android:key="pref_maxthrust"
+                android:title="@string/preferences_maxThrust_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_minThrust_defaultValue"
+                android:dialogTitle="@string/preferences_minThrust_title"
+                android:inputType="number"
+                android:key="pref_minthrust"
+                android:title="@string/preferences_minThrust_title" />
+
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="pref_xmode"
+                android:summary="@string/preferences_xmode_summary"
+                android:title="@string/preferences_xmode_title" />
+
+            <Preference
+                android:key="pref_reset_afc"
+                android:summary="@string/preferences_reset_afc_summary"
+                android:title="@string/preferences_reset_afc_title" />
+        </PreferenceScreen>
+    </PreferenceScreen>
+
+    <!-- Controller settings -->
+
+    <PreferenceScreen 
+        android:key="pref_controller_screen"
+        android:title="@string/preferences_controller_title">
+
         <!-- Gampepad and button mapping -->
         <PreferenceScreen 
             android:key="pref_btn_screen"
@@ -108,6 +174,7 @@
                 android:key="pref_reset_btn"
                 android:summary="@string/preferences_reset_btn_summary"
                 android:title="@string/preferences_reset_btn_title" />
+
         </PreferenceScreen>
 
         <CheckBoxPreference
@@ -116,61 +183,19 @@
             android:summaryOff="@string/preferences_use_gyro_bool_summary_off"
             android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
             android:title="@string/preferences_use_gyro_bool_title" />
-        
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_afc_bool"
-            android:summaryOff="@string/preferences_afc_bool_summary_off"
-            android:summaryOn="@string/preferences_afc_bool_summary_on"
-            android:title="@string/preferences_advancedflightcontrol" />
 
-        <PreferenceScreen
-            android:key="pref_afc_screen"
-            android:title="@string/preferences_afc_title"
-            android:dependency="pref_afc_bool" >
-            <EditTextPreference
-                android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
-                android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
-                android:inputType="number"
-                android:key="pref_maxrollpitchangle"
-                android:title="@string/preferences_maxRollPitchAngle_title" />
-            <EditTextPreference
-                android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
-                android:dialogTitle="@string/preferences_maxYawAngle_title"
-                android:inputType="number"
-                android:key="pref_maxyawangle"
-                android:title="@string/preferences_maxYawAngle_title" />
-            <EditTextPreference
-                android:defaultValue="@string/preferences_maxThrust_defaultValue"
-                android:dialogTitle="@string/preferences_maxThrust_title"
-                android:inputType="number"
-                android:key="pref_maxthrust"
-                android:title="@string/preferences_maxThrust_title" />
-            <EditTextPreference
-                android:defaultValue="@string/preferences_minThrust_defaultValue"
-                android:dialogTitle="@string/preferences_minThrust_title"
-                android:inputType="number"
-                android:key="pref_minthrust"
-                android:title="@string/preferences_minThrust_title" />
+    </PreferenceScreen>
 
-            <CheckBoxPreference
-                android:defaultValue="false"
-                android:key="pref_xmode"
-                android:summary="@string/preferences_xmode_summary"
-                android:title="@string/preferences_xmode_title" />
+    <!-- App settings -->
 
-            <Preference
-                android:key="pref_reset_afc"
-                android:summary="@string/preferences_reset_afc_summary"
-                android:title="@string/preferences_reset_afc_title" />
-        </PreferenceScreen>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/preferences_category_app_settings" >
+    <PreferenceScreen 
+        android:key="pref_app_screen"
+        android:title="@string/preferences_app_title">
+    
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_screen_rotation_lock_bool"
             android:title="@string/preferences_screen_rotation_lock_title" />
-    </PreferenceCategory>
+    </PreferenceScreen>
 
 </PreferenceScreen>
