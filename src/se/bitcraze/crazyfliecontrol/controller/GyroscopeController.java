@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
@@ -21,10 +22,8 @@ public class GyroscopeController extends TouchController {
     private Sensor sensor = null;
     private SensorEventListener seListener = null;
 
-    private int AMPLIFICATION = 2;
-
-    private float mSensorRoll = 0;;
-    private float mSensorPitch = 0;;
+    private float mSensorRoll = 0;
+    private float mSensorPitch = 0;
 
     public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView, SensorManager sensorManager) {
         super(controls, activity, dualJoystickView);
@@ -56,20 +55,26 @@ public class GyroscopeController extends TouchController {
     }
 
     class AccelerometerListener implements SensorEventListener {
+    	Float meterMax;
 
     	@Override
-    	public void onAccuracyChanged(Sensor arg0, int arg1) {
+    	public void onAccuracyChanged(Sensor sensor, int arg1) {
+    		Float sensorMax = sensor.getMaximumRange();
+    		//9.81 means the maximum rotation
+    		meterMax = (sensorMax/(float) 100.0) * (float) 9.81;
     	}
 
     	@Override
     	public void onSensorChanged(SensorEvent event) {
-    		mSensorPitch = (event.values[0] / 10 ) * -1;
-    		mSensorRoll = event.values[1] / 10;
-            updateFlightData();
+    		mSensorPitch = (event.values[0] / meterMax ) * -1;
+    		mSensorRoll = event.values[1] / meterMax;
+    		updateFlightData();
     	}
     }
 
     class RotationVectorListener implements SensorEventListener {
+    	private int AMPLIFICATION = 2;
+    	
 	    @Override
 	    public void onAccuracyChanged(Sensor arg0, int arg1) {
 	    }
@@ -86,11 +91,19 @@ public class GyroscopeController extends TouchController {
     // overwrite getRoll() and getPitch() to only use values from gyro sensors
     public float getRoll() {
         float roll = mSensorRoll;
+        
+        //Filter the overshoot
+        roll = (float) Math.min(1.0, Math.max(-1, roll+mControls.getRollTrim()));
+
         return (roll + mControls.getRollTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(roll);
     }
 
     public float getPitch() {
         float pitch = mSensorPitch;
+        
+        //Filter the overshoot
+        pitch = (float) Math.min(1.0, Math.max(-1, pitch+mControls.getPitchTrim()));
+        
         return (pitch + mControls.getPitchTrim()) * mControls.getRollPitchFactor() * mControls.getDeadzone(pitch);
     }
 
