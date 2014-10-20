@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
@@ -16,10 +15,11 @@ import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
  * to the chosen "mode" setting.
  * 
  */
-public class GyroscopeController extends TouchController {
+public class GyroscopeController extends TouchController implements SensorEventListener {
 
     private SensorManager mSensorManager;
-    private SensorEventListener seListener = null;
+
+    Float meterMax;
 
     private float mSensorRoll = 0;
     private float mSensorPitch = 0;
@@ -27,42 +27,37 @@ public class GyroscopeController extends TouchController {
     public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView, SensorManager sensorManager) {
         super(controls, activity, dualJoystickView);
         mSensorManager = sensorManager;
-        seListener = new AccelerometerListener();        
     }
 
     @Override
     public void enable() {
         super.enable();
-        mSensorManager.registerListener(seListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
     public void disable() {
         super.disable();
-        mSensorManager.unregisterListener(seListener);
+        mSensorManager.unregisterListener(this);
     }
 
     public String getControllerName() {
         return "gyroscope controller";
     }
 
-    class AccelerometerListener implements SensorEventListener {
-    	Float meterMax;
+   	@Override
+  	public void onAccuracyChanged(Sensor sensor, int arg1) {
+   		Float sensorMax = sensor.getMaximumRange();
+   		//9.81 means the maximum rotation
+   		meterMax = (sensorMax/(float) 100.0) * (float) 9.81;
+   	}
 
-    	@Override
-    	public void onAccuracyChanged(Sensor sensor, int arg1) {
-    		Float sensorMax = sensor.getMaximumRange();
-    		//9.81 means the maximum rotation
-    		meterMax = (sensorMax/(float) 100.0) * (float) 9.81;
-    	}
-
-    	@Override
-    	public void onSensorChanged(SensorEvent event) {
-    		mSensorPitch = (event.values[0] / meterMax ) * -1;
-    		mSensorRoll = event.values[1] / meterMax;
-    		updateFlightData();
-    	}
-    }
+   	@Override
+   	public void onSensorChanged(SensorEvent event) {
+   		mSensorPitch = (event.values[0] / meterMax ) * -1;
+   		mSensorRoll = event.values[1] / meterMax;
+   		updateFlightData();
+   	}
 
     // overwrite getRoll() and getPitch() to only use values from gyro sensors
     public float getRoll() {
