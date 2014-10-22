@@ -11,5 +11,7 @@ public interface IController {
     public float getYaw();
 
     public void enable();
+    
+    public void disable();
 
 }

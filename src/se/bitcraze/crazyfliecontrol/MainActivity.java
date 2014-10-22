@@ -216,6 +216,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         mControls.resetAxisValues();
+        mController.disable();
         if (mCrazyradioLink != null) {
             linkDisconnect();
         }
