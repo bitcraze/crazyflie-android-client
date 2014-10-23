@@ -12,4 +12,6 @@ public interface IController {
 
     public void enable();
 
+    public void disable();
+
 }
