@@ -54,19 +54,18 @@ public class GyroscopeController extends TouchController {
     }
     
     class AccelerometerListener implements SensorEventListener {
-    	Float meterMax;
+        //It divide back the 90 degree.
+        private final float AMPLIFICATION = 1.5f;
 
     	@Override
     	public void onAccuracyChanged(Sensor sensor, int arg1) {
-    		Float sensorMax = sensor.getMaximumRange();
-    		//9.81 means the maximum rotation
-    		meterMax = (sensorMax/(float) 100.0) * (float) 9.81;
     	}
 
     	@Override
     	public void onSensorChanged(SensorEvent event) {
-    		mSensorPitch = (event.values[0] / meterMax ) * -1;
-    		mSensorRoll = event.values[1] / meterMax;
+    		float d = (float) Math.abs(Math.sqrt(event.values[0]*event.values[0] + event.values[1]*event.values[1] + event.values[2]*event.values[2]));
+    		mSensorPitch = event.values[0] / d * -1f * AMPLIFICATION;
+    		mSensorRoll = event.values[1] / d * AMPLIFICATION;
             updateFlightData();
     	}
     }
