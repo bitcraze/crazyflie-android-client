@@ -15,11 +15,10 @@ import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
  * to the chosen "mode" setting.
  * 
  */
-public class GyroscopeController extends TouchController implements SensorEventListener {
+public class GyroscopeController extends TouchController {
 
     private SensorManager mSensorManager;
-
-    private int AMPLIFICATION = 2;
+    private SensorEventListener seListener = null;
 
     private float mSensorRoll = 0;;
     private float mSensorPitch = 0;;
@@ -27,34 +26,39 @@ public class GyroscopeController extends TouchController implements SensorEventL
     public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView, SensorManager sensorManager) {
         super(controls, activity, dualJoystickView);
         mSensorManager = sensorManager;
+        seListener = new RotationVectorListener();
     }
 
     @Override
     public void enable() {
         super.enable();
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(seListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
     public void disable() {
         super.disable();
-        mSensorManager.unregisterListener(this);
+        mSensorManager.unregisterListener(seListener);
     }
 
     public String getControllerName() {
         return "gyroscope controller";
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor arg0, int arg1) {
-    }
+    class RotationVectorListener implements SensorEventListener {
+    	private final int AMPLIFICATION = 2;
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        // amplifying the sensitivity.
-        mSensorRoll = event.values[0] * AMPLIFICATION;
-        mSensorPitch = event.values[1] * AMPLIFICATION;
-        updateFlightData();
+    	@Override
+    	public void onAccuracyChanged(Sensor arg0, int arg1) {
+    	}
+
+    	@Override
+    	public void onSensorChanged(SensorEvent event) {
+    		//amplifying the sensitivity.
+    		mSensorRoll = event.values[0] * AMPLIFICATION;
+    		mSensorPitch = event.values[1] * AMPLIFICATION;
+    		updateFlightData();
+    	}
     }
 
     // overwrite getRoll() and getPitch() to only use values from gyro sensors
