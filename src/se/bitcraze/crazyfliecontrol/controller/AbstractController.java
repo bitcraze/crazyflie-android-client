@@ -26,6 +26,7 @@ public abstract class AbstractController implements IController {
 	
     public void disable() {
         mIsDisabled = true;
+        updateFlightData();
     }
 
     public boolean isDisabled() {

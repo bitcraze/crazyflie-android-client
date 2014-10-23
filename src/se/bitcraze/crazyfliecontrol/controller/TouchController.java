@@ -33,8 +33,12 @@ public class TouchController extends AbstractController {
 
     @Override
     public void disable() {
-        super.disable();
+        mControls.setRightAnalogY(0);
+        mControls.setRightAnalogX(0);
+        mControls.setRightAnalogY(0);
+        mControls.setRightAnalogX(0);
         this.dualJoystickView.setOnJostickMovedListener(null, null);
+        super.disable();
     }
 
     public String getControllerName() {

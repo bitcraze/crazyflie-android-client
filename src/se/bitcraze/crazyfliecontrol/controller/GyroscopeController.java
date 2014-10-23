@@ -45,8 +45,10 @@ public class GyroscopeController extends TouchController {
 
     @Override
     public void disable() {
-        super.disable();
+        mSensorRoll = 0;
+        mSensorPitch = 0;
         mSensorManager.unregisterListener(seListener);
+        super.disable();
     }
 
     public String getControllerName() {
