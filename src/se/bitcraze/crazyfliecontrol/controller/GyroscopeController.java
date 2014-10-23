@@ -18,6 +18,7 @@ import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 public class GyroscopeController extends TouchController {
 
     private SensorManager mSensorManager;
+    private Sensor sensor = null;
     private SensorEventListener seListener = null;
 
     private float mSensorRoll = 0;;
@@ -26,13 +27,20 @@ public class GyroscopeController extends TouchController {
     public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView, SensorManager sensorManager) {
         super(controls, activity, dualJoystickView);
         mSensorManager = sensorManager;
-        seListener = new RotationVectorListener();
+        
+        if(mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)!=null) {
+        	sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        	seListener = new RotationVectorListener();
+        } else {
+        	sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        	seListener = new AccelerometerListener();
+        }
     }
 
     @Override
     public void enable() {
         super.enable();
-        mSensorManager.registerListener(seListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR), SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(seListener, sensor, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -44,7 +52,21 @@ public class GyroscopeController extends TouchController {
     public String getControllerName() {
         return "gyroscope controller";
     }
+    
+    class AccelerometerListener implements SensorEventListener {
 
+    	@Override
+    	public void onAccuracyChanged(Sensor arg0, int arg1) {
+    	}
+
+    	@Override
+    	public void onSensorChanged(SensorEvent event) {
+    		mSensorPitch = (event.values[0] / 10 ) * -1;
+    		mSensorRoll = event.values[1] / 10;
+            updateFlightData();
+    	}
+    }
+    
     class RotationVectorListener implements SensorEventListener {
     	private final int AMPLIFICATION = 2;
 
