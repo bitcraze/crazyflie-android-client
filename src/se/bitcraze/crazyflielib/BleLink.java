@@ -1,6 +1,7 @@
 package se.bitcraze.crazyflielib;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -112,13 +113,18 @@ public class BleLink extends AbstractLink {
 	private LeScanCallback mLeScanCallback = new LeScanCallback() {
 		@Override
 		public void onLeScan(BluetoothDevice device, int rssi, byte[] anounce) {
-			if (device != null) {
+			if (device != null && device.getName() != null) {
 				Log.e("bluetoothTest", device.getName());
 
 				if (device.getName().equals("Crazyflie")) {
 					mBluetoothAdapter.stopLeScan(this);
 					mDevice = device;
-					mDevice.connectGatt(BleLink.mContext, false, mGattCallback);
+					mContext.runOnUiThread(new Runnable() {
+						@Override
+                        public void run() {
+							mDevice.connectGatt(BleLink.mContext, false, mGattCallback);
+						}
+					});
 				}
 			}
 		}
