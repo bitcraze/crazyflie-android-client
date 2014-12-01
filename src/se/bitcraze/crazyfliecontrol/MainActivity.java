@@ -36,6 +36,7 @@ import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.Link;
@@ -74,8 +75,8 @@ public class MainActivity extends Activity {
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
-    private Link mCrazyradioLink;
-
+    private Link mLink;
+    
     private SharedPreferences mPreferences;
 
     private IController mController;
@@ -165,7 +166,7 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
-        if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
+        if (mLink != null && mLink.isConnected()) {
             menu.findItem(R.id.menu_connect).setTitle(R.string.menu_disconnect);
         } else {
             menu.findItem(R.id.menu_connect).setTitle(R.string.menu_connect);
@@ -178,7 +179,7 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.menu_connect:
                 try {
-                    if (mCrazyradioLink != null && mCrazyradioLink.isConnected()) {
+                    if (mLink != null && mLink.isConnected()) {
                         linkDisconnect();
                     } else {
                         linkConnect();
@@ -216,7 +217,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mControls.resetAxisValues();
         mController.disable();
-        if (mCrazyradioLink != null) {
+        if (mLink != null) {
             linkDisconnect();
         }
     }
@@ -329,7 +330,7 @@ public class MainActivity extends Activity {
                     Log.d(TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
-                    if (mCrazyradioLink != null) {
+                    if (mLink != null) {
                         Log.d(TAG, "linkDisconnect()");
                         linkDisconnect();
                     }
@@ -362,10 +363,14 @@ public class MainActivity extends Activity {
 
         try {
             // create link
-            mCrazyradioLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
-
+            try {
+            	mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+            } catch (IllegalArgumentException e) {
+            	mLink = new BleLink(this);
+            }
+            	
             // add listener for connection status
-            mCrazyradioLink.addConnectionListener(new ConnectionAdapter() {
+            mLink.addConnectionListener(new ConnectionAdapter() {
                 @Override
                 public void connectionSetupFinished(Link l) {
                     runOnUiThread(new Runnable() {
@@ -411,12 +416,12 @@ public class MainActivity extends Activity {
 
             // connect and start thread to periodically send commands containing
             // the user input
-            mCrazyradioLink.connect();
+            mLink.connect();
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()), mControls.isXmode()));
+                    while (mLink != null) {
+                        mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20, 0);
@@ -437,19 +442,19 @@ public class MainActivity extends Activity {
     }
 
     public Link getCrazyflieLink(){
-        return mCrazyradioLink;
+        return mLink;
     }
 
     public void linkDisconnect() {
-        if (mCrazyradioLink != null) {
-            mCrazyradioLink.disconnect();
-            mCrazyradioLink = null;
+        if (mLink != null) {
+            mLink.disconnect();
+            mLink = null;
         }
         if (mSendJoystickDataThread != null) {
             mSendJoystickDataThread.interrupt();
             mSendJoystickDataThread = null;
         }
-
+        
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
