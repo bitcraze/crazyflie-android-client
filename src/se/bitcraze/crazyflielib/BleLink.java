@@ -3,6 +3,8 @@ package se.bitcraze.crazyflielib;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -32,6 +34,7 @@ public class BleLink extends AbstractLink {
 	protected BluetoothGattCharacteristic mCrtpChar;
 	private static Activity mContext;
 	protected static boolean mWritten = true;
+	private Timer mScannTimer;
 
 	public BleLink(Activity ctx) {
 		mContext = ctx;
@@ -118,6 +121,10 @@ public class BleLink extends AbstractLink {
 
 				if (device.getName().equals("Crazyflie")) {
 					mBluetoothAdapter.stopLeScan(this);
+					if (mScannTimer != null) {
+						mScannTimer.cancel();
+						mScannTimer = null;
+					}
 					mDevice = device;
 					mContext.runOnUiThread(new Runnable() {
 						@Override
@@ -143,6 +150,16 @@ public class BleLink extends AbstractLink {
 
 		mBluetoothAdapter.stopLeScan(mLeScanCallback);
 		mBluetoothAdapter.startLeScan(mLeScanCallback);
+		if (mScannTimer != null)
+			mScannTimer.cancel();
+		mScannTimer = new Timer();
+		mScannTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				mBluetoothAdapter.stopLeScan(mLeScanCallback);
+				notifyConnectionFailed();
+			}
+		}, 10000);
 		
 		notifyConnectionInitiated();
 	}
@@ -153,6 +170,11 @@ public class BleLink extends AbstractLink {
 			mGatt.disconnect();
 			mGatt.close();
 			mGatt = null;
+			mBluetoothAdapter.stopLeScan(mLeScanCallback);
+			if (mScannTimer != null) {
+				mScannTimer.cancel();
+				mScannTimer = null;
+			}
 			notifyDisconnected();
 		}
 	}

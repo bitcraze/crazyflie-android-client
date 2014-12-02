@@ -371,6 +371,26 @@ public class MainActivity extends Activity {
             	
             // add listener for connection status
             mLink.addConnectionListener(new ConnectionAdapter() {
+            	@Override
+            	public void connectionInitiated(Link l) {
+            		runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Connecting ...", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            	}
+            	
+            	@Override
+                public void disconnected(Link l) {
+            		runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            	
                 @Override
                 public void connectionSetupFinished(Link l) {
                     runOnUiThread(new Runnable() {
