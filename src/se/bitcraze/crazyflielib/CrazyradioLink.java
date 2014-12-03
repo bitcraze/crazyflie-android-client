@@ -1,3 +1,29 @@
+/**
+ *    ||          ____  _ __
+ * +------+      / __ )(_) /_______________ _____  ___
+ * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+ *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ *
+ * Copyright (C) 2013 Bitcraze AB
+ *
+ * Crazyflie Nano Quadcopter Client
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 
 package se.bitcraze.crazyflielib;
 
@@ -102,7 +128,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Create a new link using the Crazyradio.
-     * 
+     *
      * @param usbManager
      * @param usbDevice
      * @param connectionData connection data to initialize the link
@@ -126,7 +152,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Initialize the USB device. Determines endpoints and prepares
      * communication.
-     * 
+     *
      * @param usbManager
      * @throws IOException if the device cannot be opened
      */
@@ -174,7 +200,7 @@ public class CrazyradioLink extends AbstractLink {
      */
     private static UsbDevice searchForCrazyradio(Context context, UsbManager usbManager) {
         UsbDevice device = null;
-        
+
         HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
         // Iterate over USB devices
         for (Entry<String, UsbDevice> e : deviceList.entrySet()) {
@@ -199,7 +225,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Scan for available channels.
-     * 
+     *
      * @param usbManager
      * @param usbDevice
      * @return array containing the found channels and datarates.
@@ -219,7 +245,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Scan for available channels.
-     * 
+     *
      * @return array containing the found channels and datarates.
      */
     public ConnectionData[] scanChannels() {
@@ -228,7 +254,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Scan for available channels.
-     * 
+     *
      * @param connection connection to the USB dongle.
      * @return array containing the found channels and datarates.
      * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
@@ -261,7 +287,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Connect to the Crazyflie.
-     * 
+     *
      * @throws IllegalStateException if the Crazyradio is not attached
      */
     @Override
@@ -304,7 +330,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Set the radio channel.
-     * 
+     *
      * @param channel the new channel. Must be in range 0-125.
      */
     public void setRadioChannel(int channel) {
@@ -313,7 +339,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Set the data rate.
-     * 
+     *
      * @param rate new data rate. Possible values are in range 0-2.
      */
     public void setDataRate(int rate) {
@@ -323,7 +349,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Set the radio address. The same address must be configured in the
      * receiver for the communication to work.
-     * 
+     *
      * @param address the new address with a length of 5 byte.
      * @throws IllegalArgumentException if the length of the address doesn't equal 5 bytes
      */
@@ -338,7 +364,7 @@ public class CrazyradioLink extends AbstractLink {
      * Set the continuous carrier mode. When enabled the radio chip provides a
      * test mode in which a continuous non-modulated sine wave is emitted. When
      * this mode is activated the radio dongle does not transmit any packets.
-     * 
+     *
      * @param continuous <code>true</code> to enable the continuous carrier mode
      */
     public void setContinuousCarrier(boolean continuous) {
@@ -347,7 +373,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Configure the time the radio waits for the acknowledge.
-     * 
+     *
      * @param us microseconds to wait. Will be rounded to the closest possible value supported by the radio.
      */
     public void setAutoRetryADRTime(int us) {
@@ -362,7 +388,7 @@ public class CrazyradioLink extends AbstractLink {
 
     /**
      * Set the length of the ACK payload.
-     * 
+     *
      * @param bytes number of bytes in the payload.
      * @throws IllegalArgumentException if the payload length is not in range 0-32.
      */
@@ -376,7 +402,7 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Set how often the radio will retry a transfer if the ACK has not been
      * received.
-     * 
+     *
      * @param count the number of retries.
      * @throws IllegalArgumentException if the number of retries is not in range 0-15.
      */
@@ -409,7 +435,7 @@ public class CrazyradioLink extends AbstractLink {
                     final byte[] sendData = p.toByteArray();
 
                     final int receivedByteCount = sendBulkTransfer(sendData, receiveData);
-                    
+
                     //TODO: extract link quality calculation
                     if (receivedByteCount >= 1) {
                         // update link quality status

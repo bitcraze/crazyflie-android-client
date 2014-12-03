@@ -1,3 +1,29 @@
+/**
+ *    ||          ____  _ __
+ * +------+      / __ )(_) /_______________ _____  ___
+ * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+ *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ *
+ * Copyright (C) 2013 Bitcraze AB
+ *
+ * Crazyflie Nano Quadcopter Client
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
 
 package se.bitcraze.crazyflielib.crtp;
 
@@ -35,7 +61,7 @@ public abstract class CrtpPacket {
 
     /**
      * Create a new packet.
-     * 
+     *
      * @param channel channel to set in the header.
      * @param port port to set in the header.
      */
@@ -45,7 +71,7 @@ public abstract class CrtpPacket {
 
     /**
      * Create a new packet.
-     * 
+     *
      * @param packetHeader header of the packet.
      */
     public CrtpPacket(byte packetHeader) {
@@ -55,7 +81,7 @@ public abstract class CrtpPacket {
 
     /**
      * Get the header of the packet.
-     * 
+     *
      * @return the header of the packet.
      */
     public byte getHeader() {
@@ -64,21 +90,21 @@ public abstract class CrtpPacket {
 
     /**
      * Serialize the data of the packet. Must not include the header.
-     * 
+     *
      * @param buffer the target buffer for serialization.
      */
     protected abstract void serializeData(ByteBuffer buffer);
 
     /**
      * Get the number of bytes used when serializing the data.
-     * 
+     *
      * @return number of bytes required by the serialized data.
      */
     protected abstract int getDataByteCount();
 
     /**
      * Convert the packet to a byte array suitable for transmission.
-     * 
+     *
      * @return byte array containing the header and packet data.
      */
     public byte[] toByteArray() {
