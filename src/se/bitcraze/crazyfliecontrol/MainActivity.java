@@ -416,7 +416,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mCrazyradioLink != null) {
-                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrust()), mControls.isXmode()));
+                        mCrazyradioLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20, 0);

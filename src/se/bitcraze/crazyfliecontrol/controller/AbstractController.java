@@ -43,10 +43,24 @@ public abstract class AbstractController implements IController {
         mActivity.updateFlightData();
 	}
 
+    /* 
+     * Thrust value in percent (used in the UI)
+     */
     public float getThrust() {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
         if (thrust > mControls.getDeadzone()) {
-            return mControls.getMinThrust() + (thrust * mControls.getThrustFactor())/100 * MAX_THRUST;
+            return mControls.getMinThrust() + (thrust * mControls.getThrustFactor());
+        }
+        return 0;
+    }
+
+    /* 
+     * Absolute thrust value (gets send to the Crazyflie)
+     */
+    public float getThrustAbsolute() {
+        float thrust = getThrust();
+        if(thrust > 0) {
+            return thrust/100 * MAX_THRUST;
         }
         return 0;
     }

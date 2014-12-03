@@ -4,6 +4,8 @@ public interface IController {
 
     public float getThrust();
 
+    public float getThrustAbsolute();
+
     public float getRoll();
 
     public float getPitch();
