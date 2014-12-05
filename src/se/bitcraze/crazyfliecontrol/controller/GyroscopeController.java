@@ -92,7 +92,7 @@ public class GyroscopeController extends TouchController {
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            float d = (float) Math.abs(Math.sqrt(event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2]));
+            float d = (float) Math.max(Math.sqrt(event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2]),0.001);
             mSensorPitch = event.values[0] / d * -1f * AMPLIFICATION;
             mSensorRoll = event.values[1] / d * AMPLIFICATION;
             updateFlightData();
