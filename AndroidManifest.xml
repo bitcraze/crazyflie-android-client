@@ -5,10 +5,13 @@
     android:versionName="0.1" >
 
     <uses-sdk
-        android:minSdkVersion="13"
-        android:targetSdkVersion="15" />
+        android:minSdkVersion="19"
+        android:targetSdkVersion="19" />
 
     <uses-feature android:name="android.hardware.usb.host" />
+    
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:icon="@drawable/ic_launcher"
