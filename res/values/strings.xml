@@ -59,7 +59,7 @@
     <string name="preferences_splitaxis_yaw_left_axis_defaultValue">AXIS_BRAKE</string>
     <string name="preferences_splitaxis_yaw_right_axis_title">Yaw split axis - right axis</string>
     <string name="preferences_splitaxis_yaw_right_axis_defaultValue">AXIS_GAS</string>
-    <string name="preferences_axis_mapping_dialog_text">Please move a joystick axis...</string>
+    <string name="preferences_axis_mapping_dialog_text">Please move a joystick axis&#8230;</string>
     <string name="preferences_category_buttons">Buttons</string>
     <string name="preferences_emergency_btn_title">Emergency stop</string>
     <string name="preferences_emergency_btn_defaultValue">KEYCODE_BUTTON_B</string>
@@ -73,7 +73,7 @@
     <string name="preferences_pitchtrim_minus_btn_defaultValue">KEYCODE_DPAD_DOWN</string>
     <string name="preferences_reset_btn_title">Reset values</string>
     <string name="preferences_reset_btn_summary">Reset to default values</string>
-    <string name="preferences_button_mapping_dialog_text">Please press a button...</string>
+    <string name="preferences_button_mapping_dialog_text">Please press a button&#8230;</string>
     <string name="preferences_category_app_settings">App Preferences</string>
     <string name="preferences_screen_rotation_lock_title">Screen rotation lock</string>
     <string name="select_connection_dialog_title">Select Connection</string>
