@@ -1,12 +1,11 @@
 package se.bitcraze.crazyflielib;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
-
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -22,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+@SuppressLint("NewApi")
 public class BleLink extends AbstractLink {
 
 	private static final String TAG = "BleLink";
