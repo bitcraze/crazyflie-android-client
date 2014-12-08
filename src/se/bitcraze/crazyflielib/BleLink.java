@@ -41,6 +41,9 @@ public class BleLink extends AbstractLink {
 	private static Activity mContext;
 	protected static boolean mWritten = true;
 	private Timer mScannTimer;
+	
+	protected enum State {IDLE, CONNECTING, CONNECTED};
+	protected State state = State.IDLE;
 
 	public BleLink(Activity ctx, boolean writeWithAnswer) {
 		mContext = ctx;
@@ -57,7 +60,9 @@ public class BleLink extends AbstractLink {
 				gatt.discoverServices();
 				mGatt = gatt;
 			} else {
+				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				mConnected = false;
+				state = State.IDLE;
 				notifyConnectionLost();
 			}
 		}
@@ -82,6 +87,7 @@ public class BleLink extends AbstractLink {
 				mConnected = true;
 				mWritten = false;
 				
+				state = State.CONNECTED;
 				notifyConnectionSetupFinished();
 			}
 		}
@@ -130,6 +136,7 @@ public class BleLink extends AbstractLink {
 						mScannTimer.cancel();
 						mScannTimer = null;
 					}
+					state = State.CONNECTING;
 					mDevice = device;
 					mContext.runOnUiThread(new Runnable() {
 						@Override
@@ -144,6 +151,10 @@ public class BleLink extends AbstractLink {
 	
 	@Override
 	public void connect() {
+		if (state != State.IDLE) {
+			throw new IllegalArgumentException("Connection already started");
+		}
+		
 		final BluetoothManager bluetoothManager =
 		        (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
 		mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -151,6 +162,7 @@ public class BleLink extends AbstractLink {
 		if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
 		    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 		    mContext.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+		    throw new IllegalArgumentException("Bluetooth needs to be started");
 		}
 
 		mBluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -162,10 +174,12 @@ public class BleLink extends AbstractLink {
 			@Override
 			public void run() {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
+				state = State.IDLE;
 				notifyConnectionFailed();
 			}
 		}, 10000);
 		
+		state = State.CONNECTING;
 		notifyConnectionInitiated();
 	}
 
@@ -183,6 +197,7 @@ public class BleLink extends AbstractLink {
 						mScannTimer.cancel();
 						mScannTimer = null;
 					}
+					state = State.IDLE;
 					notifyDisconnected();
 				}
 			}
@@ -191,7 +206,7 @@ public class BleLink extends AbstractLink {
 
 	@Override
 	public boolean isConnected() {
-		return mConnected;
+		return state != State.IDLE;
 	}
 
 	int ctr = 0;

@@ -464,7 +464,7 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread.start();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, e.getMessage());
-            Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Crazyradio not attached or BLE not available", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
