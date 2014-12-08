@@ -25,7 +25,7 @@
  *
  */
 
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyfliecontrol2;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -36,6 +36,7 @@ import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
@@ -48,6 +49,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -366,7 +368,7 @@ public class MainActivity extends Activity {
             try {
             	mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
             } catch (IllegalArgumentException e) {
-            	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
 	            	if (android.os.Build.MODEL.equals("Nexus 4")) {
 	            		Log.d(TAG, "Using bluetooth write with response");
 	            		mLink = new BleLink(this, true);
@@ -464,7 +466,7 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread.start();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, e.getMessage());
-            Toast.makeText(this, "Crazyradio not attached or BLE not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Cannot connect: Crazyradio not attached and Bluetooth LE not available", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <se.bitcraze.crazyfliecontrol.FlightDataView
+    <se.bitcraze.crazyfliecontrol2.FlightDataView
         android:id="@+id/flightdataview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

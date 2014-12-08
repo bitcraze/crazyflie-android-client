@@ -27,8 +27,8 @@
 
 package se.bitcraze.crazyfliecontrol.prefs;
 
-import se.bitcraze.crazyfliecontrol.R;
 import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
+import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import android.annotation.TargetApi;

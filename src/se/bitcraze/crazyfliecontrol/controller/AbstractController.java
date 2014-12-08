@@ -27,7 +27,7 @@
 
 package se.bitcraze.crazyfliecontrol.controller;
 
-import se.bitcraze.crazyfliecontrol.MainActivity;
+import se.bitcraze.crazyfliecontrol2.MainActivity;
 import android.widget.Toast;
 
 

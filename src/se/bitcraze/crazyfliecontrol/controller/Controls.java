@@ -27,10 +27,10 @@
 
 package se.bitcraze.crazyfliecontrol.controller;
 
-import se.bitcraze.crazyfliecontrol.FlightDataView;
-import se.bitcraze.crazyfliecontrol.MainActivity;
-import se.bitcraze.crazyfliecontrol.R;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyfliecontrol2.R;
+import se.bitcraze.crazyfliecontrol2.FlightDataView;
+import se.bitcraze.crazyfliecontrol2.MainActivity;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.widget.Toast;

@@ -25,10 +25,11 @@
  *
  */
 
-package se.bitcraze.crazyfliecontrol;
+package se.bitcraze.crazyfliecontrol2;
 
 import java.math.BigDecimal;
 
+import se.bitcraze.crazyfliecontrol2.R;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
