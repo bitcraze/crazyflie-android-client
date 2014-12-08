@@ -368,7 +368,8 @@ public class MainActivity extends Activity {
             try {
             	mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
             } catch (IllegalArgumentException e) {
-            	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            	if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
+        	        getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
 	            	if (android.os.Build.MODEL.equals("Nexus 4")) {
 	            		Log.d(TAG, "Using bluetooth write with response");
 	            		mLink = new BleLink(this, true);
