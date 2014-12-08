@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="se.bitcraze.crazyfliecontrol2"
-    android:versionCode="1"
+    android:versionCode="2"
     android:versionName="0.1" >
 
     <uses-sdk
         android:minSdkVersion="12"
         android:targetSdkVersion="19" />
 
-    <uses-feature android:name="android.hardware.usb.host" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false"/>
     
     <uses-permission android:name="android.permission.BLUETOOTH"/>
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
