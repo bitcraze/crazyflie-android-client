@@ -36,7 +36,6 @@ import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
-import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
@@ -63,9 +62,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
@@ -78,7 +77,7 @@ public class MainActivity extends Activity {
     private FlightDataView mFlightDataView;
 
     private Link mLink;
-    
+
     private SharedPreferences mPreferences;
 
     private IController mController;
@@ -115,6 +114,9 @@ public class MainActivity extends Activity {
         //initialize gamepad controller
         mGamepadController = new GamepadController(mControls, this, mPreferences);
         mGamepadController.setDefaultPreferenceValues(getResources());
+
+        //initialize buttons
+        initializeMenuButtons();
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
 
@@ -160,26 +162,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
+    private void initializeMenuButtons() {
+        ImageButton toggleConnectButton = (ImageButton) findViewById(R.id.imageButton_connect);
+        toggleConnectButton.setOnClickListener(new View.OnClickListener() {
 
-    @Override
-    public boolean onPrepareOptionsMenu(final Menu menu) {
-        if (mLink != null && mLink.isConnected()) {
-            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_disconnect);
-        } else {
-            menu.findItem(R.id.menu_connect).setTitle(R.string.menu_connect);
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_connect:
+            @Override
+            public void onClick(View v) {
                 try {
                     if (mLink != null && mLink.isConnected()) {
                         linkDisconnect();
@@ -187,15 +175,20 @@ public class MainActivity extends Activity {
                         linkConnect();
                     }
                 } catch (IllegalStateException e) {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-                break;
-            case R.id.preferences:
-                Intent intent = new Intent(this, PreferencesActivity.class);
-                startActivity(intent);
-                break;
-        }
-        return true;
+            }
+        });
+
+        ImageButton settingsButton = (ImageButton) findViewById(R.id.imageButton_settings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+              Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
+              startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -381,7 +374,7 @@ public class MainActivity extends Activity {
             		throw e;
             	}
             }
-            	
+
             // add listener for connection status
             mLink.addConnectionListener(new ConnectionAdapter() {
             	@Override
@@ -393,7 +386,7 @@ public class MainActivity extends Activity {
                         }
                     });
             	}
-            	
+
             	@Override
                 public void disconnected(Link l) {
             		runOnUiThread(new Runnable() {
@@ -403,7 +396,7 @@ public class MainActivity extends Activity {
                         }
                     });
                 }
-            	
+
                 @Override
                 public void connectionSetupFinished(Link l) {
                     runOnUiThread(new Runnable() {
@@ -487,7 +480,7 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread.interrupt();
             mSendJoystickDataThread = null;
         }
-        
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

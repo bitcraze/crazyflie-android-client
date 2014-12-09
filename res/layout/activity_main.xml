@@ -4,11 +4,43 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <se.bitcraze.crazyfliecontrol2.FlightDataView
-        android:id="@+id/flightdataview"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.15" />
+        android:orientation="horizontal"
+        android:layout_weight="0.15" >
+
+        <se.bitcraze.crazyfliecontrol2.FlightDataView
+            android:id="@+id/flightdataview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp" />
+
+        <ImageButton
+            android:id="@+id/imageButton_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@null"
+            android:src="@drawable/ic_action_import_export" />
+
+        <ImageButton
+            android:id="@+id/imageButton_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@null"
+            android:src="@drawable/ic_action_settings_light" />
+
+    </LinearLayout>
 
     <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
         android:id="@+id/joysticks"

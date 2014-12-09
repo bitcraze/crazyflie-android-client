@@ -31,7 +31,6 @@ import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectC
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
-import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,7 +39,6 @@ import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -124,8 +122,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         setInitialSummaries();
-
-        setupActionBar();
 
         mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
@@ -215,16 +211,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 return true;
             }
         });
-    }
-
-    /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void setupActionBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
-        }
     }
 
     @Override
