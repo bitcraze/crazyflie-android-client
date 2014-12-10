@@ -97,6 +97,8 @@ public class MainActivity extends Activity {
     private int mSoundConnect;
     private int mSoundDisconnect;
 
+    private ImageButton mToggleConnectButton;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +118,7 @@ public class MainActivity extends Activity {
         mGamepadController.setDefaultPreferenceValues(getResources());
 
         //initialize buttons
+        mToggleConnectButton = (ImageButton) findViewById(R.id.imageButton_connect);
         initializeMenuButtons();
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
@@ -163,8 +166,7 @@ public class MainActivity extends Activity {
     }
 
     private void initializeMenuButtons() {
-        ImageButton toggleConnectButton = (ImageButton) findViewById(R.id.imageButton_connect);
-        toggleConnectButton.setOnClickListener(new View.OnClickListener() {
+        mToggleConnectButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -359,40 +361,41 @@ public class MainActivity extends Activity {
         try {
             // create link
             try {
-            	mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+                mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
             } catch (IllegalArgumentException e) {
-            	if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
-        	        getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-	            	if (android.os.Build.MODEL.equals("Nexus 4")) {
-	            		Log.d(TAG, "Using bluetooth write with response");
-	            		mLink = new BleLink(this, true);
-	            	} else {
-	            		Log.d(TAG, "Using bluetooth write without response");
-	            		mLink = new BleLink(this, false);
-	            	}
-            	} else {
-            		throw e;
-            	}
+                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
+                    getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+                    if (android.os.Build.MODEL.equals("Nexus 4")) {
+                        Log.d(TAG, "Using bluetooth write with response");
+                        mLink = new BleLink(this, true);
+                    } else {
+                        Log.d(TAG, "Using bluetooth write without response");
+                        mLink = new BleLink(this, false);
+                    }
+                } else {
+                    throw e;
+                }
             }
 
             // add listener for connection status
             mLink.addConnectionListener(new ConnectionAdapter() {
-            	@Override
-            	public void connectionInitiated(Link l) {
-            		runOnUiThread(new Runnable() {
+                @Override
+                public void connectionInitiated(Link l) {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connecting ...", Toast.LENGTH_SHORT).show();
                         }
                     });
-            	}
+                }
 
-            	@Override
+                @Override
                 public void disconnected(Link l) {
-            		runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
+                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
                         }
                     });
                 }
@@ -403,6 +406,11 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
+                            if (mLink instanceof BleLink) {
+                                mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
+                            } else {
+                                mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
+                            }
                         }
                     });
                 }
@@ -413,6 +421,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
                         }
                     });
                     linkDisconnect();
