@@ -1,4 +1,7 @@
-#built application files
+# ProGuard
+proguard/
+
+# built application files
 *.apk
 *.ap_
 
