@@ -66,6 +66,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
@@ -151,6 +152,17 @@ public class MainActivity extends Activity {
         mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
     }
 
+    private void toggleFullscreen(boolean fullscreen) {
+        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        if ( fullscreen ) {
+            attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        } else {
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        }
+        getWindow().setAttributes(attrs);
+    }
+
+
     private void checkScreenLock() {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
         if(isScreenLock || mController instanceof GyroscopeController){
@@ -202,6 +214,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         //TODO: improve
+        toggleFullscreen(mPreferences.getBoolean(PreferencesActivity.KEY_PREF_FULL_SCREEN_BOOL, false));
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
         resetInputMethod();
