@@ -213,8 +213,8 @@ public class MainActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        //TODO: improve
         toggleFullscreen(mPreferences.getBoolean(PreferencesActivity.KEY_PREF_FULL_SCREEN_BOOL, false));
+        //TODO: improve
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
         resetInputMethod();
