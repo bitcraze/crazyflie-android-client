@@ -228,7 +228,7 @@ public class CrazyradioLink extends AbstractLink {
         mLogger.debug("connect()");
         notifyConnectionInitiated();
 
-        if (mUsbLink.isUsbConnected()) {
+        if (mUsbLink != null && mUsbLink.isUsbConnected()) {
             if (mRadioLinkThread == null) {
                 mRadioLinkThread = new Thread(radioControlRunnable);
                 mRadioLinkThread.start();
