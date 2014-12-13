@@ -77,7 +77,9 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
 
+    public static final String KEY_PREF_CONTROLLER = "pref_controller";
     public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
+    public static final String KEY_PREF_BTN_SCREEN = "pref_btn_screen";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
     public static final String KEY_PREF_RIGHT_ANALOG_Y_AXIS = "pref_right_analog_y_axis";
     public static final String KEY_PREF_LEFT_ANALOG_X_AXIS = "pref_left_analog_x_axis";
@@ -141,8 +143,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
 
+    /**
+     * Set initial summaries and get default values
+     */
     private void setInitialSummaries() {
-        // Set initial summaries and get default values
+        // Connection settings
         radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
         setSummaryArray(KEY_PREF_RADIO_DATARATE, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
         findPreference(KEY_PREF_RADIO_SCAN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -165,12 +170,18 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
         });
 
+        // Flight control settings
         setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
 
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
         trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
         setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
 
+        // Controller settings
+        setSummaryArray(KEY_PREF_CONTROLLER, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
+        setControllerSpecificPreferences();
+
+        // Gamepad and button mapping
         rightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
         rightAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_Y_AXIS, R.string.preferences_right_analog_y_axis_defaultValue);
         leftAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_X_AXIS, R.string.preferences_left_analog_x_axis_defaultValue);
@@ -218,6 +229,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
         });
 
+        // Advanced flight control settings
         findPreference(KEY_PREF_AFC_SCREEN).setEnabled(sharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
 
         maxRollPitchAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_ROLLPITCH_ANGLE, R.string.preferences_maxRollPitchAngle_defaultValue);
@@ -286,12 +298,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
     // Set summary to be the user-description for the selected value
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        // Connection settings
         if (key.equals(KEY_PREF_RADIO_CHANNEL)) {
             setSummaryInt(key, radioChannelDefaultValue, RADIOCHANNEL_UPPER_LIMIT, "Radio channel");
         }
         if (key.equals(KEY_PREF_RADIO_DATARATE)) {
             setSummaryArray(key, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
         }
+
+        // Flight control settings
         if (key.equals(KEY_PREF_MODE)) {
             setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
         }
@@ -308,6 +323,18 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             deadzonePref.setSummary(sharedPreferences.getString(key, ""));
         }
 
+        // Controller settings
+        if (key.equals(KEY_PREF_CONTROLLER)) {
+            setSummaryArray(key, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
+            setControllerSpecificPreferences();
+        }
+
+        if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
+        }
+
+        // Gamepad and button mapping
         if (key.equals(KEY_PREF_RIGHT_ANALOG_X_AXIS)){
             findPreference(key).setSummary(sharedPreferences.getString(key, rightAnalogXAxisDefaultValue));
         }
@@ -363,17 +390,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimMinusBtnDefaultValue));
         }
 
-        if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
-            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
-            pref.setChecked(sharedPreferences.getBoolean(key, false));
-        }
-
+        // Advanced flight control settings
         if (key.equals(KEY_PREF_AFC_BOOL)) {
             Preference afcScreenPref = findPreference(KEY_PREF_AFC_SCREEN);
             afcScreenPref.setEnabled(sharedPreferences.getBoolean(key, false));
             if (!sharedPreferences.getBoolean(key, false)) {
-                Toast.makeText(this, "Resetting to default values:\n" + "Max roll/pitch angle: " + maxRollPitchAngleDefaultValue + "\n" + "Max yaw angle: " + maxYawAngleDefaultValue + "\n" + "Max thrust: " + maxThrustDefaultValue + "\n" + "Min thrust: " + minThrustDefaultValue, Toast.LENGTH_LONG)
-                        .show();
+                Toast.makeText(this, "Resetting to default values:\n"
+                                    + "Max roll/pitch angle: " + maxRollPitchAngleDefaultValue + "\n"
+                                    + "Max yaw angle: " + maxYawAngleDefaultValue + "\n"
+                                    + "Max thrust: " + maxThrustDefaultValue + "\n"
+                                    + "Min thrust: " + minThrustDefaultValue, Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "You have been warned!", Toast.LENGTH_LONG).show();
             }
@@ -395,6 +421,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             pref.setChecked(sharedPreferences.getBoolean(key, false));
         }
 
+        // App settings
         if (key.equals(KEY_PREF_SCREEN_ROTATION_LOCK_BOOL)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
@@ -403,6 +430,13 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
         }
+    }
+
+    private void setControllerSpecificPreferences() {
+        String controllerDefaultValue = getResources().getString(R.string.preferences_controller_defaultValue);
+        int controllerIndex = Integer.parseInt(sharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
+        findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
+        findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
     }
 
     private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue) {

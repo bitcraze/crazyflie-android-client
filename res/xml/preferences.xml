@@ -83,6 +83,7 @@
             android:summaryOn="@string/preferences_afc_bool_summary_on"
             android:title="@string/preferences_advancedflightcontrol" />
 
+        <!-- Advanced flight control settings -->
         <PreferenceScreen
             android:key="pref_afc_screen"
             android:title="@string/preferences_afc_title"
@@ -131,7 +132,16 @@
         android:key="pref_controller_screen"
         android:title="@string/preferences_controller_title">
 
-        <!-- Gampepad and button mapping -->
+        <ListPreference
+            android:defaultValue="@string/preferences_controller_defaultValue"
+            android:dialogTitle="@string/preferences_controller"
+            android:entries="@array/controllerEntries"
+            android:entryValues="@array/controllerValues"
+            android:key="pref_controller"
+            android:summary="@string/preferences_controller_summary"
+            android:title="@string/preferences_controller" />
+
+        <!-- Gamepad and button mapping -->
         <PreferenceScreen 
             android:key="pref_btn_screen"
             android:title="@string/preferences_btn_title">

@@ -289,10 +289,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a joystick since a generic motion event could be almost anything.
-        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE) {
-        	if(!(mController instanceof GamepadController)){
-        		changeToGamepadController();
-        	}
+        if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && event.getAction() == MotionEvent.ACTION_MOVE && mController instanceof GamepadController) {
             mGamepadController.dealWithMotionEvent(event);
             updateFlightData();
             return true;
@@ -305,10 +302,7 @@ public class MainActivity extends Activity {
     public boolean dispatchKeyEvent(KeyEvent event) {
         // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-        if (event.getSource() == 1281) {
-        	if(!(mController instanceof GamepadController)){
-        		changeToGamepadController();
-        	}
+        if (event.getSource() == 1281 && mController instanceof GamepadController) {
             mGamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
@@ -318,23 +312,25 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
-    //TODO: improve
-    private void changeToGamepadController(){
-        if (!((TouchController) getController()).isDisabled()) {
-        	((TouchController) getController()).disable();
-        }
-        mController = mGamepadController;
-        mController.enable();
-    }
-
     private void resetInputMethod() {
-        // TODO: reuse existing touch controller?
+        mController.disable();
+        switch (mControls.getControllerType()) {
+            case 0:
+                // Use GyroscopeController if activated in the preferences
+                if (mControls.isUseGyro()) {
+                    mController = new GyroscopeController(mControls, this, mDualJoystickView, (SensorManager) getSystemService(Context.SENSOR_SERVICE));
+                } else {
+                    // TODO: reuse existing touch controller?
+                    mController = new TouchController(mControls, this, mDualJoystickView);
+                }
+                break;
+            case 1:
+                    // TODO: show warning if no game pad is found?
+                    mController = mGamepadController;
+                break;
+            default:
+                break;
 
-        // Use GyroscopeController if activated in the preferences
-        if (mControls.isUseGyro()) {
-            mController = new GyroscopeController(mControls, this, mDualJoystickView, (SensorManager) getSystemService(Context.SENSOR_SERVICE));
-        } else {
-            mController = new TouchController(mControls, this, mDualJoystickView);
         }
         mController.enable();
     }

@@ -52,6 +52,11 @@
 
     <!-- Controller settings -->
     <string name="preferences_controller_title">Controller settings</string>
+
+    <string name="preferences_controller_defaultValue">0</string>
+    <string name="preferences_controller">Controller</string>
+    <string name="preferences_controller_summary">Choose input controller</string>
+
     <string name="preferences_use_gyro_bool_summary_on">Use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_summary_off">Do not use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_title">Use gyroscope sensors</string>
