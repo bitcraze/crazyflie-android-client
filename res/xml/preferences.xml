@@ -29,9 +29,14 @@
                 android:title="@string/preferences_radio_datarate" />
     
             <Preference
-                    android:key="pref_radio_scan"
-                    android:summary="@string/preferences_radio_scan_summary"
-                    android:title="@string/preferences_radio_scan" />
+                android:key="pref_radio_scan"
+                android:summary="@string/preferences_radio_scan_summary"
+                android:title="@string/preferences_radio_scan" />
+
+            <Preference
+                android:key="pref_radio_stats"
+                android:summary="@string/preferences_radio_stats_summary"
+                android:title="@string/preferences_radio_stats" />
 
         </PreferenceCategory>
     </PreferenceScreen>

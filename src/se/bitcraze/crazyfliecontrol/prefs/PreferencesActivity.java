@@ -51,13 +51,19 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+
+    private static final String LOG_TAG = "CrazyflieControl_Preferences";
+
     public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
     public static final String KEY_PREF_RADIO_DATARATE = "pref_radiodatarate";
     public static final String KEY_PREF_RADIO_SCAN = "pref_radio_scan";
+    public static final String KEY_PREF_RADIO_STATS = "pref_radio_stats";
+
     public static final String KEY_PREF_MODE = "pref_mode";
     public static final String KEY_PREF_DEADZONE = "pref_deadzone";
     public static final String KEY_PREF_ROLLTRIM = "pref_rolltrim";
@@ -68,9 +74,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_MAX_YAW_ANGLE = "pref_maxyawangle";
     public static final String KEY_PREF_MAX_THRUST = "pref_maxthrust";
     public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
-    public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
+
+    public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
     public static final String KEY_PREF_RIGHT_ANALOG_Y_AXIS = "pref_right_analog_y_axis";
     public static final String KEY_PREF_LEFT_ANALOG_X_AXIS = "pref_left_analog_x_axis";
@@ -147,6 +154,17 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
         });
 
+        //Radio stats
+        setRadioStats();
+        findPreference(KEY_PREF_RADIO_STATS).setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                setRadioStats();
+                return true;
+            }
+        });
+
         setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
 
         deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
@@ -219,6 +237,31 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 return true;
             }
         });
+    }
+
+    private void setRadioStats() {
+        Preference pref = findPreference(KEY_PREF_RADIO_STATS);
+        String defaultValue = getResources().getString(R.string.preferences_radio_stats_summary);
+
+        try {
+            UsbLinkAndroid usbLinkAndroid = new UsbLinkAndroid(PreferencesActivity.this);
+            if (usbLinkAndroid != null) {
+                if(usbLinkAndroid.isUsbConnected() && usbLinkAndroid.isCrazyradio()){
+                    pref.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
+                                    "Serial number: " + usbLinkAndroid.getSerialNumber());
+                } else{
+                    pref.setSummary(defaultValue);
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            Log.d(LOG_TAG, e.getMessage());
+            Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
+            pref.setSummary(defaultValue);
+        } catch (IOException iae) {
+            Log.e(LOG_TAG, iae.getMessage());
+            Toast.makeText(this, iae.getMessage(), Toast.LENGTH_SHORT).show();
+            pref.setSummary(defaultValue);
+        }
     }
 
     /**

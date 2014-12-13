@@ -21,6 +21,8 @@
     <string name="preferences_radio_datarate_defaultValue">0</string>
     <string name="preferences_radio_scan">Radio Scan</string>
     <string name="preferences_radio_scan_summary">Initiate radio scan to find Crazyflie</string>
+    <string name="preferences_radio_stats">Radio stats</string>
+    <string name="preferences_radio_stats_summary">Not attached</string>
 
     <!-- Flight control settings -->
     <string name="preferences_flightcontrol_title">Flight control settings</string>

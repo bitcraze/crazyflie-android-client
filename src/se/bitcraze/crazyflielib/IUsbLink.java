@@ -44,4 +44,11 @@ public interface IUsbLink {
      */
     public float getFirmwareVersion();
 
+
+    /**
+     * Returns the serial number of the USB device
+     *
+     * @return serial number
+     */
+    public String getSerialNumber();
 }
