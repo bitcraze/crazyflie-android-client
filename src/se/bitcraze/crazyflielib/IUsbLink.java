@@ -37,4 +37,11 @@ public interface IUsbLink {
      */
     public int sendBulkTransfer(byte[] data, byte[] receiveData);
 
+    /**
+     * Returns the firmware version of the USB device
+     *
+     * @return firmware version
+     */
+    public float getFirmwareVersion();
+
 }

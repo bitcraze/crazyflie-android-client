@@ -27,6 +27,8 @@
 
 package se.bitcraze.crazyfliecontrol.prefs;
 
+import java.io.IOException;
+
 import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
@@ -431,8 +433,15 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 try {
                     //For testing purposes only
 //                    return new ConnectionData[0];
-                    return CrazyradioLink.scanChannels(new UsbLinkAndroid(PreferencesActivity.this));
-                } catch(Exception e) {
+                    UsbLinkAndroid usbLinkAndroid = new UsbLinkAndroid(PreferencesActivity.this);
+                    CrazyradioLink crlink = new CrazyradioLink(usbLinkAndroid);
+                    boolean useSlowScan = false;
+                    //Use slow scan, when Crazyradio firmware version is 0.52
+                    if(0.52f == usbLinkAndroid.getFirmwareVersion()){
+                        useSlowScan = true;
+                    }
+                    return crlink.scanChannels(useSlowScan);
+                } catch(IOException e) {
                     mException = e;
                     return null;
                 }

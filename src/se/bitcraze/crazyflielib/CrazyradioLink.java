@@ -113,54 +113,109 @@ public class CrazyradioLink extends AbstractLink {
     /**
      * Create a new link using the Crazyradio.
      *
+     * @param usbLink
+     */
+    public CrazyradioLink(IUsbLink usbLink) {
+        this.mUsbLink = usbLink;
+        this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
+    }
+
+    /**
+     * Create a new link using the Crazyradio.
+     *
      * @param context
      * @param connectionData connection data to initialize the link
      * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
      * @throws IOException if the device cannot be opened
      */
     public CrazyradioLink(IUsbLink usbLink, ConnectionData connectionData) throws IOException {
-        this.mUsbLink = usbLink;
+        this(usbLink);
 
         setRadioChannel(connectionData.getChannel());
         setDataRate(connectionData.getDataRate());
-
-        this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
     }
 
     /**
      * Scan for available channels.
      *
-     * @param usbLink
      * @return array containing the found channels and datarates.
+     * @throws IOException
      * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
-    public static ConnectionData[] scanChannels(IUsbLink usbLink) {
-        Logger logger = LoggerFactory.getLogger("CrazyradioLink");
+
+    public ConnectionData[] scanChannels() throws IOException {
+        return scanChannels(false);
+    }
+
+    /**
+     * Scan for available channels.
+     *
+     * @param useSlowScan
+     * @return array containing the found channels and datarates.
+     * @throws IOException
+     * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
+     */
+    public ConnectionData[] scanChannels(boolean useSlowScan) throws IOException {
         List<ConnectionData> result = new ArrayList<ConnectionData>();
-        if (usbLink.isUsbConnected()) {
+        if (mUsbLink.isUsbConnected()) {
             // null packet
             final byte[] packet = CrtpPacket.NULL_PACKET.toByteArray();
             final byte[] rdata = new byte[64];
 
-            logger.debug("Scanning...");
+            mLogger.debug("Scanning...");
             // scan for all 3 data rates
-            for (int b = 0; b < 3; b++) {
+            for (int datarate = 0; datarate < 3; datarate++) {
                 // set data rate
-                usbLink.sendControlTransfer(0x40, REQUEST_SET_DATA_RATE, b, 0, null);
-                //long transfer timeout (1000) is important!
-                usbLink.sendControlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet);
-                final int nfound = usbLink.sendControlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0, 0, rdata);
-
-                for (int i = 0; i < nfound; i++) {
-                    result.add(new ConnectionData(rdata[i], b));
-                    logger.debug("Found channel: " + rdata[i] + " Data rate: " + b);
+                mUsbLink.sendControlTransfer(0x40, REQUEST_SET_DATA_RATE, datarate, 0, null);
+                if (useSlowScan) {
+                    result.addAll(scanChannelsSlow(datarate));
+                } else {
+                    mLogger.debug("Fast firmware scan...");
+                    //long transfer timeout (1000) is important!
+                    mUsbLink.sendControlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet);
+                    final int nfound = mUsbLink.sendControlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0, 0, rdata);
+                    for (int i = 0; i < nfound; i++) {
+                        result.add(new ConnectionData(rdata[i], datarate));
+                        mLogger.debug("Found channel: " + rdata[i] + " Data rate: " + datarate);
+                    }
                 }
             }
         } else {
-            logger.debug("connection is null");
+            mLogger.debug("connection is null");
             throw new IllegalStateException("Crazyradio not attached");
         }
         return result.toArray(new ConnectionData[result.size()]);
+    }
+
+    /**
+     * Slow manual scan
+     *
+     * @param datarate
+     * @throws IOException
+     */
+    private List<ConnectionData> scanChannelsSlow(int datarate) throws IOException {
+        mLogger.debug("Slow manual scan...");
+        List<ConnectionData> result = new ArrayList<ConnectionData>();
+
+        for (int channel = 0; channel < 126; channel++) {
+            // set channel
+            mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null);
+
+            byte[] receiveData = new byte[33];
+            final byte[] sendData = CrtpPacket.NULL_PACKET.toByteArray();
+
+            mUsbLink.sendBulkTransfer(sendData, receiveData);
+            if ((receiveData[0] & 1) != 0) { // check if ack received
+                result.add(new ConnectionData(channel, datarate));
+                mLogger.debug("Channel found: " + channel + " Data rate: " + datarate);
+            }
+            try {
+                Thread.sleep(20, 0);
+            } catch (InterruptedException e) {
+                mLogger.error("scanChannelsSlow InterruptedException");
+            }
+        }
+        return result;
     }
 
     /**
