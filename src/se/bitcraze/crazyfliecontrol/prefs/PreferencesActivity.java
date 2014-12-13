@@ -104,27 +104,27 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private static final int MAX_THRUST_UPPER_LIMIT = 100;
     private static final int MIN_THRUST_UPPER_LIMIT = 50;
 
-    private SharedPreferences sharedPreferences;
+    private SharedPreferences mSharedPreferences;
 
-    private String radioChannelDefaultValue;
-    private String deadzoneDefaultValue;
-    private String trimDefaultValue;
-    private String maxRollPitchAngleDefaultValue;
-    private String maxYawAngleDefaultValue;
-    private String maxThrustDefaultValue;
-    private String minThrustDefaultValue;
+    private String mRadioChannelDefaultValue;
+    private String mDeadzoneDefaultValue;
+    private String mTrimDefaultValue;
+    private String mMaxRollPitchAngleDefaultValue;
+    private String mMaxYawAngleDefaultValue;
+    private String mMaxThrustDefaultValue;
+    private String mMinThrustDefaultValue;
 
-    private String rightAnalogXAxisDefaultValue;
-    private String rightAnalogYAxisDefaultValue;
-    private String leftAnalogXAxisDefaultValue;
-    private String leftAnalogYAxisDefaultValue;
-    private String splitAxisLeftAxisDefaultValue;
-    private String splitAxisRightAxisDefaultValue;
-    private String emergencyBtnDefaultValue;
-    private String rollTrimPlusBtnDefaultValue;
-    private String rollTrimMinusBtnDefaultValue;
-    private String pitchTrimPlusBtnDefaultValue;
-    private String pitchTrimMinusBtnDefaultValue;
+    private String mRightAnalogXAxisDefaultValue;
+    private String mRightAnalogYAxisDefaultValue;
+    private String mLeftAnalogXAxisDefaultValue;
+    private String mLeftAnalogYAxisDefaultValue;
+    private String mSplitAxisLeftAxisDefaultValue;
+    private String mSplitAxisRightAxisDefaultValue;
+    private String mEmergencyBtnDefaultValue;
+    private String mRollTrimPlusBtnDefaultValue;
+    private String mRollTrimMinusBtnDefaultValue;
+    private String mPitchTrimPlusBtnDefaultValue;
+    private String mPitchTrimMinusBtnDefaultValue;
 
     private String[] mDatarateStrings;
 
@@ -133,9 +133,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         setInitialSummaries();
 
         setupActionBar();
@@ -148,7 +146,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
      */
     private void setInitialSummaries() {
         // Connection settings
-        radioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
+        mRadioChannelDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RADIO_CHANNEL, R.string.preferences_radio_channel_defaultValue);
         setSummaryArray(KEY_PREF_RADIO_DATARATE, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
         findPreference(KEY_PREF_RADIO_SCAN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
@@ -173,8 +171,8 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         // Flight control settings
         setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
 
-        deadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
-        trimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
+        mDeadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
+        mTrimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
         setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
 
         // Controller settings
@@ -182,21 +180,21 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         setControllerSpecificPreferences();
 
         // Gamepad and button mapping
-        rightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
-        rightAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_Y_AXIS, R.string.preferences_right_analog_y_axis_defaultValue);
-        leftAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_X_AXIS, R.string.preferences_left_analog_x_axis_defaultValue);
-        leftAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_Y_AXIS, R.string.preferences_left_analog_y_axis_defaultValue);
+        mRightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
+        mRightAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_Y_AXIS, R.string.preferences_right_analog_y_axis_defaultValue);
+        mLeftAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_X_AXIS, R.string.preferences_left_analog_x_axis_defaultValue);
+        mLeftAnalogYAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_LEFT_ANALOG_Y_AXIS, R.string.preferences_left_analog_y_axis_defaultValue);
 
-        findPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS).setEnabled(sharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
-        findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(sharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
-        splitAxisLeftAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, R.string.preferences_splitaxis_yaw_left_axis_defaultValue);
-        splitAxisRightAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, R.string.preferences_splitaxis_yaw_right_axis_defaultValue);
+        findPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS).setEnabled(mSharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
+        findPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS).setEnabled(mSharedPreferences.getBoolean(KEY_PREF_SPLITAXIS_YAW_BOOL, false));
+        mSplitAxisLeftAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, R.string.preferences_splitaxis_yaw_left_axis_defaultValue);
+        mSplitAxisRightAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, R.string.preferences_splitaxis_yaw_right_axis_defaultValue);
 
-        emergencyBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_EMERGENCY_BTN, R.string.preferences_emergency_btn_defaultValue);
-        rollTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_PLUS_BTN , R.string.preferences_rolltrim_plus_btn_defaultValue);
-        rollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
-        pitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
-        pitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
+        mEmergencyBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_EMERGENCY_BTN, R.string.preferences_emergency_btn_defaultValue);
+        mRollTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_PLUS_BTN , R.string.preferences_rolltrim_plus_btn_defaultValue);
+        mRollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
+        mPitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
+        mPitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
 
         //Test the available sensors
         SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -211,40 +209,40 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                resetPreference(KEY_PREF_RIGHT_ANALOG_X_AXIS, rightAnalogXAxisDefaultValue, null);
-                resetPreference(KEY_PREF_RIGHT_ANALOG_Y_AXIS, rightAnalogYAxisDefaultValue, null);
-                resetPreference(KEY_PREF_LEFT_ANALOG_X_AXIS, leftAnalogXAxisDefaultValue, null);
-                resetPreference(KEY_PREF_LEFT_ANALOG_Y_AXIS, leftAnalogYAxisDefaultValue, null);
+                resetPreference(KEY_PREF_RIGHT_ANALOG_X_AXIS, mRightAnalogXAxisDefaultValue, null);
+                resetPreference(KEY_PREF_RIGHT_ANALOG_Y_AXIS, mRightAnalogYAxisDefaultValue, null);
+                resetPreference(KEY_PREF_LEFT_ANALOG_X_AXIS, mLeftAnalogXAxisDefaultValue, null);
+                resetPreference(KEY_PREF_LEFT_ANALOG_Y_AXIS, mLeftAnalogYAxisDefaultValue, null);
                 resetPreference(KEY_PREF_SPLITAXIS_YAW_BOOL, false);
-                resetPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, splitAxisLeftAxisDefaultValue, null);
-                resetPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, splitAxisRightAxisDefaultValue, null);
+                resetPreference(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS, mSplitAxisLeftAxisDefaultValue, null);
+                resetPreference(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS, mSplitAxisRightAxisDefaultValue, null);
 
-                resetPreference(KEY_PREF_EMERGENCY_BTN, emergencyBtnDefaultValue, null);
-                resetPreference(KEY_PREF_ROLLTRIM_PLUS_BTN, rollTrimPlusBtnDefaultValue, null);
-                resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, rollTrimMinusBtnDefaultValue, null);
-                resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, pitchTrimPlusBtnDefaultValue, null);
-                resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, pitchTrimMinusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_EMERGENCY_BTN, mEmergencyBtnDefaultValue, null);
+                resetPreference(KEY_PREF_ROLLTRIM_PLUS_BTN, mRollTrimPlusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue, null);
+                resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue, null);
                 Toast.makeText(PreferencesActivity.this, "Resetting to default values...", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
 
         // Advanced flight control settings
-        findPreference(KEY_PREF_AFC_SCREEN).setEnabled(sharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
+        findPreference(KEY_PREF_AFC_SCREEN).setEnabled(mSharedPreferences.getBoolean(KEY_PREF_AFC_BOOL, false));
 
-        maxRollPitchAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_ROLLPITCH_ANGLE, R.string.preferences_maxRollPitchAngle_defaultValue);
-        maxYawAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_YAW_ANGLE, R.string.preferences_maxYawAngle_defaultValue);
-        maxThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_THRUST, R.string.preferences_maxThrust_defaultValue);
-        minThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MIN_THRUST, R.string.preferences_minThrust_defaultValue);
+        mMaxRollPitchAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_ROLLPITCH_ANGLE, R.string.preferences_maxRollPitchAngle_defaultValue);
+        mMaxYawAngleDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_YAW_ANGLE, R.string.preferences_maxYawAngle_defaultValue);
+        mMaxThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MAX_THRUST, R.string.preferences_maxThrust_defaultValue);
+        mMinThrustDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_MIN_THRUST, R.string.preferences_minThrust_defaultValue);
 
         findPreference(KEY_PREF_RESET_AFC).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                resetPreference(KEY_PREF_MAX_ROLLPITCH_ANGLE, maxRollPitchAngleDefaultValue, null);
-                resetPreference(KEY_PREF_MAX_YAW_ANGLE, maxYawAngleDefaultValue, null);
-                resetPreference(KEY_PREF_MAX_THRUST, maxThrustDefaultValue, null);
-                resetPreference(KEY_PREF_MIN_THRUST, minThrustDefaultValue, null);
+                resetPreference(KEY_PREF_MAX_ROLLPITCH_ANGLE, mMaxRollPitchAngleDefaultValue, null);
+                resetPreference(KEY_PREF_MAX_YAW_ANGLE, mMaxYawAngleDefaultValue, null);
+                resetPreference(KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue, null);
+                resetPreference(KEY_PREF_MIN_THRUST, mMinThrustDefaultValue, null);
                 resetPreference(KEY_PREF_XMODE, false);
                 return true;
             }
@@ -267,11 +265,11 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             }
         } catch (IllegalArgumentException e) {
             Log.d(LOG_TAG, e.getMessage());
-            Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
             pref.setSummary(defaultValue);
         } catch (IOException iae) {
             Log.e(LOG_TAG, iae.getMessage());
-            Toast.makeText(this, iae.getMessage(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, iae.getMessage(), Toast.LENGTH_SHORT).show();
             pref.setSummary(defaultValue);
         }
     }
@@ -300,7 +298,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // Connection settings
         if (key.equals(KEY_PREF_RADIO_CHANNEL)) {
-            setSummaryInt(key, radioChannelDefaultValue, RADIOCHANNEL_UPPER_LIMIT, "Radio channel");
+            setSummaryInt(key, mRadioChannelDefaultValue, RADIOCHANNEL_UPPER_LIMIT, "Radio channel");
         }
         if (key.equals(KEY_PREF_RADIO_DATARATE)) {
             setSummaryArray(key, R.string.preferences_radio_datarate_defaultValue, R.array.radioDatarateEntries, 0);
@@ -313,12 +311,12 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (key.equals(KEY_PREF_DEADZONE)) {
             Preference deadzonePref = findPreference(key);
             try {
-                float deadzone = Float.parseFloat(sharedPreferences.getString(key, deadzoneDefaultValue));
+                float deadzone = Float.parseFloat(sharedPreferences.getString(key, mDeadzoneDefaultValue));
                 if (deadzone < 0.0 || deadzone > DEADZONE_UPPER_LIMIT) {
-                    resetPreference(key, deadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
+                    resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
                 }
             } catch (NumberFormatException nfe) {
-                resetPreference(key, deadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
+                resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
             }
             deadzonePref.setSummary(sharedPreferences.getString(key, ""));
         }
@@ -336,16 +334,16 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
         // Gamepad and button mapping
         if (key.equals(KEY_PREF_RIGHT_ANALOG_X_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, rightAnalogXAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mRightAnalogXAxisDefaultValue));
         }
         if (key.equals(KEY_PREF_RIGHT_ANALOG_Y_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, rightAnalogYAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mRightAnalogYAxisDefaultValue));
         }
         if (key.equals(KEY_PREF_LEFT_ANALOG_X_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogXAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mLeftAnalogXAxisDefaultValue));
         }
         if (key.equals(KEY_PREF_LEFT_ANALOG_Y_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, leftAnalogYAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mLeftAnalogYAxisDefaultValue));
         }
 
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_BOOL)) {
@@ -356,38 +354,38 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
 
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_LEFT_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisLeftAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mSplitAxisLeftAxisDefaultValue));
         }
         if (key.equals(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS)){
-            findPreference(key).setSummary(sharedPreferences.getString(key, splitAxisRightAxisDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mSplitAxisRightAxisDefaultValue));
         }
 
         if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {
             Preference trimPref = findPreference(key);
             try {
-                float trim = Float.parseFloat(sharedPreferences.getString(key, trimDefaultValue));
+                float trim = Float.parseFloat(sharedPreferences.getString(key, mTrimDefaultValue));
                 if (Math.abs(trim) < 0.0 || Math.abs(trim) > TRIM_UPPER_LIMIT) {
-                    resetPreference(key, trimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
+                    resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
                 }
             } catch (NumberFormatException nfe) {
-                resetPreference(key, trimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
+                resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
             }
             trimPref.setSummary(sharedPreferences.getString(key, ""));
         }
         if (key.equals(KEY_PREF_EMERGENCY_BTN)) {
-            findPreference(key).setSummary(sharedPreferences.getString(key, emergencyBtnDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mEmergencyBtnDefaultValue));
         }
         if (key.equals(KEY_PREF_ROLLTRIM_PLUS_BTN)) {
-            findPreference(key).setSummary(sharedPreferences.getString(key, rollTrimPlusBtnDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mRollTrimPlusBtnDefaultValue));
         }
         if (key.equals(KEY_PREF_ROLLTRIM_MINUS_BTN)) {
-            findPreference(key).setSummary(sharedPreferences.getString(key, rollTrimMinusBtnDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mRollTrimMinusBtnDefaultValue));
         }
         if (key.equals(KEY_PREF_PITCHTRIM_PLUS_BTN)) {
-            findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimPlusBtnDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mPitchTrimPlusBtnDefaultValue));
         }
         if (key.equals(KEY_PREF_PITCHTRIM_MINUS_BTN)) {
-            findPreference(key).setSummary(sharedPreferences.getString(key, pitchTrimMinusBtnDefaultValue));
+            findPreference(key).setSummary(sharedPreferences.getString(key, mPitchTrimMinusBtnDefaultValue));
         }
 
         // Advanced flight control settings
@@ -396,25 +394,25 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
             afcScreenPref.setEnabled(sharedPreferences.getBoolean(key, false));
             if (!sharedPreferences.getBoolean(key, false)) {
                 Toast.makeText(this, "Resetting to default values:\n"
-                                    + "Max roll/pitch angle: " + maxRollPitchAngleDefaultValue + "\n"
-                                    + "Max yaw angle: " + maxYawAngleDefaultValue + "\n"
-                                    + "Max thrust: " + maxThrustDefaultValue + "\n"
-                                    + "Min thrust: " + minThrustDefaultValue, Toast.LENGTH_LONG).show();
+                                    + "Max roll/pitch angle: " + mMaxRollPitchAngleDefaultValue + "\n"
+                                    + "Max yaw angle: " + mMaxYawAngleDefaultValue + "\n"
+                                    + "Max thrust: " + mMaxThrustDefaultValue + "\n"
+                                    + "Min thrust: " + mMinThrustDefaultValue, Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(this, "You have been warned!", Toast.LENGTH_LONG).show();
             }
         }
         if (key.equals(KEY_PREF_MAX_ROLLPITCH_ANGLE)) {
-            setSummaryInt(key, maxRollPitchAngleDefaultValue, MAX_ROLLPITCH_ANGLE_UPPER_LIMIT, "Max roll/pitch angle");
+            setSummaryInt(key, mMaxRollPitchAngleDefaultValue, MAX_ROLLPITCH_ANGLE_UPPER_LIMIT, "Max roll/pitch angle");
         }
         if (key.equals(KEY_PREF_MAX_YAW_ANGLE)) {
-            setSummaryInt(key, maxYawAngleDefaultValue, MAX_YAW_ANGLE_UPPER_LIMIT, "Max yaw angle");
+            setSummaryInt(key, mMaxYawAngleDefaultValue, MAX_YAW_ANGLE_UPPER_LIMIT, "Max yaw angle");
         }
         if (key.equals(KEY_PREF_MAX_THRUST)) {
-            setSummaryInt(key, maxThrustDefaultValue, MAX_THRUST_UPPER_LIMIT, "Max thrust");
+            setSummaryInt(key, mMaxThrustDefaultValue, MAX_THRUST_UPPER_LIMIT, "Max thrust");
         }
         if (key.equals(KEY_PREF_MIN_THRUST)) {
-            setSummaryInt(key, minThrustDefaultValue, MIN_THRUST_UPPER_LIMIT, "Min thrust");
+            setSummaryInt(key, mMinThrustDefaultValue, MIN_THRUST_UPPER_LIMIT, "Min thrust");
         }
         if (key.equals(KEY_PREF_XMODE)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
@@ -434,7 +432,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
     private void setControllerSpecificPreferences() {
         String controllerDefaultValue = getResources().getString(R.string.preferences_controller_defaultValue);
-        int controllerIndex = Integer.parseInt(sharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
+        int controllerIndex = Integer.parseInt(mSharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
         findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
         findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
     }
@@ -442,28 +440,28 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue) {
         Preference pref = findPreference(pKey);
         String defaultValue = getResources().getString(pRDefaultValue);
-        pref.setSummary(sharedPreferences.getString(pKey, defaultValue));
+        pref.setSummary(mSharedPreferences.getString(pKey, defaultValue));
         return defaultValue;
     }
 
     private void setSummaryInt(String key, String pDefaultValue, int pUpperLimit, String pValueName) {
         Preference pref = findPreference(key);
         try {
-            int newPrefValue = Integer.parseInt(sharedPreferences.getString(key, pDefaultValue));
+            int newPrefValue = Integer.parseInt(mSharedPreferences.getString(key, pDefaultValue));
             if (newPrefValue < 0 || newPrefValue > pUpperLimit) {
                 resetPreference(key, pDefaultValue, pValueName + " must be an integer value between 0 and " + pUpperLimit + ".");
             }
         } catch (NumberFormatException nfe) {
             resetPreference(key, pDefaultValue, pValueName + " must be an integer value between 0 and " + pUpperLimit + ".");
         }
-        pref.setSummary(sharedPreferences.getString(key, ""));
+        pref.setSummary(mSharedPreferences.getString(key, ""));
     }
 
     private void setSummaryArray(String key, int pRDefaultValue, int pRArray, int arrayOffset){
         Preference pref = findPreference(key);
         String preDefaultValue = getResources().getString(pRDefaultValue);
         String[] stringArray = getResources().getStringArray(pRArray);
-        String keyString = sharedPreferences.getString(key, preDefaultValue);
+        String keyString = mSharedPreferences.getString(key, preDefaultValue);
         pref.setSummary(stringArray[Integer.parseInt(keyString) + arrayOffset]);
     }
 
@@ -471,13 +469,13 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         if (pErrorMessage != null) {
             Toast.makeText(this, pErrorMessage + "\nResetting to default value " + pDefaultValue + ".", Toast.LENGTH_SHORT).show();
         }
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putString(pKey, pDefaultValue);
         editor.commit();
     }
 
     private void resetPreference(String pKey, boolean pDefaultValue) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
         editor.putBoolean(pKey, pDefaultValue);
         editor.commit();
     }
@@ -574,7 +572,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
     private void setRadioChannelAndDatarate(int channel, int datarate) {
         if (channel != -1 && datarate != -1) {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
             editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
             editor.commit();

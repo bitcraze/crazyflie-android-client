@@ -44,18 +44,18 @@ public class TouchController extends AbstractController {
 
     protected int mResolution = 1000;
 
-    protected DualJoystickView dualJoystickView;
+    protected DualJoystickView mDualJoystickView;
 
     public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
         super(controls, activity);
-        this.dualJoystickView = dualJoystickview;
-        this.dualJoystickView.setMovementRange(mResolution, mResolution);
+        this.mDualJoystickView = dualJoystickview;
+        this.mDualJoystickView.setMovementRange(mResolution, mResolution);
     }
 
     @Override
     public void enable() {
         super.enable();
-        this.dualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        this.mDualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class TouchController extends AbstractController {
         mControls.setRightAnalogX(0);
         mControls.setLeftAnalogY(0);
         mControls.setLeftAnalogX(0);
-        this.dualJoystickView.setOnJostickMovedListener(null, null);
+        this.mDualJoystickView.setOnJostickMovedListener(null, null);
         super.disable();
     }
 

@@ -50,7 +50,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.hardware.SensorManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -318,7 +317,7 @@ public class MainActivity extends Activity {
             case 0:
                 // Use GyroscopeController if activated in the preferences
                 if (mControls.isUseGyro()) {
-                    mController = new GyroscopeController(mControls, this, mDualJoystickView, (SensorManager) getSystemService(Context.SENSOR_SERVICE));
+                    mController = new GyroscopeController(mControls, this, mDualJoystickView);
                 } else {
                     // TODO: reuse existing touch controller?
                     mController = new TouchController(mControls, this, mDualJoystickView);

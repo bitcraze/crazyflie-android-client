@@ -44,8 +44,8 @@ import android.widget.TextView;
 
 public class ButtonMappingDialogPreference extends DialogPreference implements OnKeyListener{
 
-    private TextView valueTextView;
-    private String keyCode;
+    private TextView mValueTextView;
+    private String mKeyCode;
 
     public ButtonMappingDialogPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -77,13 +77,13 @@ public class ButtonMappingDialogPreference extends DialogPreference implements O
         promptTextView.setText(R.string.preferences_button_mapping_dialog_text);
         promptTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        valueTextView = new TextView(getContext());
-        valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        valueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
-        valueTextView.setPadding(0, 12, 0, 12);
+        mValueTextView = new TextView(getContext());
+        mValueTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        mValueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+        mValueTextView.setPadding(0, 12, 0, 12);
 
         layout.addView(promptTextView, params);
-        layout.addView(valueTextView, params);
+        layout.addView(mValueTextView, params);
 
         return layout;
     }
@@ -92,16 +92,16 @@ public class ButtonMappingDialogPreference extends DialogPreference implements O
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
         super.onSetInitialValue(restorePersistedValue, defaultValue);
         if(restorePersistedValue) {
-            keyCode = getPersistedString((String) defaultValue);
+            mKeyCode = getPersistedString((String) defaultValue);
         } else {
-            keyCode = (String) defaultValue;
+            mKeyCode = (String) defaultValue;
         }
     }
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         if(positiveResult) {
-            persistString(keyCode);
+            persistString(mKeyCode);
         }
         super.onDialogClosed(positiveResult);
     }
@@ -109,18 +109,18 @@ public class ButtonMappingDialogPreference extends DialogPreference implements O
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
-        if(keyCode == null || keyCode.equals("")) {
-            valueTextView.setText("No Key");
+        if(mKeyCode == null || mKeyCode.equals("")) {
+            mValueTextView.setText("No Key");
         } else {
-            valueTextView.setText(keyCode);
+            mValueTextView.setText(mKeyCode);
         }
     }
 
     @Override
     public boolean onKey(DialogInterface dialog, int pKeyCode, KeyEvent event) {
         if(pKeyCode != KeyEvent.KEYCODE_BACK) {
-            this.keyCode = KeyEvent.keyCodeToString(pKeyCode);
-            valueTextView.setText(keyCode);
+            this.mKeyCode = KeyEvent.keyCodeToString(pKeyCode);
+            mValueTextView.setText(mKeyCode);
         } else {
             dialog.dismiss();
         }

@@ -52,8 +52,8 @@ import android.widget.TextView;
 public class AxisMappingDialogPreference extends DialogPreference implements OnKeyListener, OnGenericMotionListener{
 
     private static final String TAG = "axisMappingDialogPreference";
-    private TextView valueTextView;
-    private String axisName;
+    private TextView mValueTextView;
+    private String mAxisName;
 
     public AxisMappingDialogPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -77,21 +77,21 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
         promptTextView.setText(R.string.preferences_axis_mapping_dialog_text);
         promptTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        valueTextView = new TextView(getContext());
-        valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        valueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
-        valueTextView.setPadding(0, 12, 0, 12);
+        mValueTextView = new TextView(getContext());
+        mValueTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        mValueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+        mValueTextView.setPadding(0, 12, 0, 12);
 
 
-        valueTextView.setOnGenericMotionListener(this);
+        mValueTextView.setOnGenericMotionListener(this);
         //TODO: is there an easier way to make this work?
         //motion events are not captured when view is not focusable
-        valueTextView.setFocusableInTouchMode(true);
+        mValueTextView.setFocusableInTouchMode(true);
         //if focus is not set, right analog stick events are only recognized after the left analog stick is moved!?!
-        valueTextView.requestFocus();
+        mValueTextView.requestFocus();
 
         layout.addView(promptTextView, params);
-        layout.addView(valueTextView, params);
+        layout.addView(mValueTextView, params);
 
         return layout;
     }
@@ -100,16 +100,16 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
         super.onSetInitialValue(restorePersistedValue, defaultValue);
         if(restorePersistedValue) {
-            axisName = getPersistedString((String) defaultValue);
+            mAxisName = getPersistedString((String) defaultValue);
         } else {
-            axisName = (String) defaultValue;
+            mAxisName = (String) defaultValue;
         }
     }
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         if(positiveResult) {
-            persistString(axisName);
+            persistString(mAxisName);
         }
         super.onDialogClosed(positiveResult);
     }
@@ -117,10 +117,10 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
     @Override
     protected void onBindDialogView(View view) {
         super.onBindDialogView(view);
-        if(axisName == null || axisName.equals("")) {
-            valueTextView.setText("No axis");
+        if(mAxisName == null || mAxisName.equals("")) {
+            mValueTextView.setText("No axis");
         } else {
-            valueTextView.setText(axisName);
+            mValueTextView.setText(mAxisName);
         }
     }
 
@@ -133,8 +133,8 @@ public class AxisMappingDialogPreference extends DialogPreference implements OnK
                 int axis = mr.getAxis();
                 if(event.getAxisValue(axis) > 0.5 || event.getAxisValue(axis) < -0.5){
                     Log.i(TAG, "Axis found: " + MotionEvent.axisToString(axis));
-                    this.axisName = MotionEvent.axisToString(axis);
-                    valueTextView.setText(axisName);
+                    this.mAxisName = MotionEvent.axisToString(axis);
+                    mValueTextView.setText(mAxisName);
                 }
             }
         }else{
