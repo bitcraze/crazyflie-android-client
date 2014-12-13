@@ -72,7 +72,7 @@ import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
 public class MainActivity extends Activity {
 
-    private static final String TAG = "CrazyflieControl";
+    private static final String LOG_TAG = "CrazyflieControl";
 
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
@@ -265,7 +265,7 @@ public class MainActivity extends Activity {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void setHideyBar() {
-        Log.i(TAG, "Activating immersive mode");
+        Log.i(LOG_TAG, "Activating immersive mode");
         int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
         int newUiOptions = uiOptions;
 
@@ -343,7 +343,7 @@ public class MainActivity extends Activity {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "mUsbReceiver action: " + action);
+            Log.d(LOG_TAG, "mUsbReceiver action: " + action);
             if ((MainActivity.this.getPackageName()+".USB_PERMISSION").equals(action)) {
                 //reached only when USB permission on physical connect was canceled and "Connect" or "Radio Scan" is clicked
                 synchronized (this) {
@@ -353,26 +353,26 @@ public class MainActivity extends Activity {
                             Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Log.d(TAG, "permission denied for device " + device);
+                        Log.d(LOG_TAG, "permission denied for device " + device);
                     }
                 }
             }
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && CrazyradioLink.isCrazyradio(device)) {
-                    Log.d(TAG, "Crazyradio detached");
+                if (device != null && UsbLinkAndroid.isCrazyradio(device)) {
+                    Log.d(LOG_TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
                     if (mLink != null) {
-                        Log.d(TAG, "linkDisconnect()");
+                        Log.d(LOG_TAG, "linkDisconnect()");
                         linkDisconnect();
                     }
                 }
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && CrazyradioLink.isCrazyradio(device)) {
-                    Log.d(TAG, "Crazyradio attached");
+                if (device != null && UsbLinkAndroid.isCrazyradio(device)) {
+                    Log.d(LOG_TAG, "Crazyradio attached");
                     Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundConnect);
                 }
@@ -397,15 +397,15 @@ public class MainActivity extends Activity {
         try {
             // create link
             try {
-                mLink = new CrazyradioLink(this, new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+                mLink = new CrazyradioLink(new UsbLinkAndroid(this), new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
                     if (android.os.Build.MODEL.equals("Nexus 4")) {
-                        Log.d(TAG, "Using bluetooth write with response");
+                        Log.d(LOG_TAG, "Using bluetooth write with response");
                         mLink = new BleLink(this, true);
                     } else {
-                        Log.d(TAG, "Using bluetooth write without response");
+                        Log.d(LOG_TAG, "Using bluetooth write without response");
                         mLink = new BleLink(this, false);
                     }
                 } else {
@@ -504,10 +504,10 @@ public class MainActivity extends Activity {
             });
             mSendJoystickDataThread.start();
         } catch (IllegalArgumentException e) {
-            Log.d(TAG, e.getMessage());
+            Log.d(LOG_TAG, e.getMessage());
             Toast.makeText(this, "Cannot connect: Crazyradio not attached and Bluetooth LE not available", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(LOG_TAG, e.getMessage());
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
