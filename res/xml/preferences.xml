@@ -214,7 +214,8 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="pref_screen_rotation_lock_bool"
-            android:title="@string/preferences_screen_rotation_lock_title" />
+            android:title="@string/preferences_screen_rotation_lock_title"
+            android:summary="@string/preferences_screen_rotation_lock_summary" />
 
         <CheckBoxPreference
             android:defaultValue="false"

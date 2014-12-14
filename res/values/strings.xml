@@ -21,6 +21,7 @@
     <string name="preferences_radio_datarate_defaultValue">0</string>
     <string name="preferences_radio_scan">Radio Scan</string>
     <string name="preferences_radio_scan_summary">Initiate radio scan to find Crazyflie</string>
+    <string name="select_connection_dialog_title">Select Connection</string>
     <string name="preferences_radio_stats">Radio stats</string>
     <string name="preferences_radio_stats_summary">Not attached</string>
 
@@ -95,9 +96,9 @@
     <!-- App settings -->
     <string name="preferences_app_title">App settings</string>
     <string name="preferences_screen_rotation_lock_title">Screen rotation lock</string>
+    <string name="preferences_screen_rotation_lock_summary"></string>
     <string name="preferences_immersive_mode_title">Full screen mode</string>
     <string name="preferences_immersive_mode_summary">Requires Android 4.4</string>
-    <string name="select_connection_dialog_title">Select Connection</string>
     
     <!-- FlightDataView -->
     <string name="pitch">Pitch: %3.0f</string>

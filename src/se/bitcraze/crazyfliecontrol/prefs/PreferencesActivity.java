@@ -93,6 +93,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_PITCHTRIM_PLUS_BTN = "pref_pitchtrim_plus_btn";
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
+
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
     public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
@@ -329,7 +330,19 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
 
         if (key.equals(KEY_PREF_USE_GYRO_BOOL)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
-            pref.setChecked(sharedPreferences.getBoolean(key, false));
+            boolean useGyro = sharedPreferences.getBoolean(key, false);
+            pref.setChecked(useGyro);
+            // automatically activate the screen rotation lock preference
+            CheckBoxPreference screenRotationLock = (CheckBoxPreference) findPreference(KEY_PREF_SCREEN_ROTATION_LOCK_BOOL);
+            if (useGyro) {
+                Toast.makeText(this, "Activated screen rotation lock...", Toast.LENGTH_LONG).show();
+                screenRotationLock.setSummary("Locked because gyroscope is used as controller.");
+            } else {
+                Toast.makeText(this, "Deactivated screen rotation lock...", Toast.LENGTH_LONG).show();
+                screenRotationLock.setSummary("");
+            }
+            screenRotationLock.setChecked(useGyro);
+            screenRotationLock.setEnabled(!useGyro);
         }
 
         // Gamepad and button mapping

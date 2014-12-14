@@ -158,7 +158,7 @@ public class MainActivity extends Activity {
 
     private void checkScreenLock() {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
-        if(isScreenLock || mController instanceof GyroscopeController){
+        if(isScreenLock){
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }else{
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
