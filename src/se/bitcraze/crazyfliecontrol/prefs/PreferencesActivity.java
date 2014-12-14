@@ -80,6 +80,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
+    public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
     private static final float DEADZONE_UPPER_LIMIT = 1.0f;
@@ -335,6 +336,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
 
         if (key.equals(KEY_PREF_SCREEN_ROTATION_LOCK_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
+        }
+        if (key.equals(KEY_PREF_IMMERSIVE_MODE_BOOL)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
         }

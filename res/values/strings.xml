@@ -76,6 +76,8 @@
     <string name="preferences_button_mapping_dialog_text">Please press a button&#8230;</string>
     <string name="preferences_category_app_settings">App Preferences</string>
     <string name="preferences_screen_rotation_lock_title">Screen rotation lock</string>
+    <string name="preferences_immersive_mode_title">Full screen mode</string>
+    <string name="preferences_immersive_mode_summary">Requires Android 4.4</string>
     <string name="select_connection_dialog_title">Select Connection</string>
     <string name="pitch">Pitch: %3.0f</string>
     <string name="roll">Roll: % 3.0f</string>

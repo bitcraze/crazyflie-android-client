@@ -41,6 +41,7 @@ import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -201,6 +202,10 @@ public class MainActivity extends Activity {
         mGamepadController.setControlConfig();
         resetInputMethod();
         checkScreenLock();
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_IMMERSIVE_MODE_BOOL, false)) {
+            setHideyBar();
+        }
+        mDualJoystickView.requestLayout();
     }
 
     @Override
@@ -243,6 +248,37 @@ public class MainActivity extends Activity {
 
             }
         }, 2000);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(mPreferences.getBoolean(PreferencesActivity.KEY_PREF_IMMERSIVE_MODE_BOOL, false) && hasFocus){
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setHideyBar();
+                }
+            }, 2000);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void setHideyBar() {
+        Log.i(TAG, "Activating immersive mode");
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        int newUiOptions = uiOptions;
+
+        if(Build.VERSION.SDK_INT >= 14){
+            newUiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+        if(Build.VERSION.SDK_INT >= 16){
+            newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+        if(Build.VERSION.SDK_INT >= 18){
+            newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
 
     //TODO: fix indirection
