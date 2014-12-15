@@ -31,7 +31,6 @@ import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectC
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
-import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,7 +39,6 @@ import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -82,6 +80,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
+    public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
     private static final float DEADZONE_UPPER_LIMIT = 1.0f;
@@ -124,8 +123,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         setInitialSummaries();
-
-        setupActionBar();
 
         mDatarateStrings = getResources().getStringArray(R.array.radioDatarateEntries);
     }
@@ -215,16 +212,6 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                 return true;
             }
         });
-    }
-
-    /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void setupActionBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
-        }
     }
 
     @Override
@@ -349,6 +336,10 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
         }
 
         if (key.equals(KEY_PREF_SCREEN_ROTATION_LOCK_BOOL)) {
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+            pref.setChecked(sharedPreferences.getBoolean(key, false));
+        }
+        if (key.equals(KEY_PREF_IMMERSIVE_MODE_BOOL)) {
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
             pref.setChecked(sharedPreferences.getBoolean(key, false));
         }
