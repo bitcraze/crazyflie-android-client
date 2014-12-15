@@ -8,10 +8,11 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_preferences">Preferences</string>
 
-    <string name="preferences_title">CrazyflieControl settings</string>
+    <string name="preferences_title">Crazyflie Client settings</string>
 
     <!-- Connection settings -->
     <string name="preferences_radio_title">Connection settings</string>
+    <string name="preferences_category_radio">Crazyradio settings</string>
     <string name="preferences_radio_channel">Radio channel</string>
     <string name="preferences_radio_channel_summary">Set the radio channel</string>
     <string name="preferences_radio_channel_defaultValue">10</string>

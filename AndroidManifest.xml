@@ -35,8 +35,12 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <activity android:name="se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity">
-            <meta-data android:value="se.bitcraze.crazyfliecontrol2.MainActivity" android:name="android.support.PARENT_ACTIVITY"/>
+        <activity
+            android:name="se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity"
+            android:theme="@android:style/Theme.Holo.Light">
+            <meta-data
+                android:value="se.bitcraze.crazyfliecontrol2.MainActivity"
+                android:name="android.support.PARENT_ACTIVITY"/>
         </activity>
     </application>
 

@@ -7,29 +7,33 @@
         android:key="pref_radio_screen"
         android:title="@string/preferences_radio_title">
 
-        <EditTextPreference
-            android:defaultValue="@string/preferences_radio_channel_defaultValue"
-            android:dialogTitle="@string/preferences_radio_channel"
-            android:inputType="number"
-            android:maxLength="4"
-            android:key="pref_radiochannel"
-            android:summary="@string/preferences_radio_channel_summary"
-            android:title="@string/preferences_radio_channel" />
+        <PreferenceCategory
+            android:title="@string/preferences_category_radio">
 
-        <ListPreference
-            android:defaultValue="@string/preferences_radio_datarate_defaultValue"
-            android:dialogTitle="@string/preferences_radio_datarate"
-            android:entries="@array/radioDatarateEntries"
-            android:entryValues="@array/radioDatarateEntryValues"
-            android:key="pref_radiodatarate"
-            android:summary="@string/preferences_radio_datarate_summary"
-            android:title="@string/preferences_radio_datarate" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_radio_channel_defaultValue"
+                android:dialogTitle="@string/preferences_radio_channel"
+                android:inputType="number"
+                android:maxLength="4"
+                android:key="pref_radiochannel"
+                android:summary="@string/preferences_radio_channel_summary"
+                android:title="@string/preferences_radio_channel" />
+    
+            <ListPreference
+                android:defaultValue="@string/preferences_radio_datarate_defaultValue"
+                android:dialogTitle="@string/preferences_radio_datarate"
+                android:entries="@array/radioDatarateEntries"
+                android:entryValues="@array/radioDatarateEntryValues"
+                android:key="pref_radiodatarate"
+                android:summary="@string/preferences_radio_datarate_summary"
+                android:title="@string/preferences_radio_datarate" />
+    
+            <Preference
+                    android:key="pref_radio_scan"
+                    android:summary="@string/preferences_radio_scan_summary"
+                    android:title="@string/preferences_radio_scan" />
 
-        <Preference
-                android:key="pref_radio_scan"
-                android:summary="@string/preferences_radio_scan_summary"
-                android:title="@string/preferences_radio_scan" />
-
+        </PreferenceCategory>
     </PreferenceScreen>
 
     <!-- Flight control settings -->
