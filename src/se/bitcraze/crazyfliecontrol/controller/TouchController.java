@@ -55,7 +55,7 @@ public class TouchController extends AbstractController {
     @Override
     public void enable() {
         super.enable();
-        this.mDualJoystickView.setOnJostickMovedListener(_listenerLeft, _listenerRight);
+        this.mDualJoystickView.setOnJoystickMovedListener(_listenerLeft, _listenerRight);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class TouchController extends AbstractController {
         mControls.setRightAnalogX(0);
         mControls.setLeftAnalogY(0);
         mControls.setLeftAnalogX(0);
-        this.mDualJoystickView.setOnJostickMovedListener(null, null);
+        this.mDualJoystickView.setOnJoystickMovedListener(null, null);
         super.disable();
     }
 
