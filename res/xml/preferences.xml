@@ -39,6 +39,14 @@
                 android:title="@string/preferences_radio_stats" />
 
         </PreferenceCategory>
+        <PreferenceCategory android:title="@string/preferences_category_bluetooth">
+            <CheckBoxPreference
+	            android:defaultValue="false"
+	            android:key="pref_blatency_bool"
+	            android:summaryOff="@string/preferences_ble_latency_fix_sumary"
+	            android:summaryOn="@string/preferences_ble_latency_fix_sumary"
+	            android:title="@string/preferences_ble_latency_fix" />
+        </PreferenceCategory>
     </PreferenceScreen>
 
     <!-- Flight control settings -->

@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-                    if (android.os.Build.MODEL.equals("Nexus 4")) {
+                    if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
                         Log.d(LOG_TAG, "Using bluetooth write with response");
                         mLink = new BleLink(this, true);
                     } else {

@@ -106,5 +106,8 @@
     <string name="thrust">Thrust: % 3.0f%%</string>
     <string name="yaw">Yaw: % 3.0f</string>
     <string name="linkQuality">Link: %1$s</string>
+    <string name="preferences_category_bluetooth">Bluetooth Settings</string>
+    <string name="preferences_ble_latency_fix">Bluetooth latency workaround</string>
+    <string name="preferences_ble_latency_fix_sumary">Check if you experience big latency (seconds of latency).</string>
 
 </resources>

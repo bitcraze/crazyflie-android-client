@@ -63,6 +63,7 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
     public static final String KEY_PREF_RADIO_DATARATE = "pref_radiodatarate";
     public static final String KEY_PREF_RADIO_SCAN = "pref_radio_scan";
     public static final String KEY_PREF_RADIO_STATS = "pref_radio_stats";
+    public static final String KEY_PREF_BLATENCY_BOOL = "pref_blatency_bool";
 
     public static final String KEY_PREF_MODE = "pref_mode";
     public static final String KEY_PREF_DEADZONE = "pref_deadzone";
