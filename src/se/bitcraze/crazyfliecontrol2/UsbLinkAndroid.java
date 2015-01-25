@@ -37,7 +37,7 @@ public class UsbLinkAndroid implements IUsbLink{
         this.mUsbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.mUsbDevice = searchForCrazyradio(context, mUsbManager);
         if (mUsbManager == null || mUsbDevice == null) {
-            throw new IllegalArgumentException("USB manager and device must not be null");
+            throw new IllegalArgumentException("Make sure that the Crazyradio (PA) is connected.");
         }
         initDevice();
     }

@@ -530,9 +530,12 @@ public class PreferencesActivity extends PreferenceActivity implements OnSharedP
                         useSlowScan = true;
                     }
                     return crlink.scanChannels(useSlowScan);
-                } catch(IOException e) {
-                    mException = e;
-                    return null;
+                } catch(IOException ioe) {
+                    mException = ioe;
+                    return new ConnectionData[0];
+                } catch(IllegalArgumentException iae) {
+                    mException = iae;
+                    return new ConnectionData[0];
                 }
             }
 
