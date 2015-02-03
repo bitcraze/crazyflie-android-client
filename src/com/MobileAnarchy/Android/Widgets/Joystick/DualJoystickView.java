@@ -1,6 +1,5 @@
 package com.MobileAnarchy.Android.Widgets.Joystick;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,6 +21,9 @@ public class DualJoystickView extends LinearLayout {
     private JoystickView stickR;
 
     private View padding;
+
+    private int mViewWidth;
+    private int mViewHeight;
 
     public DualJoystickView(Context context) {
         super(context);
@@ -51,22 +53,28 @@ public class DualJoystickView extends LinearLayout {
     }
 
     @Override
-    @SuppressLint("DrawAllocation")
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    protected void onSizeChanged(int wNew, int hNew, int wOld, int hOld){
+        super.onSizeChanged(wNew, hNew, wOld, hOld);
+        mViewWidth = wNew;
+        mViewHeight = hNew;
+
+        drawJoysticks();
+    }
+
+    private void drawJoysticks() {
         removeView(stickL);
         removeView(padding);
         removeView(stickR);
 
-        int joyHeight = Math.round(getMeasuredHeight());
+        int joyHeight = Math.round(mViewHeight);
         int joyWidth = joyHeight;
-        int paddingWidth = getMeasuredWidth() - (joyWidth * 2);
+        int paddingWidth = mViewWidth - (joyWidth * 2);
 
         // Layout fix for HP Touchpad
         if (paddingWidth < 0) {
-            joyWidth = getMeasuredWidth() / 2;
+            joyWidth = mViewWidth / 2;
             joyHeight = joyWidth;
-            paddingWidth = getMeasuredWidth() - (joyWidth * 2);
+            paddingWidth = mViewWidth - (joyWidth * 2);
         }
 
         LayoutParams joyParams = new LayoutParams(joyWidth, joyHeight);
