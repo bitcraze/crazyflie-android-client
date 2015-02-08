@@ -8,6 +8,10 @@ buildscript {
 }
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+}
+
 android {
 
     compileSdkVersion 21
@@ -56,4 +60,5 @@ android {
 
 dependencies {
     compile 'com.android.support:support-v4:21.0.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.10'
 }
