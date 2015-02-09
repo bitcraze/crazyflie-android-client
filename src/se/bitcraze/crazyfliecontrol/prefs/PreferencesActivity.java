@@ -526,8 +526,9 @@ public class PreferencesActivity extends PreferenceActivity {
                         UsbLinkAndroid usbLinkAndroid = new UsbLinkAndroid(getActivity());
                         CrazyradioLink crlink = new CrazyradioLink(usbLinkAndroid);
                         boolean useSlowScan = false;
-                        //Use slow scan, when Crazyradio firmware version is 0.52
-                        if(0.52f == usbLinkAndroid.getFirmwareVersion()){
+                        //Use slow scan, when Crazyradio firmware version is 0.52 or 0.53
+                        if(0.52f == usbLinkAndroid.getFirmwareVersion() ||
+                           0.53f == usbLinkAndroid.getFirmwareVersion()){
                             useSlowScan = true;
                         }
                         return crlink.scanChannels(useSlowScan);
