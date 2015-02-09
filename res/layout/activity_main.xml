@@ -53,6 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:gravity="bottom"
         android:layout_marginTop="1dp"
         android:layout_below="@+id/view1">
     </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
