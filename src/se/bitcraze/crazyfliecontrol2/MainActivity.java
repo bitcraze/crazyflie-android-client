@@ -1,30 +1,3 @@
-/**
- *    ||          ____  _ __
- * +------+      / __ )(_) /_______________ _____  ___
- * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
- * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
- *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
- *
- * Copyright (C) 2013 Bitcraze AB
- *
- * Crazyflie Nano Quadcopter Client
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- */
-
 package se.bitcraze.crazyfliecontrol2;
 
 import java.io.IOException;
@@ -41,6 +14,8 @@ import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
+import se.bitcraze.crazyflielib.crtp.ParameterPacket;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -66,6 +41,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
@@ -98,7 +74,7 @@ public class MainActivity extends Activity {
     private int mSoundDisconnect;
 
     private ImageButton mToggleConnectButton;
-
+    private boolean oldHover;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +106,8 @@ public class MainActivity extends Activity {
         registerReceiver(mUsbReceiver, filter);
 
         initializeSounds();
+
+        oldHover = false;
     }
 
     private void initializeSounds() {
@@ -156,6 +134,9 @@ public class MainActivity extends Activity {
         mRadioDatarateDefaultValue = getString(R.string.preferences_radio_datarate_defaultValue);
     }
 
+    /*
+    * checks if auto screen rotation is on or not.
+     */
     private void checkScreenLock() {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
         if(isScreenLock){
@@ -166,6 +147,9 @@ public class MainActivity extends Activity {
     }
 
     private void initializeMenuButtons() {
+        /*
+        set the listener to connect/disconnet
+         */
         mToggleConnectButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -187,8 +171,8 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-              Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
-              startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -324,8 +308,8 @@ public class MainActivity extends Activity {
                 }
                 break;
             case 1:
-                    // TODO: show warning if no game pad is found?
-                    mController = mGamepadController;
+                // TODO: show warning if no game pad is found?
+                mController = mGamepadController;
                 break;
             default:
                 break;
@@ -395,8 +379,8 @@ public class MainActivity extends Activity {
                 mLink = new CrazyradioLink(new UsbLinkAndroid(this), new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
-                    getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-                    if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
+                        getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+                    if (android.os.Build.MODEL.equals("Nexus 4")) {
                         Log.d(LOG_TAG, "Using bluetooth write with response");
                         mLink = new BleLink(this, true);
                     } else {
@@ -487,10 +471,23 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mLink != null) {
-                        mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
-
+                        boolean curHover = ((ToggleButton)findViewById(R.id.hover)).isChecked();
+                        if (curHover != oldHover){
+                            ParameterPacket pp = new ParameterPacket(curHover);
+                            System.out.println((curHover) ? "turning hover on" : "turning hover off");
+                            System.out.println(pp.toByteArray().toString());
+                            mLink.send(pp);
+                            oldHover = curHover;
+                            System.out.println("parameter");
+                        }
+                        else {
+                            System.out.println("commander");
+                            mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(),
+                                    mController.getThrustAbsolute(), mControls.isXmode(), curHover));
+                        }
                         try {
                             Thread.sleep(20, 0);
+
                         } catch (InterruptedException e) {
                             break;
                         }
@@ -531,7 +528,7 @@ public class MainActivity extends Activity {
     }
 
     public IController getController(){
-    	return mController;
+        return mController;
     }
 
 }
