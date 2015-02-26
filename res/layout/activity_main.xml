@@ -1,0 +1,61 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal" >
+
+        <se.bitcraze.crazyfliecontrol2.FlightDataView
+            android:id="@+id/flightdataview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/imageButton_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="6dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/custom_button"
+            android:src="@drawable/ic_action_import_export" />
+
+        <ImageButton
+            android:id="@+id/imageButton_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/custom_button"
+            android:src="@drawable/ic_action_settings_light" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_marginTop="1dp" />
+
+    <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
+        android:id="@+id/joysticks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        android:layout_marginTop="1dp"
+        android:layout_below="@+id/view1">
+    </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
+
+</RelativeLayout>

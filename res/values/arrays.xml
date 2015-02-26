@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="radioDatarateEntries">
+        <item >250 Kbit/s</item>
+        <item >1 Mbit/s</item>
+        <item >2 Mbit/s</item>
+    </string-array>
+    
+    <string-array name="radioDatarateEntryValues">
+        <item >0</item>
+        <item >1</item>
+        <item >2</item>
+    </string-array>
+
+    <string-array name="modeEntries">
+        <item >Mode 1 (Left: Pitch &amp; Yaw, Right: Thrust &amp; Roll)</item>
+        <item >Mode 2 (Left: Thrust &amp; Yaw, Right: Pitch &amp; Roll)</item>
+        <item >Mode 3 (Left: Pitch &amp; Roll, Right: Thrust &amp; Yaw)</item>
+        <item >Mode 4 (Left: Thrust &amp; Roll, Right: Pitch &amp; Yaw)</item>
+    </string-array>
+
+    <string-array name="modeValues">
+        <item >1</item>
+        <item >2</item>
+        <item >3</item>
+        <item >4</item>
+    </string-array>
+
+    <string-array name="controllerEntries">
+        <item >Onscreen</item>
+        <item >Gamepad</item>
+    </string-array>
+
+    <string-array name="controllerValues">
+        <item >0</item>
+        <item >1</item>
+    </string-array>
+</resources>

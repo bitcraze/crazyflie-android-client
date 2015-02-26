@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/preferences_title" >
+
+    <!-- Connection settings -->
+    <PreferenceScreen 
+        android:key="pref_radio_screen"
+        android:title="@string/preferences_radio_title">
+
+        <PreferenceCategory
+            android:title="@string/preferences_category_radio">
+
+            <EditTextPreference
+                android:defaultValue="@string/preferences_radio_channel_defaultValue"
+                android:dialogTitle="@string/preferences_radio_channel"
+                android:inputType="number"
+                android:maxLength="4"
+                android:key="pref_radiochannel"
+                android:summary="@string/preferences_radio_channel_summary"
+                android:title="@string/preferences_radio_channel" />
+    
+            <ListPreference
+                android:defaultValue="@string/preferences_radio_datarate_defaultValue"
+                android:dialogTitle="@string/preferences_radio_datarate"
+                android:entries="@array/radioDatarateEntries"
+                android:entryValues="@array/radioDatarateEntryValues"
+                android:key="pref_radiodatarate"
+                android:summary="@string/preferences_radio_datarate_summary"
+                android:title="@string/preferences_radio_datarate" />
+    
+            <Preference
+                android:key="pref_radio_scan"
+                android:summary="@string/preferences_radio_scan_summary"
+                android:title="@string/preferences_radio_scan" />
+
+            <Preference
+                android:key="pref_radio_stats"
+                android:summary="@string/preferences_radio_stats_summary"
+                android:title="@string/preferences_radio_stats" />
+
+        </PreferenceCategory>
+        <PreferenceCategory android:title="@string/preferences_category_bluetooth">
+            <CheckBoxPreference
+	            android:defaultValue="false"
+	            android:key="pref_blatency_bool"
+	            android:summaryOff="@string/preferences_ble_latency_fix_sumary"
+	            android:summaryOn="@string/preferences_ble_latency_fix_sumary"
+	            android:title="@string/preferences_ble_latency_fix" />
+        </PreferenceCategory>
+    </PreferenceScreen>
+
+    <!-- Flight control settings -->
+    
+    <PreferenceScreen 
+        android:key="pref_flightcontrol_screen"
+        android:title="@string/preferences_flightcontrol_title">
+
+        <ListPreference
+            android:defaultValue="@string/preferences_mode_defaultValue"
+            android:dialogTitle="@string/preferences_mode"
+            android:entries="@array/modeEntries"
+            android:entryValues="@array/modeValues"
+            android:key="pref_mode"
+            android:title="@string/preferences_mode" />
+
+        <EditTextPreference
+            android:defaultValue="@string/preferences_deadzone_defaultValue"
+            android:dialogTitle="@string/preferences_deadzone"
+            android:inputType="numberDecimal"
+            android:key="pref_deadzone"
+            android:title="@string/preferences_deadzone" />
+
+        <EditTextPreference
+            android:defaultValue="@string/preferences_trim_defaultValue"
+            android:dialogTitle="@string/preferences_rolltrim"
+            android:inputType="numberDecimal|numberSigned"
+            android:key="pref_rolltrim"
+            android:title="@string/preferences_rolltrim" />
+
+        <EditTextPreference
+            android:defaultValue="@string/preferences_trim_defaultValue"
+            android:dialogTitle="@string/preferences_pitchtrim"
+            android:inputType="numberDecimal|numberSigned"
+            android:key="pref_pitchtrim"
+            android:title="@string/preferences_pitchtrim" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_afc_bool"
+            android:summaryOff="@string/preferences_afc_bool_summary_off"
+            android:summaryOn="@string/preferences_afc_bool_summary_on"
+            android:title="@string/preferences_advancedflightcontrol" />
+
+        <!-- Advanced flight control settings -->
+        <PreferenceScreen
+            android:key="pref_afc_screen"
+            android:title="@string/preferences_afc_title"
+            android:dependency="pref_afc_bool" >
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
+                android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
+                android:inputType="number"
+                android:key="pref_maxrollpitchangle"
+                android:title="@string/preferences_maxRollPitchAngle_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
+                android:dialogTitle="@string/preferences_maxYawAngle_title"
+                android:inputType="number"
+                android:key="pref_maxyawangle"
+                android:title="@string/preferences_maxYawAngle_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_maxThrust_defaultValue"
+                android:dialogTitle="@string/preferences_maxThrust_title"
+                android:inputType="number"
+                android:key="pref_maxthrust"
+                android:title="@string/preferences_maxThrust_title" />
+            <EditTextPreference
+                android:defaultValue="@string/preferences_minThrust_defaultValue"
+                android:dialogTitle="@string/preferences_minThrust_title"
+                android:inputType="number"
+                android:key="pref_minthrust"
+                android:title="@string/preferences_minThrust_title" />
+
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="pref_xmode"
+                android:summary="@string/preferences_xmode_summary"
+                android:title="@string/preferences_xmode_title" />
+
+            <Preference
+                android:key="pref_reset_afc"
+                android:summary="@string/preferences_reset_afc_summary"
+                android:title="@string/preferences_reset_afc_title" />
+        </PreferenceScreen>
+    </PreferenceScreen>
+
+    <!-- Controller settings -->
+
+    <PreferenceScreen 
+        android:key="pref_controller_screen"
+        android:title="@string/preferences_controller_title">
+
+        <ListPreference
+            android:defaultValue="@string/preferences_controller_defaultValue"
+            android:dialogTitle="@string/preferences_controller"
+            android:entries="@array/controllerEntries"
+            android:entryValues="@array/controllerValues"
+            android:key="pref_controller"
+            android:summary="@string/preferences_controller_summary"
+            android:title="@string/preferences_controller" />
+
+        <!-- Gamepad and button mapping -->
+        <PreferenceScreen 
+            android:key="pref_btn_screen"
+            android:title="@string/preferences_btn_title">
+            <PreferenceCategory android:title="@string/preferences_category_axes" >
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_right_analog_x_axis"
+                    android:title="@string/preferences_right_analog_x_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_right_analog_y_axis"
+                    android:title="@string/preferences_right_analog_y_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_left_analog_x_axis"
+                    android:title="@string/preferences_left_analog_x_axis_title"/>
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_left_analog_y_axis"
+                    android:title="@string/preferences_left_analog_y_axis_title"/>
+               <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="pref_splitaxis_yaw_bool"
+                    android:summary="@string/preferences_splitaxis_yaw_bool_summary"
+                    android:title="@string/preferences_splitaxis_yaw_bool_title" />
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_splitaxis_yaw_left_axis"
+                    android:title="@string/preferences_splitaxis_yaw_left_axis_title"
+                    android:defaultValue="@string/preferences_splitaxis_yaw_left_axis_defaultValue"/>
+               <se.bitcraze.crazyfliecontrol.prefs.AxisMappingDialogPreference 
+                    android:key="pref_splitaxis_yaw_right_axis"
+                    android:title="@string/preferences_splitaxis_yaw_right_axis_title"
+                    android:defaultValue="@string/preferences_splitaxis_yaw_right_axis_defaultValue"/>
+            </PreferenceCategory>
+            <PreferenceCategory android:title="@string/preferences_category_buttons" >
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_emergency_btn"
+                    android:title="@string/preferences_emergency_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_rolltrim_plus_btn"
+                    android:title="@string/preferences_rolltrim_plus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_rolltrim_minus_btn"
+                    android:title="@string/preferences_rolltrim_minus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_pitchtrim_plus_btn"
+                    android:title="@string/preferences_pitchtrim_plus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_pitchtrim_minus_btn"
+                    android:title="@string/preferences_pitchtrim_minus_btn_title"/>
+            </PreferenceCategory>
+            <Preference
+                android:key="pref_reset_btn"
+                android:summary="@string/preferences_reset_btn_summary"
+                android:title="@string/preferences_reset_btn_title" />
+
+        </PreferenceScreen>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_use_gyro_bool"
+            android:summaryOff="@string/preferences_use_gyro_bool_summary_off"
+            android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
+            android:title="@string/preferences_use_gyro_bool_title" />
+
+    </PreferenceScreen>
+
+    <!-- App settings -->
+
+    <PreferenceScreen 
+        android:key="pref_app_screen"
+        android:title="@string/preferences_app_title">
+    
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_screen_rotation_lock_bool"
+            android:title="@string/preferences_screen_rotation_lock_title"
+            android:summary="@string/preferences_screen_rotation_lock_summary" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_immersive_mode_bool"
+            android:title="@string/preferences_immersive_mode_title"
+            android:summary="@string/preferences_immersive_mode_summary" />
+    </PreferenceScreen>
+
+</PreferenceScreen>
