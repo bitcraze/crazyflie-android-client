@@ -13,7 +13,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -32,23 +32,27 @@ import java.nio.ByteBuffer;
 /**
  * Packet used for sending control set-points for the roll/pitch/yaw/thrust
  * regulators.
+ *
+ * Added boolean hover to change thrust accordingly
  */
 public class CommanderPacket extends CrtpPacket {
-    private final float mRoll;
-    private final float mPitch;
-    private final float mYaw;
-    private final char mThrust;
+    private float mRoll;
+    private float mPitch;
+    private float mYaw;
+    private char mThrust;
 
     /**
      * Create a new commander packet.
-     * 
+     *
      * @param roll (Deg.)
      * @param pitch (Deg.)
      * @param yaw (Deg./s)
      * @param thrust (0-65535)
      * @param xmode
+     * @param hover
      */
-    public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
+    public CommanderPacket(float roll, float pitch, float yaw, float thrust, boolean xmode, boolean hover) {
+
         super((byte) 0x30);
 
         if (xmode) {
@@ -59,7 +63,14 @@ public class CommanderPacket extends CrtpPacket {
             this.mPitch = pitch;
         }
         this.mYaw = yaw;
-        this.mThrust = thrust;
+        if (hover){
+            mThrust = (char)(32767 + (thrust/65535)*32767);
+        }
+        else{
+            mThrust = (thrust > 0 ? (char)thrust : (char)0);
+        }
+        System.out.println("thrust is " + thrust);
+        System.out.println("mThrust is " + mThrust);
     }
 
     @Override

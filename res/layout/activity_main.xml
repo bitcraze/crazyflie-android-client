@@ -10,6 +10,15 @@
         android:layout_alignParentTop="true"
         android:orientation="horizontal" >
 
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New ToggleButton"
+            android:id="@+id/hover"
+            android:layout_below="@+id/linearLayout1"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
         <se.bitcraze.crazyfliecontrol2.FlightDataView
             android:id="@+id/flightdataview"
             android:layout_width="match_parent"
