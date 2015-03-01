@@ -98,6 +98,7 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_PITCHTRIM_PLUS_BTN = "pref_pitchtrim_plus_btn";
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
+    public static final String KEY_PREF_HOVER_BTN = "pref_hover_btn";
 
     public static final String KEY_PREF_JOYSTICK_SIZE = "pref_touch_slider_size";
 
@@ -140,6 +141,7 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mRollTrimMinusBtnDefaultValue;
         private String mPitchTrimPlusBtnDefaultValue;
         private String mPitchTrimMinusBtnDefaultValue;
+        private String mHoverBtnDefaultValue;
 
         private String[] mDatarateStrings;
 
@@ -217,6 +219,7 @@ public class PreferencesActivity extends PreferenceActivity {
             mRollTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM_MINUS_BTN, R.string.preferences_rolltrim_minus_btn_defaultValue);
             mPitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
             mPitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
+            mHoverBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_HOVER_BTN, R.string.preferences_hover_btn_defaultValue);
 
             findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
@@ -235,6 +238,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     resetPreference(KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue, null);
                     resetPreference(KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue, null);
                     resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue, null);
+                    resetPreference(KEY_PREF_HOVER_BTN, mHoverBtnDefaultValue, null);
                     Toast.makeText(getActivity(), "Resetting to default values...", Toast.LENGTH_SHORT).show();
                     return true;
                 }
@@ -390,6 +394,9 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             if (key.equals(KEY_PREF_PITCHTRIM_MINUS_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mPitchTrimMinusBtnDefaultValue));
+            }
+            if (key.equals(KEY_PREF_HOVER_BTN)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mHoverBtnDefaultValue));
             }
 
             // Advanced flight control settings

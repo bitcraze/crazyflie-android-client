@@ -206,6 +206,9 @@
                 <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_pitchtrim_minus_btn"
                     android:title="@string/preferences_pitchtrim_minus_btn_title"/>
+                <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
+                    android:key="pref_hover_btn"
+                    android:title="@string/preferences_hover_btn_title"/>
             </PreferenceCategory>
             <Preference
                 android:key="pref_reset_btn"

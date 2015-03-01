@@ -46,6 +46,7 @@ import se.bitcraze.crazyflielib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
+import se.bitcraze.crazyflielib.crtp.ParameterPacket;
 import se.bitcraze.crazyflielib.toc.Toc;
 import se.bitcraze.crazyflielib.toc.TocFetcher;
 import se.bitcraze.crazyflielib.toc.TocFetcher.TocFetchFinishedListener;
@@ -542,7 +543,13 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 while (mCrazyflie != null) {
-                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+
+                    //Hacky Hover Mode
+                    if (mController instanceof GamepadController) {
+                        boolean hover = ((GamepadController) mController).isHover();
+                        mCrazyflie.sendPacket(new ParameterPacket(10, hover ? 1 : 0));
+                    }
+                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) mController.getThrustAbsolute(), mControls.isXmode()));
 
                     try {
                         Thread.sleep(20);
