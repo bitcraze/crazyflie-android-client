@@ -211,6 +211,12 @@
             android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
             android:title="@string/preferences_use_gyro_bool_title" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_touch_thrust_full_travel"
+            android:summary="@string/preferences_touch_thrust_full_travel_summary"
+            android:title="@string/preferences_touch_thrust_full_travel" />
+
     </PreferenceScreen>
 
     <!-- App settings -->

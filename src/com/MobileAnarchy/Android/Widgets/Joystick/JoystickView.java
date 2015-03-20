@@ -38,7 +38,14 @@ public class JoystickView extends View {
     private float moveResolution;
 
     private boolean yAxisInverted;
-    private boolean autoReturnToCenter;
+
+
+    public final static int AUTO_RETURN_NONE = 0;
+    public final static int AUTO_RETURN_CENTER = 1;
+    public final static int AUTO_RETURN_BOTTOM = 2;
+    private int autoReturnMode;
+    private volatile int autoReturnSequenceNum;
+
 
     // Max range of movement in user coordinate system
     public final static int CONSTRAIN_BOX = 0;
@@ -143,12 +150,18 @@ public class JoystickView extends View {
     }
 
     public void setAutoReturnToCenter(boolean autoReturnToCenter) {
-        this.autoReturnToCenter = autoReturnToCenter;
+        this.autoReturnMode = autoReturnToCenter ? AUTO_RETURN_CENTER : AUTO_RETURN_NONE;
+    }
+
+    public void setAutoReturnMode(int autoReturnMode) {
+        this.autoReturnMode = autoReturnMode;
     }
 
     public boolean isAutoReturnToCenter() {
-        return autoReturnToCenter;
+        return autoReturnMode == AUTO_RETURN_CENTER;
     }
+
+    public int getAutoReturnMode() { return autoReturnMode; }
 
     public void setUserCoordinateSystem(int userCoordinateSystem) {
         if (userCoordinateSystem < COORDINATE_CARTESIAN || movementConstraint > COORDINATE_DIFFERENTIAL)
@@ -342,7 +355,7 @@ public class JoystickView extends View {
         case MotionEvent.ACTION_UP: {
             if (pointerId != INVALID_POINTER_ID) {
                 // Log.d(TAG, "ACTION_UP");
-                returnHandleToCenter();
+                autoReturn(false);
                 setPointerId(INVALID_POINTER_ID);
             }
             break;
@@ -353,7 +366,7 @@ public class JoystickView extends View {
                 final int pointerId = ev.getPointerId(pointerIndex);
                 if (pointerId == this.pointerId) {
                     // Log.d(TAG, "ACTION_POINTER_UP: " + pointerId);
-                    returnHandleToCenter();
+                    autoReturn(false);
                     setPointerId(INVALID_POINTER_ID);
                     return true;
                 }
@@ -483,16 +496,23 @@ public class JoystickView extends View {
         }
     }
 
-    private void returnHandleToCenter() {
-        if (autoReturnToCenter) {
-            final int numberOfFrames = 5;
+    public void autoReturn(boolean immediate) {
+        if (autoReturnMode != AUTO_RETURN_NONE) {
+            final int numberOfFrames = immediate ? 1 : 5;
             final double intervalsX = (0 - touchX) / numberOfFrames;
-            final double intervalsY = (0 - touchY) / numberOfFrames;
+            final double returnY = autoReturnMode == AUTO_RETURN_BOTTOM ? movementRadius : 0;
+            final double intervalsY = (returnY - touchY) / numberOfFrames;
+
+            ++autoReturnSequenceNum;
+            final int thisAutoReturnSequence = autoReturnSequenceNum;
 
             for (int i = 0; i < numberOfFrames; i++) {
                 final int j = i;
                 postDelayed(new Runnable() {
                     public void run() {
+                        if( thisAutoReturnSequence != autoReturnSequenceNum )
+                            return;
+
                         touchX += intervalsX;
                         touchY += intervalsY;
 

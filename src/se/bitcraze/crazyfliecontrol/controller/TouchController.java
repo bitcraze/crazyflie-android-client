@@ -27,10 +27,12 @@
 
 package se.bitcraze.crazyfliecontrol.controller;
 
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
 
 /**
  * The TouchController uses the on-screen joysticks to control the roll, pitch, yaw and thrust values.
@@ -50,12 +52,22 @@ public class TouchController extends AbstractController {
         super(controls, activity);
         this.mDualJoystickView = dualJoystickview;
         this.mDualJoystickView.setMovementRange(mResolution, mResolution);
+        updateAutoReturnMode();
+    }
+
+    private void updateAutoReturnMode() {
+        this.mDualJoystickView.setAutoReturnMode(
+                isLeftAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER,
+                isRightAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER
+        );
+        this.mDualJoystickView.autoReturn(true);
     }
 
     @Override
     public void enable() {
         super.enable();
         this.mDualJoystickView.setOnJoystickMovedListener(_listenerLeft, _listenerRight);
+        updateAutoReturnMode();
     }
 
     @Override
@@ -76,7 +88,12 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            mControls.setRightAnalogY((float) tilt / mResolution);
+            if (isRightAnalogFullTravelThrust()) {
+                mControls.setRightAnalogY((((float) tilt / mResolution) + 1.0f) / 2.0f);
+            } else {
+                mControls.setRightAnalogY((float) tilt / mResolution);
+            }
+
             mControls.setRightAnalogX((float) pan / mResolution);
 
             updateFlightData();
@@ -100,7 +117,12 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnMoved(int pan, int tilt) {
-            mControls.setLeftAnalogY((float) tilt / mResolution);
+            if (isLeftAnalogFullTravelThrust()) {
+                mControls.setLeftAnalogY((((float) tilt / mResolution) + 1.0f) / 2.0f);
+            } else {
+                mControls.setLeftAnalogY((float) tilt / mResolution);
+            }
+
             mControls.setLeftAnalogX((float) pan / mResolution);
 
             updateFlightData();
@@ -117,5 +139,18 @@ public class TouchController extends AbstractController {
             mControls.setLeftAnalogX(0);
         }
     };
+
+
+    public boolean isThrustRightAnalog() {
+        return (mControls.getMode() == 1 || mControls.getMode() == 3);
+    }
+
+    public boolean isLeftAnalogFullTravelThrust() {
+        return mControls.isTouchThrustFullTravel() && !isThrustRightAnalog();
+    }
+
+    public boolean isRightAnalogFullTravelThrust() {
+        return mControls.isTouchThrustFullTravel() && isThrustRightAnalog();
+    }
 
 }
