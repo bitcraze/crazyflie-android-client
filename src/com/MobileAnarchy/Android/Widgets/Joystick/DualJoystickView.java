@@ -106,6 +106,18 @@ public class DualJoystickView extends LinearLayout {
         stickR.setAutoReturnToCenter(right);
     }
 
+    public void setAutoReturnMode(int left, int right) {
+        stickL.setAutoReturnMode(left);
+        stickR.setAutoReturnMode(right);
+    }
+
+    public void autoReturn(boolean immediate)
+    {
+        stickL.autoReturn(immediate);
+        stickR.autoReturn(immediate);
+    }
+
+
     public void setOnJoystickMovedListener(JoystickMovedListener left, JoystickMovedListener right) {
         stickL.setOnJoystickMovedListener(left);
         stickR.setOnJoystickMovedListener(right);

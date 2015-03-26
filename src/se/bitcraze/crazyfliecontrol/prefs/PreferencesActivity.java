@@ -82,6 +82,7 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_CONTROLLER = "pref_controller";
     public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
     public static final String KEY_PREF_BTN_SCREEN = "pref_btn_screen";
+    public static final String KEY_PREF_TOUCH_THRUST_FULL_TRAVEL = "pref_touch_thrust_full_travel";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
     public static final String KEY_PREF_RIGHT_ANALOG_Y_AXIS = "pref_right_analog_y_axis";
     public static final String KEY_PREF_LEFT_ANALOG_X_AXIS = "pref_left_analog_x_axis";

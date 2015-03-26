@@ -64,6 +64,7 @@ public class Controls {
     private int mControllerType;
     private String mControllerTypeDefaultValue;
     private boolean mUseGyro;
+    private boolean mTouchThrustFullTravel;
 
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
@@ -111,6 +112,7 @@ public class Controls {
 
         this.mControllerType = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_CONTROLLER, mControllerTypeDefaultValue));
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
+        this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
 
         //Advanced flight control
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
@@ -205,6 +207,10 @@ public class Controls {
 
     public boolean isUseGyro() {
         return mUseGyro;
+    }
+
+    public boolean isTouchThrustFullTravel() {
+        return mTouchThrustFullTravel;
     }
 
     public float getRightAnalog_X() {
