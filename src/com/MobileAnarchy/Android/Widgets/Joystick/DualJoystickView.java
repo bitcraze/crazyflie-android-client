@@ -111,8 +111,7 @@ public class DualJoystickView extends LinearLayout {
         stickR.setAutoReturnMode(right);
     }
 
-    public void autoReturn(boolean immediate)
-    {
+    public void autoReturn(boolean immediate) {
         stickL.autoReturn(immediate);
         stickR.autoReturn(immediate);
     }

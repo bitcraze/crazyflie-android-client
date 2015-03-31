@@ -451,6 +451,7 @@ public class PreferencesActivity extends PreferenceActivity {
             int controllerIndex = Integer.parseInt(mSharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
             findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
+            findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);
         }
 
         private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue) {

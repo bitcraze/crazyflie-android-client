@@ -161,7 +161,9 @@ public class JoystickView extends View {
         return autoReturnMode == AUTO_RETURN_CENTER;
     }
 
-    public int getAutoReturnMode() { return autoReturnMode; }
+    public int getAutoReturnMode() {
+        return autoReturnMode;
+    }
 
     public void setUserCoordinateSystem(int userCoordinateSystem) {
         if (userCoordinateSystem < COORDINATE_CARTESIAN || movementConstraint > COORDINATE_DIFFERENTIAL)
