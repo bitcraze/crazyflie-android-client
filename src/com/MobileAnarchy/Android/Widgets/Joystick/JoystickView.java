@@ -54,7 +54,7 @@ public class JoystickView extends View {
     private float movementRange;
 
     public final static int COORDINATE_CARTESIAN = 0; // Regular cartesian coordinates
-    public final static int COORDINATE_DIFFERENTIAL = 1; // Uses polar rotation of 45 degrees to calc differential drive paramaters
+    public final static int COORDINATE_DIFFERENTIAL = 1; // Uses polar rotation of 45 degrees to calc differential drive parameters
     private int userCoordinateSystem;
 
     // Records touch pressure for click handling
@@ -459,8 +459,9 @@ public class JoystickView extends View {
         angle = Math.atan2(cartY, cartX);
 
         // Invert Y axis if requested
-        if (!yAxisInverted)
+        if (!yAxisInverted) {
             cartY *= -1;
+        }
 
         if (userCoordinateSystem == COORDINATE_CARTESIAN) {
             userX = cartX;
