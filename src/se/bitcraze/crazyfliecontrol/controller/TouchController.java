@@ -43,14 +43,14 @@ import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
  */
 public class TouchController extends AbstractController {
 
-    protected int mResolution = 1000;
+    protected int mMovementRange = 1000;  // "resolution"
 
     protected DualJoystickView mDualJoystickView;
 
     public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
         super(controls, activity);
         this.mDualJoystickView = dualJoystickview;
-        this.mDualJoystickView.setMovementRange(mResolution, mResolution);
+        this.mDualJoystickView.setMovementRange(mMovementRange, mMovementRange);
         updateAutoReturnMode();
     }
 
@@ -86,14 +86,13 @@ public class TouchController extends AbstractController {
     private JoystickMovedListener _listenerRight = new JoystickMovedListener() {
 
         @Override
-        public void OnMoved(int pan, int tilt) {
+        public void OnMoved(float pan, float tilt) {
             if (isRightAnalogFullTravelThrust()) {
-                mControls.setRightAnalogY((((float) tilt / mResolution) + 1.0f) / 2.0f);
-            } else {
-                mControls.setRightAnalogY((float) tilt / mResolution);
+                tilt = (tilt + 1.0f) / 2.0f;
             }
+            mControls.setRightAnalogY(tilt);
 
-            mControls.setRightAnalogX((float) pan / mResolution);
+            mControls.setRightAnalogX(pan);
 
             updateFlightData();
         }
@@ -115,14 +114,13 @@ public class TouchController extends AbstractController {
     private JoystickMovedListener _listenerLeft = new JoystickMovedListener() {
 
         @Override
-        public void OnMoved(int pan, int tilt) {
+        public void OnMoved(float pan, float tilt) {
             if (isLeftAnalogFullTravelThrust()) {
-                mControls.setLeftAnalogY((((float) tilt / mResolution) + 1.0f) / 2.0f);
-            } else {
-                mControls.setLeftAnalogY((float) tilt / mResolution);
+                tilt = (tilt + 1.0f) / 2.0f;
             }
+            mControls.setLeftAnalogY(tilt);
 
-            mControls.setLeftAnalogX((float) pan / mResolution);
+            mControls.setLeftAnalogX(pan);
 
             updateFlightData();
         }

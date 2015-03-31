@@ -86,7 +86,7 @@ public class JoystickView extends View {
     private double angle;
 
     // User coordinates of last touch point
-    private int userX, userY;
+    private float userX, userY;
 
     // Offset co-ordinates (used when touch events are received from parent's coordinate origin)
     private int offsetX;
@@ -464,8 +464,8 @@ public class JoystickView extends View {
         }
 
         if (userCoordinateSystem == COORDINATE_CARTESIAN) {
-            userX = cartX;
-            userY = cartY;
+            userX = cartX / movementRange;
+            userY = cartY / movementRange;
         } else if (userCoordinateSystem == COORDINATE_DIFFERENTIAL) {
             userX = cartY + cartX / 4;
             userY = cartY - cartX / 4;
