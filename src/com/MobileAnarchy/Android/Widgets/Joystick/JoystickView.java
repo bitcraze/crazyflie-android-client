@@ -166,10 +166,11 @@ public class JoystickView extends View {
     }
 
     public void setUserCoordinateSystem(int userCoordinateSystem) {
-        if (userCoordinateSystem < COORDINATE_CARTESIAN || movementConstraint > COORDINATE_DIFFERENTIAL)
+        if (userCoordinateSystem < COORDINATE_CARTESIAN || movementConstraint > COORDINATE_DIFFERENTIAL) {
             Log.e(TAG, "invalid value for userCoordinateSystem");
-        else
+        } else {
             this.userCoordinateSystem = userCoordinateSystem;
+        }
     }
 
     public int getUserCoordinateSystem() {
@@ -177,10 +178,11 @@ public class JoystickView extends View {
     }
 
     public void setMovementConstraint(int movementConstraint) {
-        if (movementConstraint < CONSTRAIN_BOX || movementConstraint > CONSTRAIN_CIRCLE)
+        if (movementConstraint < CONSTRAIN_BOX || movementConstraint > CONSTRAIN_CIRCLE) {
             Log.e(TAG, "invalid value for movementConstraint");
-        else
+        } else {
             this.movementConstraint = movementConstraint;
+        }
     }
 
     public int getMovementConstraint() {
@@ -202,10 +204,11 @@ public class JoystickView extends View {
      *            threshold 0...1.0f inclusive. 0 will cause clicks to never be reported, 1.0 is a very hard click
      */
     public void setClickThreshold(float clickThreshold) {
-        if (clickThreshold < 0 || clickThreshold > 1.0f)
+        if (clickThreshold < 0 || clickThreshold > 1.0f) {
             Log.e(TAG, "clickThreshold must range from 0...1.0f inclusive");
-        else
+        } else {
             this.clickThreshold = clickThreshold;
+        }
     }
 
     public float getClickThreshold() {
@@ -269,8 +272,9 @@ public class JoystickView extends View {
         handleInnerBoundaries = handleRadius;
         float oldMovementRadius = movementRadius;
         movementRadius = Math.min(cX, cY) - handleInnerBoundaries;
-        if(oldMovementRadius != movementRadius)
+        if(oldMovementRadius != movementRadius) {
             autoReturn(true);
+        }
     }
 
     private int measure(int measureSpec) {
@@ -430,10 +434,11 @@ public class JoystickView extends View {
     }
 
     private void reportOnMoved() {
-        if (movementConstraint == CONSTRAIN_CIRCLE)
+        if (movementConstraint == CONSTRAIN_CIRCLE) {
             constrainCircle();
-        else
+        } else {
             constrainBox();
+        }
 
         calcUserCoordinates();
 
@@ -470,15 +475,18 @@ public class JoystickView extends View {
             userX = cartY + cartX / 4;
             userY = cartY - cartX / 4;
 
-            if (userX < -movementRange)
+            if (userX < -movementRange) {
                 userX = (int) -movementRange;
-            if (userX > movementRange)
+            }
+            if (userX > movementRange) {
                 userX = (int) movementRange;
-
-            if (userY < -movementRange)
+            }
+            if (userY < -movementRange) {
                 userY = (int) -movementRange;
-            if (userY > movementRange)
+            }
+            if (userY > movementRange) {
                 userY = (int) movementRange;
+            }
         }
 
     }
@@ -516,8 +524,9 @@ public class JoystickView extends View {
                 final int j = i;
                 postDelayed(new Runnable() {
                     public void run() {
-                        if( thisAutoReturnSequence != autoReturnSequenceNum )
+                        if(thisAutoReturnSequence != autoReturnSequenceNum) {
                             return;
+                        }
 
                         touchX += intervalsX;
                         touchY += intervalsY;
