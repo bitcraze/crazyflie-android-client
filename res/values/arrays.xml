@@ -27,7 +27,7 @@
     </string-array>
 
     <string-array name="controllerEntries">
-        <item >Onscreen</item>
+        <item >Touch</item>
         <item >Gamepad</item>
     </string-array>
 

@@ -214,7 +214,8 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_touch_thrust_full_travel"
-            android:summary="@string/preferences_touch_thrust_full_travel_summary"
+            android:summaryOff="@string/preferences_touch_thrust_full_travel_summary_off"
+            android:summaryOn="@string/preferences_touch_thrust_full_travel_summary_on"
             android:title="@string/preferences_touch_thrust_full_travel" />
 
     </PreferenceScreen>
