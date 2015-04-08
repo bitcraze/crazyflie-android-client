@@ -146,6 +146,8 @@ public class PreferencesActivity extends PreferenceActivity {
 
         private String[] mDatarateStrings;
 
+        private boolean mNoGyroSensor = false;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -219,15 +221,6 @@ public class PreferencesActivity extends PreferenceActivity {
             mPitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
             mPitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
 
-            //Test the available sensors
-            SensorManager mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-            if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
-                CheckBoxPreference pref = (CheckBoxPreference) findPreference(KEY_PREF_USE_GYRO_BOOL);
-                pref.setEnabled(false);
-                pref.setChecked(false);
-                resetPreference(KEY_PREF_USE_GYRO_BOOL, false);
-            }
-
             findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
                 @Override
@@ -270,6 +263,24 @@ public class PreferencesActivity extends PreferenceActivity {
                     return true;
                 }
             });
+        }
+
+        private void checkGyroSensors() {
+            //Test the available sensors
+            SensorManager mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+            CheckBoxPreference pref = (CheckBoxPreference) findPreference(KEY_PREF_USE_GYRO_BOOL);
+
+            if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
+                pref.setEnabled(false);
+                pref.setChecked(false);
+                resetPreference(KEY_PREF_USE_GYRO_BOOL, false);
+                mNoGyroSensor  = true;
+                pref.setSummaryOff("No gyro or accelerometer sensors found");
+                Log.i(LOG_TAG, "No gyro or accelerometer sensors found");
+            } else {
+                pref.setEnabled(true);
+                mNoGyroSensor = false;
+            }
         }
 
         private void setRadioStats() {
@@ -337,10 +348,10 @@ public class PreferencesActivity extends PreferenceActivity {
                 // automatically activate the screen rotation lock preference
                 CheckBoxPreference screenRotationLock = (CheckBoxPreference) findPreference(KEY_PREF_SCREEN_ROTATION_LOCK_BOOL);
                 if (useGyro) {
-                    Toast.makeText(getActivity(), "Activated screen rotation lock...", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Activating screen rotation lock...", Toast.LENGTH_LONG).show();
                     screenRotationLock.setSummary("Locked because gyroscope is used as controller.");
                 } else {
-                    Toast.makeText(getActivity(), "Deactivated screen rotation lock...", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Deactivating screen rotation lock...", Toast.LENGTH_LONG).show();
                     screenRotationLock.setSummary("");
                 }
                 screenRotationLock.setChecked(useGyro);
@@ -449,7 +460,9 @@ public class PreferencesActivity extends PreferenceActivity {
         private void setControllerSpecificPreferences() {
             String controllerDefaultValue = getResources().getString(R.string.preferences_controller_defaultValue);
             int controllerIndex = Integer.parseInt(mSharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
-            findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
+            if (!mNoGyroSensor) {
+                findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
+            }
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
             findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);
         }
@@ -501,6 +514,7 @@ public class PreferencesActivity extends PreferenceActivity {
         public void onResume() {
             super.onResume();
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+            checkGyroSensors();
         }
 
         @Override

@@ -33,6 +33,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 
@@ -59,23 +60,30 @@ public class GyroscopeController extends TouchController {
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null) {
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
             mSeListener = new RotationVectorListener();
-        } else {
+        } else if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
             mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             mSeListener = new AccelerometerListener();
+        }
+        if (mSensor != null) {
+            Log.i("GyroscopeController", "Gyro sensor type: " + mSensor.getName());
         }
     }
 
     @Override
     public void enable() {
         super.enable();
-        mSensorManager.registerListener(mSeListener, mSensor, SensorManager.SENSOR_DELAY_UI);
+        if (mSensor != null && mSeListener != null) {
+            mSensorManager.registerListener(mSeListener, mSensor, SensorManager.SENSOR_DELAY_UI);
+        }
     }
 
     @Override
     public void disable() {
         mSensorRoll = 0;
         mSensorPitch = 0;
-        mSensorManager.unregisterListener(mSeListener);
+        if (mSeListener != null) {
+            mSensorManager.unregisterListener(mSeListener);
+        }
         super.disable();
     }
 
