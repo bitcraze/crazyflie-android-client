@@ -35,13 +35,12 @@ import java.nio.charset.Charset;
  */
 public class ConsolePacket extends CrtpPacket {
 
-    public static final int PORT = 0;
     public static final Charset CHARSET = Charset.forName("US-ASCII");
 
     private final String mText;
 
     public ConsolePacket(String text) {
-        super(0, PORT);
+        super(0, CrtpPort.CONSOLE);
         this.mText = text;
     }
 

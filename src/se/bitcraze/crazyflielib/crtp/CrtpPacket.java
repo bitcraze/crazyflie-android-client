@@ -72,6 +72,16 @@ public abstract class CrtpPacket {
     /**
      * Create a new packet.
      *
+     * @param channel channel to set in the header.
+     * @param port port to set in the header.
+     */
+    public CrtpPacket(int channel, CrtpPort port) {
+        this((byte) (((port.getNumber() & 0x0F) << 4) | (channel & 0x03)));
+    }
+
+    /**
+     * Create a new packet.
+     *
      * @param packetHeader header of the packet.
      */
     public CrtpPacket(byte packetHeader) {

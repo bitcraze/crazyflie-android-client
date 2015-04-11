@@ -30,14 +30,14 @@ package se.bitcraze.crazyflielib.crtp;
 import java.nio.ByteBuffer;
 
 /**
- * Packet used for sending control set-points for the roll/pitch/yaw/thrust
- * regulators.
+ * Packet used for sending control set-points for the roll/pitch/yaw/thrust regulators.
  */
 public class CommanderPacket extends CrtpPacket {
     private final float mRoll;
     private final float mPitch;
     private final float mYaw;
     private final char mThrust;
+    private final boolean mClientXmode; // client side x-mode (default is +-mode)
 
     /**
      * Create a new commander packet.
@@ -46,12 +46,14 @@ public class CommanderPacket extends CrtpPacket {
      * @param pitch (Deg.)
      * @param yaw (Deg./s)
      * @param thrust (0-65535)
-     * @param xmode
+     * @param clientXmode if true, then roll and pitch values are recalculated before sending them to the Crazyflie
      */
-    public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean xmode) {
-        super((byte) 0x30);
+    public CommanderPacket(float roll, float pitch, float yaw, char thrust, boolean clientXmode) {
+        super(0, CrtpPort.COMMANDER);
+        this.mClientXmode = clientXmode;
 
-        if (xmode) {
+        if (this.mClientXmode) {
+            //offset by 45 degrees
             this.mRoll = 0.707f * (roll - pitch);
             this.mPitch = 0.707f * (roll + pitch);
         } else {
@@ -60,6 +62,18 @@ public class CommanderPacket extends CrtpPacket {
         }
         this.mYaw = yaw;
         this.mThrust = thrust;
+    }
+
+    /**
+     * Create a new commander packet with clientXmode set to false.
+     *
+     * @param roll (Deg.)
+     * @param pitch (Deg.)
+     * @param yaw (Deg./s)
+     * @param thrust (0-65535)
+     */
+    public CommanderPacket(float roll, float pitch, float yaw, char thrust) {
+        this(roll, pitch, yaw, thrust, false);
     }
 
     @Override
@@ -73,6 +87,11 @@ public class CommanderPacket extends CrtpPacket {
     @Override
     protected int getDataByteCount() {
         return 3 * 4 + 1 * 2; // 3 floats with size 4, 1 char (= uint16_t) with size 2
+    }
+
+    @Override
+    public String toString() {
+        return "CommanderPacket: roll: " + this.mRoll + " pitch: " + this.mPitch + " yaw: " + this.mYaw + " thrust: " + (int) this.mThrust + " xmode: " + this.mClientXmode;
     }
 
 }
