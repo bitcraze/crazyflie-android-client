@@ -1,6 +1,7 @@
 package com.MobileAnarchy.Android.Widgets.Joystick;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -9,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 
 public class DualJoystickView extends LinearLayout {
     @SuppressWarnings("unused")
@@ -24,6 +27,7 @@ public class DualJoystickView extends LinearLayout {
 
     private int mViewWidth;
     private int mViewHeight;
+    private float prefRatio = 1;
 
     public DualJoystickView(Context context) {
         super(context);
@@ -52,6 +56,12 @@ public class DualJoystickView extends LinearLayout {
         padding = new View(getContext());
     }
 
+    public void setPreferences(SharedPreferences prefs){
+        prefRatio = Float.parseFloat(prefs.getString(PreferencesActivity.KEY_PREF_JOYSTICK_SIZE, "100"));
+        prefRatio/=100.0;
+        drawJoysticks();
+    }
+
     @Override
     protected void onSizeChanged(int wNew, int hNew, int wOld, int hOld){
         super.onSizeChanged(wNew, hNew, wOld, hOld);
@@ -66,7 +76,7 @@ public class DualJoystickView extends LinearLayout {
         removeView(padding);
         removeView(stickR);
 
-        int joyHeight = Math.round(mViewHeight);
+        int joyHeight = Math.round(mViewHeight*prefRatio);
         int joyWidth = joyHeight;
         int paddingWidth = mViewWidth - (joyWidth * 2);
 

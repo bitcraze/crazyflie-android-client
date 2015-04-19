@@ -27,13 +27,6 @@
 
 package se.bitcraze.crazyfliecontrol.prefs;
 
-import java.io.IOException;
-
-import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
-import se.bitcraze.crazyfliecontrol2.R;
-import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
-import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -55,6 +48,14 @@ import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.io.IOException;
+
+import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
+import se.bitcraze.crazyfliecontrol2.R;
+import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
+import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 
 public class PreferencesActivity extends PreferenceActivity {
 
@@ -97,6 +98,8 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
 
+    public static final String KEY_PREF_JOYSTICK_SIZE = "pref_touch_slider_size";
+
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
     public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
@@ -131,6 +134,7 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
+        private String mJoystickSizeDefaultValue;
 
         private String mRightAnalogXAxisDefaultValue;
         private String mRightAnalogYAxisDefaultValue;
@@ -203,6 +207,7 @@ public class PreferencesActivity extends PreferenceActivity {
             // Controller settings
             setSummaryArray(KEY_PREF_CONTROLLER, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
             setControllerSpecificPreferences();
+            mJoystickSizeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_JOYSTICK_SIZE, R.string.preferences_joystick_size_defaultValue);
 
             // Gamepad and button mapping
             mRightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
@@ -357,6 +362,9 @@ public class PreferencesActivity extends PreferenceActivity {
                 screenRotationLock.setChecked(useGyro);
                 screenRotationLock.setEnabled(!useGyro);
             }
+            if(key.equals(KEY_PREF_JOYSTICK_SIZE)){
+                findPreference(key).setSummary(sharedPreferences.getString(key,mJoystickSizeDefaultValue));
+            }
 
             // Gamepad and button mapping
             if (key.equals(KEY_PREF_RIGHT_ANALOG_X_AXIS)){
@@ -465,6 +473,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
             findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);
+            findPreference(KEY_PREF_JOYSTICK_SIZE).setEnabled(controllerIndex == 0);
         }
 
         private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue) {

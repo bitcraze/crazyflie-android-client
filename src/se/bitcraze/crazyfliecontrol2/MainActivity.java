@@ -27,20 +27,6 @@
 
 package se.bitcraze.crazyfliecontrol2;
 
-import java.io.IOException;
-import java.util.Locale;
-
-import se.bitcraze.crazyfliecontrol.controller.Controls;
-import se.bitcraze.crazyfliecontrol.controller.GamepadController;
-import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
-import se.bitcraze.crazyfliecontrol.controller.IController;
-import se.bitcraze.crazyfliecontrol.controller.TouchController;
-import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
-import se.bitcraze.crazyflielib.BleLink;
-import se.bitcraze.crazyflielib.ConnectionAdapter;
-import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.Link;
-import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -68,6 +54,21 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+
+import java.io.IOException;
+import java.util.Locale;
+
+import se.bitcraze.crazyfliecontrol.controller.Controls;
+import se.bitcraze.crazyfliecontrol.controller.GamepadController;
+import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
+import se.bitcraze.crazyfliecontrol.controller.IController;
+import se.bitcraze.crazyfliecontrol.controller.TouchController;
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyflielib.BleLink;
+import se.bitcraze.crazyflielib.ConnectionAdapter;
+import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.Link;
+import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 
 public class MainActivity extends Activity {
 
@@ -197,6 +198,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         //TODO: improve
+        mDualJoystickView.setPreferences(mPreferences);
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
         resetInputMethod();
