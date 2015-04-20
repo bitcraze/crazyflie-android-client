@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/se.bitcraze.crazyfliecontrol2"
     android:title="@string/preferences_title" >
 
     <!-- Connection settings -->
@@ -218,10 +219,9 @@
             android:summaryOn="@string/preferences_touch_thrust_full_travel_summary_on"
             android:title="@string/preferences_touch_thrust_full_travel" />
 
-        <se.bitcraze.crazyfliecontrol.prefs.JoystickSizeSliderPreference
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             android:defaultValue="@string/preferences_joystick_size_defaultValue"
             android:key="pref_touch_slider_size"
-            android:dialogTitle="@string/preferences_joystick_size_dialog_title"
             android:title="@string/preferences_joystick_size_title"/>
 
     </PreferenceScreen>
