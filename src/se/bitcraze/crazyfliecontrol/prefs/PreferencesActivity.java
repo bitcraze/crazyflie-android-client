@@ -328,16 +328,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
             }
             if (key.equals(KEY_PREF_DEADZONE)) {
-                Preference deadzonePref = findPreference(key);
-                try {
-                    float deadzone = Float.parseFloat(sharedPreferences.getString(key, mDeadzoneDefaultValue));
-                    if (deadzone < 0.0 || deadzone > DEADZONE_UPPER_LIMIT) {
-                        resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
-                    }
-                } catch (NumberFormatException nfe) {
-                    resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
-                }
-                deadzonePref.setSummary(sharedPreferences.getString(key, ""));
+                findPreference(key).setSummary(sharedPreferences.getString(key,mDeadzoneDefaultValue));
             }
 
             // Controller settings
@@ -437,16 +428,16 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             }
             if (key.equals(KEY_PREF_MAX_ROLLPITCH_ANGLE)) {
-                setSummaryInt(key, mMaxRollPitchAngleDefaultValue, MAX_ROLLPITCH_ANGLE_UPPER_LIMIT, "Max roll/pitch angle");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxRollPitchAngleDefaultValue));
             }
             if (key.equals(KEY_PREF_MAX_YAW_ANGLE)) {
-                setSummaryInt(key, mMaxYawAngleDefaultValue, MAX_YAW_ANGLE_UPPER_LIMIT, "Max yaw angle");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxYawAngleDefaultValue));
             }
             if (key.equals(KEY_PREF_MAX_THRUST)) {
-                setSummaryInt(key, mMaxThrustDefaultValue, MAX_THRUST_UPPER_LIMIT, "Max thrust");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxThrustDefaultValue));
             }
             if (key.equals(KEY_PREF_MIN_THRUST)) {
-                setSummaryInt(key, mMinThrustDefaultValue, MIN_THRUST_UPPER_LIMIT, "Min thrust");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMinThrustDefaultValue));
             }
             if (key.equals(KEY_PREF_XMODE)) {
                 CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
