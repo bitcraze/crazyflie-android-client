@@ -104,13 +104,6 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
-    private static final float DEADZONE_UPPER_LIMIT = 1.0f;
-    private static final float TRIM_UPPER_LIMIT = 0.5f;
-    private static final int MAX_ROLLPITCH_ANGLE_UPPER_LIMIT = 50;
-    private static final int MAX_YAW_ANGLE_UPPER_LIMIT = 500;
-    private static final int MAX_THRUST_UPPER_LIMIT = 100;
-    private static final int MIN_THRUST_UPPER_LIMIT = 50;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -383,19 +376,6 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             if (key.equals(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS)){
                 findPreference(key).setSummary(sharedPreferences.getString(key, mSplitAxisRightAxisDefaultValue));
-            }
-
-            if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {
-                Preference trimPref = findPreference(key);
-                try {
-                    float trim = Float.parseFloat(sharedPreferences.getString(key, mTrimDefaultValue));
-                    if (Math.abs(trim) < 0.0 || Math.abs(trim) > TRIM_UPPER_LIMIT) {
-                        resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
-                    }
-                } catch (NumberFormatException nfe) {
-                    resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
-                }
-                trimPref.setSummary(sharedPreferences.getString(key, ""));
             }
             if (key.equals(KEY_PREF_EMERGENCY_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mEmergencyBtnDefaultValue));

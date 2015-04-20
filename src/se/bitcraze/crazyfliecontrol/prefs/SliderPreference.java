@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.Preference;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +63,6 @@ public class SliderPreference extends Preference {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 setting = stepSize.multiply(BigDecimal.valueOf(progress)).add(BigDecimal.valueOf(min)).round(mc).floatValue();
-                Log.i("Slider", stepSize + "*" + progress + "=" + setting + " of max " + max);
                 indicator.setText(settingString());
             }
 
@@ -75,7 +73,6 @@ public class SliderPreference extends Preference {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Log.d("Persisting", setting + "");
                 persistString(settingString());
             }
         });
@@ -86,12 +83,10 @@ public class SliderPreference extends Preference {
 
     @Override
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
-        Log.d("Slide", "onSetInitialValue");
         super.onSetInitialValue(restorePersistedValue, defaultValue);
 
         if (restorePersistedValue) {
             setting = Float.parseFloat(getPersistedString("100"));
-            Log.d("Slider", setting + "");
         } else {
             setting = Float.parseFloat((String) defaultValue);
             persistString(settingString());
