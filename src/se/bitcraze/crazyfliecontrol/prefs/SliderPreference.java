@@ -108,7 +108,6 @@ public class SliderPreference extends Preference {
 
     @Override
     public void setSummary(CharSequence summary) {
-        super.setSummary(summary);
         if(slider!=null) {
             slider.setProgress((int) ((Float.parseFloat(summary.toString()) - min) / stepSize.floatValue()));
         }
