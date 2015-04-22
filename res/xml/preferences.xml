@@ -103,14 +103,14 @@
             android:title="@string/preferences_afc_title"
             android:dependency="pref_afc_bool" >
             <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
-                custom:upperLimit="50"
+                custom:upperLimit="80"
                 custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
                 android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
                 android:key="pref_maxrollpitchangle"
                 android:title="@string/preferences_maxRollPitchAngle_title" />
             <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
-                custom:upperLimit="500"
+                custom:upperLimit="300"
                 custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
                 android:dialogTitle="@string/preferences_maxYawAngle_title"
