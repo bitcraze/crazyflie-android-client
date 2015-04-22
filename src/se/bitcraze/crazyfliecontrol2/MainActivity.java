@@ -197,6 +197,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         //TODO: improve
+        mDualJoystickView.setPreferences(mPreferences);
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
         resetInputMethod();

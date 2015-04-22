@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/se.bitcraze.crazyfliecontrol2"
     android:title="@string/preferences_title" >
 
     <!-- Connection settings -->
@@ -63,24 +64,29 @@
             android:key="pref_mode"
             android:title="@string/preferences_mode" />
 
-        <EditTextPreference
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            custom:upperLimit="1"
+            custom:steps="20"
             android:defaultValue="@string/preferences_deadzone_defaultValue"
             android:dialogTitle="@string/preferences_deadzone"
-            android:inputType="numberDecimal"
             android:key="pref_deadzone"
             android:title="@string/preferences_deadzone" />
 
-        <EditTextPreference
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            custom:upperLimit=".5"
+            custom:lowerLimit="-.5"
+            custom:steps="20"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_rolltrim"
-            android:inputType="numberDecimal|numberSigned"
             android:key="pref_rolltrim"
             android:title="@string/preferences_rolltrim" />
 
-        <EditTextPreference
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            custom:upperLimit=".5"
+            custom:lowerLimit="-.5"
+            custom:steps="20"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_pitchtrim"
-            android:inputType="numberDecimal|numberSigned"
             android:key="pref_pitchtrim"
             android:title="@string/preferences_pitchtrim" />
 
@@ -96,28 +102,32 @@
             android:key="pref_afc_screen"
             android:title="@string/preferences_afc_title"
             android:dependency="pref_afc_bool" >
-            <EditTextPreference
+            <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+                custom:upperLimit="50"
+                custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_maxRollPitchAngle_defaultValue"
                 android:dialogTitle="@string/preferences_maxRollPitchAngle_title"
-                android:inputType="number"
                 android:key="pref_maxrollpitchangle"
                 android:title="@string/preferences_maxRollPitchAngle_title" />
-            <EditTextPreference
+            <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+                custom:upperLimit="500"
+                custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_maxYawAngle_defaultValue"
                 android:dialogTitle="@string/preferences_maxYawAngle_title"
-                android:inputType="number"
                 android:key="pref_maxyawangle"
                 android:title="@string/preferences_maxYawAngle_title" />
-            <EditTextPreference
+            <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+                custom:upperLimit="100"
+                custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_maxThrust_defaultValue"
                 android:dialogTitle="@string/preferences_maxThrust_title"
-                android:inputType="number"
                 android:key="pref_maxthrust"
                 android:title="@string/preferences_maxThrust_title" />
-            <EditTextPreference
+            <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+                custom:upperLimit="50"
+                custom:wholeNumber="true"
                 android:defaultValue="@string/preferences_minThrust_defaultValue"
                 android:dialogTitle="@string/preferences_minThrust_title"
-                android:inputType="number"
                 android:key="pref_minthrust"
                 android:title="@string/preferences_minThrust_title" />
 
@@ -217,6 +227,11 @@
             android:summaryOff="@string/preferences_touch_thrust_full_travel_summary_off"
             android:summaryOn="@string/preferences_touch_thrust_full_travel_summary_on"
             android:title="@string/preferences_touch_thrust_full_travel" />
+
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            android:defaultValue="@string/preferences_joystick_size_defaultValue"
+            android:key="pref_touch_slider_size"
+            android:title="@string/preferences_joystick_size_title"/>
 
     </PreferenceScreen>
 

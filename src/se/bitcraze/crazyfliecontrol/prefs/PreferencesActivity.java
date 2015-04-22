@@ -97,17 +97,12 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
 
+    public static final String KEY_PREF_JOYSTICK_SIZE = "pref_touch_slider_size";
+
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
     public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
-    private static final float DEADZONE_UPPER_LIMIT = 1.0f;
-    private static final float TRIM_UPPER_LIMIT = 0.5f;
-    private static final int MAX_ROLLPITCH_ANGLE_UPPER_LIMIT = 50;
-    private static final int MAX_YAW_ANGLE_UPPER_LIMIT = 500;
-    private static final int MAX_THRUST_UPPER_LIMIT = 100;
-    private static final int MIN_THRUST_UPPER_LIMIT = 50;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +126,7 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
+        private String mJoystickSizeDefaultValue;
 
         private String mRightAnalogXAxisDefaultValue;
         private String mRightAnalogYAxisDefaultValue;
@@ -203,6 +199,7 @@ public class PreferencesActivity extends PreferenceActivity {
             // Controller settings
             setSummaryArray(KEY_PREF_CONTROLLER, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
             setControllerSpecificPreferences();
+            mJoystickSizeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_JOYSTICK_SIZE, R.string.preferences_joystick_size_defaultValue);
 
             // Gamepad and button mapping
             mRightAnalogXAxisDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_RIGHT_ANALOG_X_AXIS, R.string.preferences_right_analog_x_axis_defaultValue);
@@ -323,16 +320,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
             }
             if (key.equals(KEY_PREF_DEADZONE)) {
-                Preference deadzonePref = findPreference(key);
-                try {
-                    float deadzone = Float.parseFloat(sharedPreferences.getString(key, mDeadzoneDefaultValue));
-                    if (deadzone < 0.0 || deadzone > DEADZONE_UPPER_LIMIT) {
-                        resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
-                    }
-                } catch (NumberFormatException nfe) {
-                    resetPreference(key, mDeadzoneDefaultValue, "Deadzone must be a float value between 0.0 and " + DEADZONE_UPPER_LIMIT + ".");
-                }
-                deadzonePref.setSummary(sharedPreferences.getString(key, ""));
+                findPreference(key).setSummary(sharedPreferences.getString(key,mDeadzoneDefaultValue));
             }
 
             // Controller settings
@@ -356,6 +344,9 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
                 screenRotationLock.setChecked(useGyro);
                 screenRotationLock.setEnabled(!useGyro);
+            }
+            if(key.equals(KEY_PREF_JOYSTICK_SIZE)){
+                findPreference(key).setSummary(sharedPreferences.getString(key,mJoystickSizeDefaultValue));
             }
 
             // Gamepad and button mapping
@@ -384,19 +375,6 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             if (key.equals(KEY_PREF_SPLITAXIS_YAW_RIGHT_AXIS)){
                 findPreference(key).setSummary(sharedPreferences.getString(key, mSplitAxisRightAxisDefaultValue));
-            }
-
-            if (key.equals(KEY_PREF_ROLLTRIM) || key.equals(KEY_PREF_PITCHTRIM)) {
-                Preference trimPref = findPreference(key);
-                try {
-                    float trim = Float.parseFloat(sharedPreferences.getString(key, mTrimDefaultValue));
-                    if (Math.abs(trim) < 0.0 || Math.abs(trim) > TRIM_UPPER_LIMIT) {
-                        resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
-                    }
-                } catch (NumberFormatException nfe) {
-                    resetPreference(key, mTrimDefaultValue, "Roll/Pitch trim must be a float value between 0.0 and " + TRIM_UPPER_LIMIT + ".");
-                }
-                trimPref.setSummary(sharedPreferences.getString(key, ""));
             }
             if (key.equals(KEY_PREF_EMERGENCY_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mEmergencyBtnDefaultValue));
@@ -429,16 +407,16 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             }
             if (key.equals(KEY_PREF_MAX_ROLLPITCH_ANGLE)) {
-                setSummaryInt(key, mMaxRollPitchAngleDefaultValue, MAX_ROLLPITCH_ANGLE_UPPER_LIMIT, "Max roll/pitch angle");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxRollPitchAngleDefaultValue));
             }
             if (key.equals(KEY_PREF_MAX_YAW_ANGLE)) {
-                setSummaryInt(key, mMaxYawAngleDefaultValue, MAX_YAW_ANGLE_UPPER_LIMIT, "Max yaw angle");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxYawAngleDefaultValue));
             }
             if (key.equals(KEY_PREF_MAX_THRUST)) {
-                setSummaryInt(key, mMaxThrustDefaultValue, MAX_THRUST_UPPER_LIMIT, "Max thrust");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMaxThrustDefaultValue));
             }
             if (key.equals(KEY_PREF_MIN_THRUST)) {
-                setSummaryInt(key, mMinThrustDefaultValue, MIN_THRUST_UPPER_LIMIT, "Min thrust");
+                findPreference(key).setSummary(sharedPreferences.getString(key,mMinThrustDefaultValue));
             }
             if (key.equals(KEY_PREF_XMODE)) {
                 CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
@@ -465,6 +443,7 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
             findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);
+            findPreference(KEY_PREF_JOYSTICK_SIZE).setEnabled(controllerIndex == 0);
         }
 
         private String setInitialSummaryAndReturnDefaultValue(String pKey, int pRDefaultValue) {

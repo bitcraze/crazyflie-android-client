@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SliderPreference">
+        <attr name="upperLimit" format="float"/>
+        <attr name="lowerLimit" format="float"/>
+        <attr name="steps" format="integer"/>
+        <attr name="wholeNumber" format="boolean"/>
+    </declare-styleable>
+</resources>
