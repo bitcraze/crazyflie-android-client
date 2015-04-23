@@ -27,14 +27,11 @@
 
 package se.bitcraze.crazyflielib;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import se.bitcraze.crazyflielib.crtp.ConsolePacket;
-import se.bitcraze.crazyflielib.crtp.CrtpPort;
-import android.util.Log;
+import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 /**
  * This class provides a skeletal implementation of the {@link Link} interface
@@ -97,23 +94,14 @@ public abstract class AbstractLink implements Link {
     }
 
     /**
-     * Handle the response from the Crazyflie. Parses the CRPT packet and inform
-     * registered listeners.
+     * Handle the response from the Crazyflie.
      *
-     * @param data the data received from the Crazyflie. Must not include any
-     *            headers or other attachments added by the link.
+     * @param packet
      */
-    protected void handleResponse(byte[] data) {
-        if (data.length >= 1) {
-            switch (CrtpPort.getByNumber((byte) (data[0] >> 4))) {
-                case CONSOLE:
-                    final ConsolePacket p = ConsolePacket.parse(Arrays.copyOfRange(data, 1, data.length));
-                    Log.i(AbstractLink.class.getName(), "received console packet: " + p.getText());
-                    break;
-                    // TODO implement other types
-                default:
-                    Log.d(AbstractLink.class.getName(), "packet contains unknown port");
-                    break;
+    protected void notifyDataListeners(CrtpPacket packet) {
+        for (DataListener dataListener : mDataListeners) {
+            if (dataListener.getPort() == packet.getHeader().getPort()) {
+                dataListener.dataReceived(packet);
             }
         }
     }

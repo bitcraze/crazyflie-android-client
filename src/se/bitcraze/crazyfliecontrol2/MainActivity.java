@@ -39,8 +39,11 @@ import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.DataListener;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
+import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+import se.bitcraze.crazyflielib.crtp.CrtpPort;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -484,6 +487,22 @@ public class MainActivity extends Activity {
             // connect and start thread to periodically send commands containing
             // the user input
             mLink.connect();
+            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
+
+                @Override
+                public void dataReceived(CrtpPacket packet) {
+                    Log.d(LOG_TAG, "Received console packet: " + packet);
+                }
+
+            });
+            mLink.addDataListener(new DataListener(CrtpPort.PARAMETERS) {
+
+                @Override
+                public void dataReceived(CrtpPacket packet) {
+                    Log.d(LOG_TAG, "Received parameters packet: " + packet);
+                }
+
+            });
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {

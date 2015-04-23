@@ -382,7 +382,10 @@ public class CrazyradioLink extends AbstractLink {
 
                         if ((receiveData[0] & 1) != 0) { // check if ack received
                             retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
-                            handleResponse(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
+                            if (receivedByteCount > 1) {
+                                CrtpPacket inPacket = new CrtpPacket(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
+                                notifyDataListeners(inPacket);
+                            }
                         } else {
                             // count lost packets
                             retryBeforeDisconnectRemaining--;
