@@ -434,7 +434,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void connectionSetupFinished(Link l) {
+                public void connected(Link l) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -446,6 +446,10 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
+                }
+
+                @Override
+                public void connectionSetupFinished(Link l) {
                 }
 
                 @Override
