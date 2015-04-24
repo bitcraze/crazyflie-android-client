@@ -118,6 +118,17 @@ public abstract class AbstractLink implements Link {
     }
 
     /**
+     * Notify all registered listeners about an initiated connection.
+     */
+    protected void notifyConnected() {
+        synchronized (this.mConnectionListeners) {
+            for (ConnectionListener cl : this.mConnectionListeners) {
+                cl.connected(this);
+            }
+        }
+    }
+
+    /**
      * Notify all registered listeners about a setup connection.
      */
     protected void notifyConnectionSetupFinished() {

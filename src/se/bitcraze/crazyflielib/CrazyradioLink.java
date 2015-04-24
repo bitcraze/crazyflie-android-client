@@ -355,7 +355,7 @@ public class CrazyradioLink extends AbstractLink {
             int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
             int nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
 
-            notifyConnectionSetupFinished();
+            notifyConnected();
 
             while (mUsbLink != null && mUsbLink.isUsbConnected()) {
                 try {
