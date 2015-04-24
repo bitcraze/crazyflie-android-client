@@ -44,6 +44,8 @@ import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
+import se.bitcraze.crazyflielib.toc.Toc;
+import se.bitcraze.crazyflielib.toc.TocFetcher;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -101,6 +103,8 @@ public class MainActivity extends Activity {
     private int mSoundDisconnect;
 
     private ImageButton mToggleConnectButton;
+
+    private Toc mParamToc;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -448,6 +452,9 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
+                    mParamToc = new Toc();
+                    TocFetcher tocFetcher = new TocFetcher(mLink, CrtpPort.PARAMETERS, mParamToc);
+                    tocFetcher.start();
                 }
 
                 @Override
@@ -495,14 +502,6 @@ public class MainActivity extends Activity {
                 }
 
             });
-            mLink.addDataListener(new DataListener(CrtpPort.PARAMETERS) {
-
-                @Override
-                public void dataReceived(CrtpPacket packet) {
-                    Log.d(LOG_TAG, "Received parameters packet: " + packet);
-                }
-
-            });
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -510,7 +509,7 @@ public class MainActivity extends Activity {
                         mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
-                            Thread.sleep(20, 0);
+                            Thread.sleep(20);
                         } catch (InterruptedException e) {
                             break;
                         }
