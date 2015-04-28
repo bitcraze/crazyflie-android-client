@@ -214,7 +214,7 @@ public class CrazyradioLink extends AbstractLink {
         setDataRate(connectionData.getDataRate());
 
         mLogger.debug("connect()");
-        notifyConnectionInitiated();
+        notifyConnectionRequested();
 
         if (mUsbLink != null && mUsbLink.isUsbConnected()) {
             if (mRadioLinkThread == null) {
@@ -223,7 +223,7 @@ public class CrazyradioLink extends AbstractLink {
             }
         } else {
             mLogger.debug("mConnection is null");
-            notifyConnectionFailed();
+            notifyConnectionFailed("Crazyradio not attached");
             throw new IllegalStateException("Crazyradio not attached");
         }
     }
@@ -362,7 +362,7 @@ public class CrazyradioLink extends AbstractLink {
                         // update link quality status
                         if (nextLinkQualityUpdate <= 0) {
                             final int retransmission = receiveData[0] >> 4;
-                            notifyLinkQuality(Math.max(0, (10 - retransmission) * 10));
+                            notifyLinkQualityUpdated(Math.max(0, (10 - retransmission) * 10));
                             nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
                         } else {
                             nextLinkQualityUpdate--;
@@ -378,7 +378,7 @@ public class CrazyradioLink extends AbstractLink {
                             // count lost packets
                             retryBeforeDisconnectRemaining--;
                             if (retryBeforeDisconnectRemaining <= 0) {
-                                notifyConnectionLost();
+                                notifyConnectionLost("Too many packets lost");
                                 disconnect();
                                 break;
                             }

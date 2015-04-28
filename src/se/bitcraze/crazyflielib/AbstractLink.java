@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 /**
@@ -41,6 +42,7 @@ public abstract class AbstractLink implements Link {
 
     private List<ConnectionListener> mConnectionListeners;
     private List<DataListener> mDataListeners;
+    private ConnectionData mConnectionData;
 
     /**
      * Create a new abstract link.
@@ -48,6 +50,7 @@ public abstract class AbstractLink implements Link {
     public AbstractLink() {
         this.mConnectionListeners = Collections.synchronizedList(new LinkedList<ConnectionListener>());
         this.mDataListeners = Collections.synchronizedList(new LinkedList<DataListener>());
+        this.mConnectionData = new ConnectionData(0, 0); // TODO: only placeholder value
     }
 
     /*
@@ -107,12 +110,12 @@ public abstract class AbstractLink implements Link {
     }
 
     /**
-     * Notify all registered listeners about an initiated connection.
+     * Notify all registered listeners about a requested connection.
      */
-    protected void notifyConnectionInitiated() {
+    protected void notifyConnectionRequested() {
         synchronized (this.mConnectionListeners) {
             for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.connectionInitiated(this);
+                cl.connectionRequested(mConnectionData.toString());
             }
         }
     }
@@ -123,7 +126,7 @@ public abstract class AbstractLink implements Link {
     protected void notifyConnected() {
         synchronized (this.mConnectionListeners) {
             for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.connected(this);
+                cl.connected(mConnectionData.toString());
             }
         }
     }
@@ -131,10 +134,36 @@ public abstract class AbstractLink implements Link {
     /**
      * Notify all registered listeners about a setup connection.
      */
-    protected void notifyConnectionSetupFinished() {
+    protected void notifySetupFinished() {
         synchronized (this.mConnectionListeners) {
             for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.connectionSetupFinished(this);
+                cl.setupFinished(mConnectionData.toString());
+            }
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a lost connection.
+     *
+     * @param msg
+     */
+    protected void notifyConnectionLost(String msg) {
+        synchronized (this.mConnectionListeners) {
+            for (ConnectionListener cl : this.mConnectionListeners) {
+                cl.connectionLost(mConnectionData.toString(), msg);
+            }
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a failed connection attempt.
+     *
+     * @param msg
+     */
+    protected void notifyConnectionFailed(String msg) {
+        synchronized (this.mConnectionListeners) {
+            for (ConnectionListener cl : this.mConnectionListeners) {
+                cl.connectionFailed(mConnectionData.toString(), msg);
             }
         }
     }
@@ -145,29 +174,7 @@ public abstract class AbstractLink implements Link {
     protected void notifyDisconnected() {
         synchronized (this.mConnectionListeners) {
             for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.disconnected(this);
-            }
-        }
-    }
-
-    /**
-     * Notify all registered listeners about a lost connection.
-     */
-    protected void notifyConnectionLost() {
-        synchronized (this.mConnectionListeners) {
-            for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.connectionLost(this);
-            }
-        }
-    }
-
-    /**
-     * Notify all registered listeners about a failed connection attempt.
-     */
-    protected void notifyConnectionFailed() {
-        synchronized (this.mConnectionListeners) {
-            for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.connectionFailed(this);
+                cl.disconnected(mConnectionData.toString());
             }
         }
     }
@@ -175,13 +182,13 @@ public abstract class AbstractLink implements Link {
     /**
      * Notify all registered listeners about the link status.
      *
-     * @param quality quality of the link (0 = connection lost, 100 = good)
+     * @param percent quality of the link (0 = connection lost, 100 = good)
      * @see ConnectionListener#linkQualityUpdate(Link, int)
      */
-    protected void notifyLinkQuality(int quality) {
+    protected void notifyLinkQualityUpdated(int percent) {
         synchronized (this.mConnectionListeners) {
             for (ConnectionListener cl : this.mConnectionListeners) {
-                cl.linkQualityUpdate(this, quality);
+                cl.linkQualityUpdated(percent);
             }
         }
     }

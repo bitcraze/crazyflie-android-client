@@ -33,58 +33,53 @@ package se.bitcraze.crazyflielib;
  */
 public abstract class ConnectionAdapter implements ConnectionListener {
 
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionInitiated(se.bitcraze.crazyflielib.Link)
+    /* (non-Javadoc)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionRequested(java.lang.String)
      */
     @Override
-    public void connectionInitiated(Link l) {
+    public void connectionRequested(String connectionInfo) {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connected(se.bitcraze.crazyflielib.Link)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connected(java.lang.String)
      */
     @Override
-    public void connected(Link l) {
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionSetupFinished(se.bitcraze.crazyflielib.Link)
-     */
-    @Override
-    public void connectionSetupFinished(Link l) {
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#disconnected(se.bitcraze.crazyflielib.Link)
-     */
-    @Override
-    public void disconnected(Link l) {
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionLost(se.bitcraze.crazyflielib.Link)
-     */
-    @Override
-    public void connectionLost(Link l) {
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionFailed(se.bitcraze.crazyflielib.Link)
-     */
-    @Override
-    public void connectionFailed(Link l) {
+    public void connected(String connectionInfo) {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#linkQualityUpdate(se.bitcraze.crazyflielib.Link, int)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#setupFinished(java.lang.String)
      */
     @Override
-    public void linkQualityUpdate(Link l, int quality) {
+    public void setupFinished(String connectionInfo) {
+    }
+
+    /* (non-Javadoc)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionFailed(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void connectionFailed(String connectionInfo, String msg) {
+    }
+
+    /* (non-Javadoc)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionLost(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void connectionLost(String connectionInfo, String msg) {
+    }
+
+    /* (non-Javadoc)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#disconnected(java.lang.String)
+     */
+    @Override
+    public void disconnected(String connectionInfo) {
+    }
+
+    /* (non-Javadoc)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#linkQualityUpdated(int)
+     */
+    @Override
+    public void linkQualityUpdated(int percent) {
     }
 
 }

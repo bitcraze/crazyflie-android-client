@@ -419,8 +419,9 @@ public class MainActivity extends Activity {
 
             // add listener for connection status
             mLink.addConnectionListener(new ConnectionAdapter() {
+
                 @Override
-                public void connectionInitiated(Link l) {
+                public void connectionRequested(String connectionInfo) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -430,18 +431,7 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void disconnected(Link l) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
-                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
-                        }
-                    });
-                }
-
-                @Override
-                public void connected(Link l) {
+                public void connected(String connectionInfo) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -459,15 +449,15 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void connectionSetupFinished(Link l) {
+                public void setupFinished(String connectionInfo) {
                 }
 
                 @Override
-                public void connectionLost(Link l) {
+                public void connectionLost(String connectionInfo, final String msg) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                             mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
                         }
                     });
@@ -475,18 +465,29 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void connectionFailed(Link l) {
+                public void connectionFailed(String connectionInfo, final String msg) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Connection failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                         }
                     });
                     linkDisconnect();
                 }
 
                 @Override
-                public void linkQualityUpdate(Link l, final int quality) {
+                public void disconnected(String connectionInfo) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
+                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
+                        }
+                    });
+                }
+
+                @Override
+                public void linkQualityUpdated(final int quality) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
