@@ -39,6 +39,7 @@ import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
+import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.DataListener;
 import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
@@ -400,7 +401,7 @@ public class MainActivity extends Activity {
         try {
             // create link
             try {
-                mLink = new CrazyradioLink(new UsbLinkAndroid(this), new CrazyradioLink.ConnectionData(radioChannel, radioDatarate));
+                mLink = new CrazyradioLink(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
@@ -495,9 +496,8 @@ public class MainActivity extends Activity {
                 }
             });
 
-            // connect and start thread to periodically send commands containing
-            // the user input
-            mLink.connect();
+            // connect and start thread to periodically send commands containing the user input
+            mLink.connect(new ConnectionData(radioChannel, radioDatarate));
             mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
 
                 @Override
@@ -510,7 +510,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mLink != null) {
-                        mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                        mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20);

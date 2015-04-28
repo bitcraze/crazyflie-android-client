@@ -12,7 +12,6 @@ import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket.Header;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
 import se.bitcraze.crazyflielib.param.ParamTocElement;
-import android.util.Log;
 
 /**
  * Fetches TOC entries from the Crazyflie
@@ -129,14 +128,14 @@ public class TocFetcher {
         mLogger.debug("Requesting TOC info on port " + this.mPort);
         Header header = new Header(TOC_CHANNEL, mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_INFO});
-        this.mLink.send(packet);
+        this.mLink.sendPacket(packet);
     }
 
     private void requestTocElement(int index) {
         mLogger.debug("Requesting index " + index + " on port " + this.mPort);
         Header header = new Header(TOC_CHANNEL, this.mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_ELEMENT, (byte) index});
-        this.mLink.send(packet);
+        this.mLink.sendPacket(packet);
     }
 
 }

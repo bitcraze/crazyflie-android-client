@@ -121,21 +121,6 @@ public class CrazyradioLink extends AbstractLink {
     }
 
     /**
-     * Create a new link using the Crazyradio.
-     *
-     * @param context
-     * @param connectionData connection data to initialize the link
-     * @throws IllegalArgumentException if usbManager or usbDevice is <code>null</code>
-     * @throws IOException if the device cannot be opened
-     */
-    public CrazyradioLink(IUsbLink usbLink, ConnectionData connectionData) throws IOException {
-        this(usbLink);
-
-        setRadioChannel(connectionData.getChannel());
-        setDataRate(connectionData.getDataRate());
-    }
-
-    /**
      * Scan for available channels.
      *
      * @return array containing the found channels and datarates.
@@ -224,7 +209,10 @@ public class CrazyradioLink extends AbstractLink {
      * @throws IllegalStateException if the Crazyradio is not attached
      */
     @Override
-    public void connect() throws IllegalStateException {
+    public void connect(ConnectionData connectionData) throws IllegalStateException {
+        setRadioChannel(connectionData.getChannel());
+        setDataRate(connectionData.getDataRate());
+
         mLogger.debug("connect()");
         notifyConnectionInitiated();
 
@@ -257,7 +245,7 @@ public class CrazyradioLink extends AbstractLink {
     }
 
     @Override
-    public void send(CrtpPacket p) {
+    public void sendPacket(CrtpPacket p) {
         this.mSendQueue.addLast(p);
     }
 
