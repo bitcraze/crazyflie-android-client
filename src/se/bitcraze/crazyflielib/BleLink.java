@@ -5,6 +5,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import android.annotation.SuppressLint;
@@ -21,12 +24,11 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 @SuppressLint("NewApi")
 public class BleLink extends AbstractLink {
 
-	private static final String TAG = "BleLink";
+    final Logger mLogger = LoggerFactory.getLogger("BLELink");
 
 	// Set to -40 to connect only to close-by Crazyflie
 	private static final int rssiThreshold = -100;
@@ -84,7 +86,7 @@ public class BleLink extends AbstractLink {
 				descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 				gatt.writeDescriptor(descriptor);
 
-				Log.d(TAG, "Connected!");
+				mLogger.debug( "Connected!");
 
 				mConnected = true;
 				mWritten = false;
@@ -98,7 +100,7 @@ public class BleLink extends AbstractLink {
 		public void onCharacteristicWrite(BluetoothGatt gatt,
 				BluetoothGattCharacteristic characteristic, int status) {
 			super.onCharacteristicWrite(gatt, characteristic, status);
-			//Log.d(TAG, "On write called for char: " + characteristic.getUuid().toString());
+			//mLogger.debug("On write called for char: " + characteristic.getUuid().toString());
 			BleLink.mWritten  = true;
 		}
 
@@ -106,7 +108,7 @@ public class BleLink extends AbstractLink {
 		public void onDescriptorWrite(BluetoothGatt gatt,
 				BluetoothGattDescriptor descritor, int status) {
 			super.onDescriptorWrite(gatt, descritor, status);
-			Log.d(TAG, "On write called for descriptor: " + descritor.getUuid().toString());
+			mLogger.debug("On write called for descriptor: " + descritor.getUuid().toString());
 			mWritten = true;
 		}
 
@@ -115,14 +117,14 @@ public class BleLink extends AbstractLink {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
 			super.onCharacteristicRead(gatt, characteristic, status);
-			Log.d(TAG, "On read call for characteristic: " + characteristic.getUuid().toString());
+			mLogger.debug("On read call for characteristic: " + characteristic.getUuid().toString());
         }
 
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt,
 		        BluetoothGattCharacteristic characteristic) {
 			//super.onCharacteristicChanged(gatt, characteristic);
-			Log.d(TAG, "On changed call for characteristic: " + characteristic.getUuid().toString());
+		    mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
 		}
 	};
 
@@ -130,7 +132,7 @@ public class BleLink extends AbstractLink {
 		@Override
 		public void onLeScan(BluetoothDevice device, int rssi, byte[] anounce) {
 			if (device != null && device.getName() != null) {
-				Log.d(TAG, "Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+			    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
 				if (device.getName().equals("Crazyflie") && rssi>rssiThreshold) {
 					mBluetoothAdapter.stopLeScan(this);
@@ -170,8 +172,9 @@ public class BleLink extends AbstractLink {
 
 		mBluetoothAdapter.stopLeScan(mLeScanCallback);
 		mBluetoothAdapter.startLeScan(mLeScanCallback);
-		if (mScannTimer != null)
+		if (mScannTimer != null) {
 			mScannTimer.cancel();
+		}
 		mScannTimer = new Timer();
 		mScannTimer.schedule(new TimerTask() {
 			@Override
@@ -188,6 +191,8 @@ public class BleLink extends AbstractLink {
 
 	@Override
 	public void disconnect() {
+	    mLogger.debug("BLELink disconnect()");
+	    //TODO: does this really need to run on UI thread?
 		mContext.runOnUiThread(new Runnable() {
 			public void run() {
 				if(mConnected) {
