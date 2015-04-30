@@ -182,9 +182,9 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 try {
                     if (mCrazyflie != null && mCrazyflie.isConnected()) {
-                        linkDisconnect();
+                        disconnect();
                     } else {
-                        linkConnect();
+                        connect();
                     }
                 } catch (IllegalStateException e) {
                     Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -230,7 +230,7 @@ public class MainActivity extends Activity {
         mControls.resetAxisValues();
         mController.disable();
         if (mCrazyflie != null) {
-            linkDisconnect();
+            disconnect();
         }
     }
 
@@ -371,7 +371,7 @@ public class MainActivity extends Activity {
                     playSound(mSoundDisconnect);
                     if (mCrazyflie != null) {
                         Log.d(LOG_TAG, "linkDisconnect()");
-                        linkDisconnect();
+                        disconnect();
                     }
                 }
             }
@@ -393,9 +393,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void linkConnect() {
+    private void connect() {
         // ensure previous link is disconnected
-        linkDisconnect();
+        disconnect();
 
         int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
         int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
@@ -482,7 +482,7 @@ public class MainActivity extends Activity {
                             mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
                         }
                     });
-                    linkDisconnect();
+                    disconnect();
                 }
 
                 @Override
@@ -493,7 +493,7 @@ public class MainActivity extends Activity {
                             Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                         }
                     });
-                    linkDisconnect();
+                    disconnect();
                 }
 
                 @Override
@@ -559,7 +559,7 @@ public class MainActivity extends Activity {
         return mCrazyflie;
     }
 
-    public void linkDisconnect() {
+    public void disconnect() {
         if (mCrazyflie != null) {
             mCrazyflie.disconnect();
             mCrazyflie = null;

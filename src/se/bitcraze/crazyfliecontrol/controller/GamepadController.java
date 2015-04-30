@@ -113,7 +113,7 @@ public class GamepadController extends AbstractController {
                 //quick solution
                 mControls.resetAxisValues();
                 if (mActivity.getCrazyflie() != null) {
-                    mActivity.linkDisconnect();
+                    mActivity.disconnect();
                 }
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             }else if (event.getKeyCode() == mRollTrimPlusBtn) {
