@@ -27,66 +27,77 @@
 
 package se.bitcraze.crazyflielib;
 
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
+import se.bitcraze.crazyflielib.crazyflie.LinkListener;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 /**
  * Representation of a link to the Crazyflie.
  */
-public interface Link {
+public abstract class Link {
+
+    protected Set<LinkListener> mLinkListeners = new CopyOnWriteArraySet<LinkListener>();
+
     /**
      * Connect to the Crazyflie.
      *
      * @param connectionData
      */
-    public void connect(ConnectionData connectionData);
+    public abstract void connect(ConnectionData connectionData);
 
     /**
      * Disconnect from the Crazyflie.
      */
-    public void disconnect();
+    public abstract void disconnect();
 
     /**
      * Check whether the link is connected.
      *
      * @return <code>true</code> if the link is connected.
      */
-    public boolean isConnected();
+    public abstract boolean isConnected();
 
     /**
      * Send data to the Crazyflie.
      *
      * @param p the packet of data to send.
      */
-    public void sendPacket(CrtpPacket p);
+    public abstract void sendPacket(CrtpPacket p);
+
+
+
+    /* LINK LISTENER */
 
     /**
-     * Add a listener to receive notifications about the connection status.
+     * Add a link listener
      *
-     * @param l the listener to add.
+     * @param linkListener
      */
-    public void addConnectionListener(ConnectionListener l);
+    public void addLinkListener(LinkListener listener) {
+        this.mLinkListeners.add(listener);
+    }
 
     /**
-     * Remote a previously registered connection listener. If the listener has
-     * not been registered before, nothing is done.
+     * Remove a link listener
      *
-     * @param l the listener to remove.
+     * @param linkListener
      */
-    public void removeConnectionListener(ConnectionListener l);
+    public void removeLinkListener(LinkListener listener) {
+        this.mLinkListeners.remove(listener);
+    }
 
-    /**
-     * Add a listener to receive notifications about incoming data.
-     *
-     * @param l the listener to add.
-     */
-    public void addDataListener(DataListener l);
+    protected void notifyLinkQualityUpdated(int percent) {
+        for (LinkListener pl : this.mLinkListeners) {
+            pl.linkQualityUpdated(percent);
+        }
+    }
 
-    /**
-     * Remote a previously registered data listener. If the listener has not
-     * been registered before, nothing is done.
-     *
-     * @param l the listener to remove.
-     */
-    public void removeDataListener(DataListener l);
+    protected void notifyLinkError(String msg) {
+        for (LinkListener pl : this.mLinkListeners) {
+            pl.linkError(msg);
+        }
+    }
 }

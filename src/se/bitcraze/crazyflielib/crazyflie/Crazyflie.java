@@ -6,7 +6,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.ConnectionListener;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.DataListener;
@@ -28,7 +27,7 @@ public class Crazyflie {
 
     private ConnectionData mConnectionData;
 
-    private ConnectionListener mConnectionListener;
+    private LinkListener mLinkListener;
 
     /**
      * State of the connection procedure
@@ -56,14 +55,20 @@ public class Crazyflie {
         mState = State.INITIALIZED;
 
         //TODO: can this be done more elegantly?
-        mConnectionListener = new ConnectionAdapter(){
+        mLinkListener = new LinkListener(){
 
-            public void linkQualityUpdated(ConnectionData connectionData, int percent) {
+            @Override
+            public void linkQualityUpdated(int percent) {
                 notifyLinkQualityUpdated(percent);
             }
 
+            @Override
+            public void linkError(String msg) {
+                // TODO Auto-generated method stub
+            }
+
         };
-        mLink.addConnectionListener(mConnectionListener);
+        mLink.addLinkListener(mLinkListener);
 
         // try to connect
         mLink.connect(mConnectionData);
@@ -98,7 +103,7 @@ public class Crazyflie {
             mLogger.debug("Disconnect");
 
             if (mLink != null) {
-                mLink.removeConnectionListener(mConnectionListener);
+                mLink.removeLinkListener(mLinkListener);
                 //Send commander packet with all values set to 0 before closing the connection
                 sendPacket(new CommanderPacket(0, 0, 0, (char) 0));
                 mLink.disconnect();

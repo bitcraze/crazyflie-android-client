@@ -38,7 +38,7 @@ import se.bitcraze.crazyflielib.crtp.CrtpPacket;
  * This class provides a skeletal implementation of the {@link Link} interface
  * to minimize the effort required to implement the interface.
  */
-public abstract class AbstractLink implements Link {
+public abstract class AbstractLink extends Link {
 
     private List<ConnectionListener> mConnectionListeners;
     private List<DataListener> mDataListeners;
@@ -51,49 +51,6 @@ public abstract class AbstractLink implements Link {
         this.mConnectionListeners = Collections.synchronizedList(new LinkedList<ConnectionListener>());
         this.mDataListeners = Collections.synchronizedList(new LinkedList<DataListener>());
         this.mConnectionData = new ConnectionData(0, 0); // TODO: only placeholder value
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * se.bitcraze.crazyflielib.Link#addConnectionListener(se.bitcraze.crazyflielib
-     * .ConnectionListener)
-     */
-    @Override
-    public void addConnectionListener(ConnectionListener l) {
-        this.mConnectionListeners.add(l);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.Link#removeConnectionListener(se.bitcraze.
-     * crazyflielib.ConnectionListener)
-     */
-    @Override
-    public void removeConnectionListener(ConnectionListener l) {
-        this.mConnectionListeners.remove(l);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * se.bitcraze.crazyflielib.Link#addDataListener(se.bitcraze.crazyflielib
-     * .DataListener)
-     */
-    @Override
-    public void addDataListener(DataListener l) {
-        this.mDataListeners.add(l);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * se.bitcraze.crazyflielib.Link#removeDataListener(se.bitcraze.crazyflielib
-     * .DataListener)
-     */
-    @Override
-    public void removeDataListener(DataListener l) {
-        this.mDataListeners.remove(l);
     }
 
     /**
