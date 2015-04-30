@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.DataListener;
-import se.bitcraze.crazyflielib.Link;
+import se.bitcraze.crazyflielib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket.Header;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
@@ -23,7 +23,7 @@ public class TocFetcher {
 
     final Logger mLogger = LoggerFactory.getLogger("TocFetcher");
 
-    private Link mLink;
+    private Crazyflie mCrazyflie;
     private CrtpPort mPort;
     private int mCrc = 0;
 
@@ -41,8 +41,8 @@ public class TocFetcher {
 
     private int mNoOfLoops;
 
-    public TocFetcher(Link link, CrtpPort port, Toc toc) {
-        this.mLink = link;
+    public TocFetcher(Crazyflie crazyflie, CrtpPort port, Toc toc) {
+        this.mCrazyflie = crazyflie;
         this.mPort = port;
         this.mToc = toc;
     }
@@ -60,7 +60,7 @@ public class TocFetcher {
                 newPacketReceived(packet);
             }
         };
-        this.mLink.addDataListener(mDataListener);
+        this.mCrazyflie.addDataListener(mDataListener);
 
         requestTocInfo();
     }
@@ -133,14 +133,14 @@ public class TocFetcher {
         mLogger.debug("Requesting TOC info on port " + this.mPort);
         Header header = new Header(TOC_CHANNEL, mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_INFO});
-        this.mLink.sendPacket(packet);
+        this.mCrazyflie.sendPacket(packet);
     }
 
     private void requestTocElement(int index) {
         mLogger.debug("Requesting index " + index + " on port " + this.mPort);
         Header header = new Header(TOC_CHANNEL, this.mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_ELEMENT, (byte) index});
-        this.mLink.sendPacket(packet);
+        this.mCrazyflie.sendPacket(packet);
     }
 
     /* TOC FETCH FINISHED LISTENER */

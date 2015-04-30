@@ -112,7 +112,7 @@ public class GamepadController extends AbstractController {
             if(event.getKeyCode() == mEmergencyBtn){
                 //quick solution
                 mControls.resetAxisValues();
-                if (mActivity.getCrazyflieLink() != null) {
+                if (mActivity.getCrazyflie() != null) {
                     mActivity.linkDisconnect();
                 }
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();

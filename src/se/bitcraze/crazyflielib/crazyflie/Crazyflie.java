@@ -114,6 +114,10 @@ public class Crazyflie {
         return mState;
     }
 
+    public boolean isConnected() {
+        return mLink.isConnected();
+    }
+
     /**
      * Send a packet through the driver interface
      *
@@ -229,7 +233,7 @@ public class Crazyflie {
 
     /**
      * Notify all registered listeners about a failed connection attempt.
-     * 
+     *
      * @param msg
      */
     private void notifyConnectionFailed(String msg) {
@@ -240,7 +244,7 @@ public class Crazyflie {
 
     /**
      * Notify all registered listeners about a lost connection.
-     * 
+     *
      * @param msg
      */
     private void notifyConnectionLost(String msg) {
@@ -260,7 +264,7 @@ public class Crazyflie {
 
     /**
      * Notify all registered listeners about a link quality update.
-     * 
+     *
      * @param percent quality of the link (0 = connection lost, 100 = good)
      */
     private void notifyLinkQualityUpdated(int percent) {

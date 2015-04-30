@@ -42,6 +42,7 @@ import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import se.bitcraze.crazyflielib.DataListener;
 import se.bitcraze.crazyflielib.Link;
+import se.bitcraze.crazyflielib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
@@ -83,7 +84,7 @@ public class MainActivity extends Activity {
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
-    private Link mLink;
+    private Crazyflie mCrazyflie;
 
     private SharedPreferences mPreferences;
 
@@ -180,7 +181,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 try {
-                    if (mLink != null && mLink.isConnected()) {
+                    if (mCrazyflie != null && mCrazyflie.isConnected()) {
                         linkDisconnect();
                     } else {
                         linkConnect();
@@ -228,7 +229,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mControls.resetAxisValues();
         mController.disable();
-        if (mLink != null) {
+        if (mCrazyflie != null) {
             linkDisconnect();
         }
     }
@@ -368,7 +369,7 @@ public class MainActivity extends Activity {
                     Log.d(LOG_TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
-                    if (mLink != null) {
+                    if (mCrazyflie != null) {
                         Log.d(LOG_TAG, "linkDisconnect()");
                         linkDisconnect();
                     }
@@ -399,27 +400,33 @@ public class MainActivity extends Activity {
         int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
         int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
+
         try {
+            Link link = null;
             // create link
             try {
-                mLink = new CrazyradioLink(new UsbLinkAndroid(this));
+                link = new CrazyradioLink(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
                     if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
                         Log.d(LOG_TAG, "Using bluetooth write with response");
-                        mLink = new BleLink(this, true);
+                        link = new BleLink(this, true);
                     } else {
                         Log.d(LOG_TAG, "Using bluetooth write without response");
-                        mLink = new BleLink(this, false);
+                        link = new BleLink(this, false);
                     }
                 } else {
                     throw e;
                 }
             }
+            if(link != null) {
+                mCrazyflie = new Crazyflie(link);
+            }
+            //TODO: handle link == null
 
             // add listener for connection status
-            mLink.addConnectionListener(new ConnectionAdapter() {
+            mCrazyflie.addConnectionListener(new ConnectionAdapter() {
 
                 @Override
                 public void connectionRequested(String connectionInfo) {
@@ -437,7 +444,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
-                            if (mLink instanceof BleLink) {
+                            if (mCrazyflie.getLink() instanceof BleLink) {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
                             } else {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
@@ -445,7 +452,7 @@ public class MainActivity extends Activity {
                         }
                     });
                     mParamToc = new Toc();
-                    TocFetcher tocFetcher = new TocFetcher(mLink, CrtpPort.PARAMETERS, mParamToc);
+                    TocFetcher tocFetcher = new TocFetcher(mCrazyflie, CrtpPort.PARAMETERS, mParamToc);
                     tocFetcher.addTocFetchFinishedListener(new TocFetchFinishedListener() {
 
                         @Override
@@ -512,8 +519,8 @@ public class MainActivity extends Activity {
             });
 
             // connect and start thread to periodically send commands containing the user input
-            mLink.connect(new ConnectionData(radioChannel, radioDatarate));
-            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
+            mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
+            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
 
                 @Override
                 public void dataReceived(CrtpPacket packet) {
@@ -534,8 +541,8 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (mLink != null) {
-                    mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                while (mCrazyflie != null) {
+                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                     try {
                         Thread.sleep(20);
@@ -548,14 +555,14 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread.start();
     }
 
-    public Link getCrazyflieLink(){
-        return mLink;
+    public Crazyflie getCrazyflie(){
+        return mCrazyflie;
     }
 
     public void linkDisconnect() {
-        if (mLink != null) {
-            mLink.disconnect();
-            mLink = null;
+        if (mCrazyflie != null) {
+            mCrazyflie.disconnect();
+            mCrazyflie = null;
         }
         if (mSendJoystickDataThread != null) {
             mSendJoystickDataThread.interrupt();
