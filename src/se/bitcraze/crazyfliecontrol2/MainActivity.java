@@ -47,6 +47,7 @@ import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
 import se.bitcraze.crazyflielib.toc.Toc;
 import se.bitcraze.crazyflielib.toc.TocFetcher;
+import se.bitcraze.crazyflielib.toc.TocFetcher.TocFetchFinishedListener;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -445,6 +446,19 @@ public class MainActivity extends Activity {
                     });
                     mParamToc = new Toc();
                     TocFetcher tocFetcher = new TocFetcher(mLink, CrtpPort.PARAMETERS, mParamToc);
+                    tocFetcher.addTocFetchFinishedListener(new TocFetchFinishedListener() {
+
+                        @Override
+                        public void tocFetchFinished() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            startSendJoystickDataThread();
+                        }
+                    });
                     tocFetcher.start();
                 }
 
@@ -507,21 +521,6 @@ public class MainActivity extends Activity {
                 }
 
             });
-            mSendJoystickDataThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (mLink != null) {
-                        mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
-
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                }
-            });
-            mSendJoystickDataThread.start();
         } catch (IllegalArgumentException e) {
             Log.d(LOG_TAG, e.getMessage());
             Toast.makeText(this, "Cannot connect: Crazyradio not attached and Bluetooth LE not available", Toast.LENGTH_SHORT).show();
@@ -529,6 +528,24 @@ public class MainActivity extends Activity {
             Log.e(LOG_TAG, e.getMessage());
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void startSendJoystickDataThread() {
+        mSendJoystickDataThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mLink != null) {
+                    mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            }
+        });
+        mSendJoystickDataThread.start();
     }
 
     public Link getCrazyflieLink(){

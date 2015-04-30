@@ -2,6 +2,8 @@ package se.bitcraze.crazyflielib.toc;
 
 
 import java.nio.ByteBuffer;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,8 @@ public class TocFetcher {
     public static final int CMD_TOC_INFO= 1;
 
     private int mNoOfItems = -1;
+
+    private Set<TocFetchFinishedListener> mTocFetchFinishedListeners = new CopyOnWriteArraySet<TocFetchFinishedListener>();
 
     private DataListener mDataListener;
 
@@ -116,6 +120,7 @@ public class TocFetcher {
                     mLogger.debug("Fetching TOC elements timed out after " + timeout  + ".");
                     return;
                 }
+                notifyTocFetchFinished();
                 mLogger.debug("Fetched all TOC elements in " + (System.currentTimeMillis() - startTime) + "ms (noOfLoops: " + mNoOfLoops + ").");
             }
 
@@ -138,4 +143,25 @@ public class TocFetcher {
         this.mLink.sendPacket(packet);
     }
 
+    /* TOC FETCH FINISHED LISTENER */
+
+    public void addTocFetchFinishedListener(TocFetchFinishedListener listener) {
+        this.mTocFetchFinishedListeners.add(listener);
+    }
+
+    public void removeTocFetchFinishedListener(TocFetchFinishedListener listener) {
+        this.mTocFetchFinishedListeners.remove(listener);
+    }
+
+    private void notifyTocFetchFinished() {
+        for (TocFetchFinishedListener tffl : this.mTocFetchFinishedListeners) {
+            tffl.tocFetchFinished();
+        }
+    }
+
+    public interface TocFetchFinishedListener {
+
+        public void tocFetchFinished();
+
+    }
 }
