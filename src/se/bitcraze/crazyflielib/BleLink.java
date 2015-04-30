@@ -245,4 +245,10 @@ public class BleLink extends AbstractLink {
 		mContext.runOnUiThread(new SendBlePacket(packet));
 	}
 
+    @Override
+    public CrtpPacket receivePacket() {
+        //TODO: receive packets
+        return null;
+    }
+
 }

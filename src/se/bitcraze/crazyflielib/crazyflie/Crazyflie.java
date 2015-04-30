@@ -19,6 +19,7 @@ public class Crazyflie {
     final Logger mLogger = LoggerFactory.getLogger("Crazyflie");
 
     private Link mLink;
+    private Thread mIncomingPacketHandlerThread;
 
     private Set<DataListener> mDataListeners = new CopyOnWriteArraySet<DataListener>();
     private Set<ConnectionListener> mConnectionListeners = new CopyOnWriteArraySet<ConnectionListener>();
@@ -73,6 +74,12 @@ public class Crazyflie {
         // try to connect
         mLink.connect(mConnectionData);
 
+        if (mIncomingPacketHandlerThread == null) {
+            IncomingPacketHandler iph = new IncomingPacketHandler();
+            mIncomingPacketHandlerThread = new Thread(iph);
+            mIncomingPacketHandlerThread.start();
+        }
+
         //TODO: better solution to wait for connected state?
         //Timeout: 10x50ms = 500ms
         int i = 0;
@@ -108,6 +115,9 @@ public class Crazyflie {
                 sendPacket(new CommanderPacket(0, 0, 0, (char) 0));
                 mLink.disconnect();
                 mLink = null;
+            }
+            if(mIncomingPacketHandlerThread != null) {
+                mIncomingPacketHandlerThread.interrupt();
             }
             notifyDisconnected();
             mState = State.DISCONNECTED;
@@ -193,9 +203,6 @@ public class Crazyflie {
     private void notifyDataReceived(CrtpPacket inPacket) {
         for (DataListener dataListener : mDataListeners) {
             dataListener.dataReceived(inPacket);
-//            if (dataListener.getPort() == packet.getHeader().getPort()) {
-//                dataListener.dataReceived(packet);
-//            }
         }
     }
 
@@ -276,6 +283,53 @@ public class Crazyflie {
         for (ConnectionListener cl : this.mConnectionListeners) {
             cl.linkQualityUpdated(percent);
         }
+    }
+
+    /**
+     * Handles incoming packets and sends the data to the correct listeners
+     *
+     * TODO: respect also channel specific data listeners?
+     *
+     */
+    public class IncomingPacketHandler implements Runnable {
+
+        final Logger mLogger = LoggerFactory.getLogger("IncomingPacketHandler");
+
+        public void run() {
+            while(true) {
+                try {
+                    if (getLink() == null) {
+                        // time.sleep(1)
+                        Thread.sleep(100);
+                        continue;
+                    }
+
+                    CrtpPacket packet = getLink().receivePacket();
+                    if(packet == null) {
+                        continue;
+                    }
+
+                    //All-packet callbacks
+                    //self.cf.packet_received.call(pk)
+                    //notifyPacketReceived(packet);
+
+                    boolean found = false;
+                    for (DataListener dataListener : mDataListeners) {
+                        if (dataListener.getPort() == packet.getHeader().getPort()) {
+                            notifyDataReceived(packet);
+                            found = true;
+                        }
+                    }
+                    if (!found) {
+                        //mLogger.warn("Got packet on port [" + packet.getHeader().getPort() + "] but found no data listener to handle it.");
+                    }
+                } catch(InterruptedException e) {
+                    mLogger.debug("IncomingPacketHandlerThread was interrupted.");
+                    break;
+                }
+            }
+        }
+
     }
 
 }

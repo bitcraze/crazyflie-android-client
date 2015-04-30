@@ -81,6 +81,7 @@ public class CrazyradioLink extends AbstractLink {
 
     private Thread mRadioLinkThread;
 
+    private final BlockingDeque<CrtpPacket> mReceiveQueue;
     private final BlockingDeque<CrtpPacket> mSendQueue;
 
     private IUsbLink mUsbLink;
@@ -117,6 +118,7 @@ public class CrazyradioLink extends AbstractLink {
      */
     public CrazyradioLink(IUsbLink usbLink) {
         this.mUsbLink = usbLink;
+        this.mReceiveQueue = new LinkedBlockingDeque<CrtpPacket>();
         this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
     }
 
@@ -249,6 +251,11 @@ public class CrazyradioLink extends AbstractLink {
         this.mSendQueue.addLast(p);
     }
 
+    @Override
+    public CrtpPacket receivePacket() {
+        return mReceiveQueue.pollFirst();
+    }
+
     /**
      * Set the radio channel.
      *
@@ -372,7 +379,7 @@ public class CrazyradioLink extends AbstractLink {
                             retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
                             if (receivedByteCount > 1) {
                                 CrtpPacket inPacket = new CrtpPacket(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
-                                notifyDataListeners(inPacket);
+                                mReceiveQueue.put(inPacket);
                             }
                         } else {
                             // count lost packets

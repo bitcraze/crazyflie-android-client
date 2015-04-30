@@ -67,6 +67,13 @@ public abstract class Link {
      */
     public abstract void sendPacket(CrtpPacket p);
 
+    /**
+     * Receive a CRTP packet.
+     *
+     * @return One CRTP packet or None if no packet has been received.
+     */
+    public abstract CrtpPacket receivePacket();
+
 
 
     /* LINK LISTENER */
@@ -100,4 +107,5 @@ public abstract class Link {
             pl.linkError(msg);
         }
     }
+
 }
