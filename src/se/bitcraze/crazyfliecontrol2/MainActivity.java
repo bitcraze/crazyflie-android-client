@@ -539,15 +539,26 @@ public class MainActivity extends Activity {
     }
 
     private void startSendJoystickDataThread() {
+
+        //TODO: extract
+        int altHoldId = -1;
+        if(mParamToc != null && mParamToc.getTocSize() > 0) {
+            altHoldId = mParamToc.getElementId("flightmode.althold");
+            Log.d(LOG_TAG, "flightmode.althold ID: " + altHoldId);
+        } else {
+            Log.d(LOG_TAG, "Hover mode not supported, because ParamTOC is empty");
+        }
+        final int finalAltHoldId = altHoldId;
+
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (mCrazyflie != null) {
 
                     //Hacky Hover Mode
-                    if (mController instanceof GamepadController) {
+                    if (finalAltHoldId != -1 && mCrazyflie.getLink() instanceof CrazyradioLink && mController instanceof GamepadController) {
                         boolean hover = ((GamepadController) mController).isHover();
-                        mCrazyflie.sendPacket(new ParameterPacket(10, hover ? 1 : 0));
+                        mCrazyflie.sendPacket(new ParameterPacket(finalAltHoldId, hover ? 1 : 0));
                     }
                     mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) mController.getThrustAbsolute(), mControls.isXmode()));
 
