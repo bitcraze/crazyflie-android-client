@@ -65,7 +65,7 @@ public class Crazyflie {
 
             @Override
             public void linkError(String msg) {
-                // TODO Auto-generated method stub
+                notifyConnectionLost(msg);
             }
 
         };
@@ -95,10 +95,13 @@ public class Crazyflie {
             i++;
         }
 
+        notifyConnected();
+
         if (mState == State.CONNECTED) {
             startConnectionSetup();
 
         } else {
+            //TODO: get more info from Link implementation
             notifyConnectionFailed("Connection failed");
             disconnect();
         }

@@ -26,7 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 
 @SuppressLint("NewApi")
-public class BleLink extends AbstractLink {
+public class BleLink extends Link {
 
     final Logger mLogger = LoggerFactory.getLogger("BLELink");
 
@@ -67,7 +67,7 @@ public class BleLink extends AbstractLink {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				mConnected = false;
 				state = State.IDLE;
-				notifyConnectionLost("BLE connection lost");
+				mLogger.debug("BLE connection lost");
 			}
 		}
 
@@ -92,7 +92,6 @@ public class BleLink extends AbstractLink {
 				mWritten = false;
 
 				state = State.CONNECTED;
-				notifyConnected();
 			}
 		}
 
@@ -181,12 +180,11 @@ public class BleLink extends AbstractLink {
 			public void run() {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				state = State.IDLE;
-				notifyConnectionFailed("BLE connection timeout");
+				mLogger.debug("BLE connection timeout");
 			}
 		}, 10000);
 
 		state = State.CONNECTING;
-		notifyConnectionRequested();
 	}
 
 	@Override
@@ -206,7 +204,6 @@ public class BleLink extends AbstractLink {
 						mScannTimer = null;
 					}
 					state = State.IDLE;
-					notifyDisconnected();
 				}
 			}
 		});

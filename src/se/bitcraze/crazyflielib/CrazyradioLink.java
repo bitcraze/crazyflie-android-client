@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
-public class CrazyradioLink extends AbstractLink {
+public class CrazyradioLink extends Link {
 
     final Logger mLogger = LoggerFactory.getLogger("CrazyradioLink");
 
@@ -215,8 +215,7 @@ public class CrazyradioLink extends AbstractLink {
         setRadioChannel(connectionData.getChannel());
         setDataRate(connectionData.getDataRate());
 
-        mLogger.debug("connect()");
-        notifyConnectionRequested();
+        mLogger.debug("CrazyradioLink connect()");
 
         if (mUsbLink != null && mUsbLink.isUsbConnected()) {
             if (mRadioLinkThread == null) {
@@ -224,21 +223,18 @@ public class CrazyradioLink extends AbstractLink {
                 mRadioLinkThread.start();
             }
         } else {
-            mLogger.debug("mConnection is null");
-            notifyConnectionFailed("Crazyradio not attached");
+            mLogger.debug("Crazyradio not attached");
             throw new IllegalStateException("Crazyradio not attached");
         }
     }
 
     @Override
     public void disconnect() {
-        mLogger.debug("disconnect()");
+        mLogger.debug("CrazyradioLink disconnect()");
         if (mRadioLinkThread != null) {
             mRadioLinkThread.interrupt();
             mRadioLinkThread = null;
         }
-
-        notifyDisconnected();
     }
 
     @Override
@@ -350,8 +346,6 @@ public class CrazyradioLink extends AbstractLink {
             int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
             int nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
 
-            notifyConnected();
-
             while (mUsbLink != null && mUsbLink.isUsbConnected()) {
                 try {
                     CrtpPacket p = mSendQueue.pollFirst(5, TimeUnit.MILLISECONDS);
@@ -385,7 +379,7 @@ public class CrazyradioLink extends AbstractLink {
                             // count lost packets
                             retryBeforeDisconnectRemaining--;
                             if (retryBeforeDisconnectRemaining <= 0) {
-                                notifyConnectionLost("Too many packets lost");
+                                notifyLinkError("Too many packets lost");
                                 disconnect();
                                 break;
                             }
