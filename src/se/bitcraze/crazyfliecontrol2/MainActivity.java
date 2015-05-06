@@ -540,25 +540,16 @@ public class MainActivity extends Activity {
 
     private void startSendJoystickDataThread() {
 
-        //TODO: extract
-        int altHoldId = -1;
-        if(mParamToc != null && mParamToc.getTocSize() > 0) {
-            altHoldId = mParamToc.getElementId("flightmode.althold");
-            Log.d(LOG_TAG, "flightmode.althold ID: " + altHoldId);
-        } else {
-            Log.d(LOG_TAG, "Hover mode not supported, because ParamTOC is empty");
-        }
-        final int finalAltHoldId = altHoldId;
+        final int altHoldId = getAltHoldParamId();
+        final boolean altHoldModeSupported = isAltHoldModeSupported();
 
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (mCrazyflie != null) {
 
-                    //Hacky Hover Mode
-                    if (finalAltHoldId != -1 && mCrazyflie.getLink() instanceof CrazyradioLink && mController instanceof GamepadController) {
-                        boolean hover = ((GamepadController) mController).isHover();
-                        mCrazyflie.sendPacket(new ParameterPacket(finalAltHoldId, hover ? 1 : 0));
+                    if (altHoldModeSupported) {
+                        mCrazyflie.sendPacket(new ParameterPacket(altHoldId, mController.isHover() ? 1 : 0));
                     }
                     mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) mController.getThrustAbsolute(), mControls.isXmode()));
 
@@ -571,6 +562,29 @@ public class MainActivity extends Activity {
             }
         });
         mSendJoystickDataThread.start();
+    }
+
+    /**
+     * For safety reasons, altHold mode is only supported when the Crazyradio and a game pad are used
+     *
+     * @return
+     */
+    private boolean isAltHoldModeSupported() {
+        if (getAltHoldParamId() != -1 && mCrazyflie.getLink() instanceof CrazyradioLink && mController instanceof GamepadController) {
+            return true;
+        }
+        return false;
+    }
+
+    private int getAltHoldParamId() {
+        int altHoldId = -1;
+        if(mParamToc != null && mParamToc.getTocSize() > 0) {
+            altHoldId = mParamToc.getElementId("flightmode.althold");
+            Log.d(LOG_TAG, "flightmode.althold ID: " + altHoldId);
+        } else {
+            Log.d(LOG_TAG, "Hover mode not supported, because ParamTOC is empty");
+        }
+        return altHoldId;
     }
 
     public Crazyflie getCrazyflie(){

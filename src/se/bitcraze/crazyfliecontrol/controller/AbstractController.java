@@ -108,4 +108,12 @@ public abstract class AbstractController implements IController {
         return yaw * mControls.getYawFactor() * mControls.getDeadzone(yaw);
     }
 
+    /**
+     * Disabled by default
+     *
+     * @return
+     */
+    public boolean isHover() {
+        return false;
+    }
 }
