@@ -35,6 +35,7 @@ import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -52,6 +53,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -121,7 +123,6 @@ public class PreferencesActivity extends PreferenceActivity {
 
         private String mRadioChannelDefaultValue;
         private String mDeadzoneDefaultValue;
-        private String mTrimDefaultValue;
         private String mMaxRollPitchAngleDefaultValue;
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
@@ -193,7 +194,6 @@ public class PreferencesActivity extends PreferenceActivity {
             setSummaryArray(KEY_PREF_MODE, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
 
             mDeadzoneDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_DEADZONE, R.string.preferences_deadzone_defaultValue);
-            mTrimDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ROLLTRIM, R.string.preferences_trim_defaultValue);
             setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM, R.string.preferences_trim_defaultValue);
 
             // Controller settings
@@ -595,6 +595,28 @@ public class PreferencesActivity extends PreferenceActivity {
                 Toast.makeText(getActivity(),"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
             }
         }
+
+    }
+
+    /**
+     * Set default joystick size according to screen size
+     *
+     * @param context
+     */
+    public static void setDefaultJoystickSize(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // If no default value exists, set new default value according to screen size
+        if(!sharedPreferences.contains(KEY_PREF_JOYSTICK_SIZE)) {
+            String defaultValue = getDefaultJoystickSize(context);
+            Log.d(LOG_TAG, "Prefs do NOT contain joystick size. Setting new default: " + defaultValue);
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(PreferencesActivity.KEY_PREF_JOYSTICK_SIZE, String.valueOf(defaultValue));
+            editor.commit();
+        } else {
+            Log.d(LOG_TAG, "Prefs already contain joystick size.");
+        }
     }
 
     /**
@@ -615,6 +637,35 @@ public class PreferencesActivity extends PreferenceActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static String getDefaultJoystickSize(Context context) {
+        long screenSizeInInches = getScreenSizeInInches(context);
+        int size = 100;
+        if (screenSizeInInches >= 4) {
+            size = 80;
+        }
+        if (screenSizeInInches >= 7) {
+            size = 50;
+        }
+        if (screenSizeInInches >= 9) {
+            size = 40;
+        }
+        if (screenSizeInInches >= 10) {
+            size = 30;
+        }
+        return String.valueOf(size);
+    }
+
+    private static long getScreenSizeInInches(Context context) {
+        DisplayMetrics dm = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int dens = dm.densityDpi;
+        double wi = (double) dm.widthPixels / (double) dens;
+        double hi = (double) dm.heightPixels / (double) dens;
+        double x = Math.pow(wi, 2);
+        double y = Math.pow(hi, 2);
+        return Math.round(Math.sqrt(x + y));
     }
 
 }

@@ -70,7 +70,7 @@
     <string name="preferences_touch_thrust_full_travel_summary_off">On the touch controller, use the travel from center to top to control thrust</string>
 
     <string name="preferences_joystick_size_title">Virtual joystick size (%)</string>
-    <string name="preferences_joystick_size_defaultValue">100</string>
+    <string name="preferences_joystick_size_defaultValue">80</string>
 
     <string name="preferences_btn_title">Gamepad axis and button mapping</string>
     <string name="preferences_category_axes">Axes</string>

@@ -229,7 +229,6 @@
             android:title="@string/preferences_touch_thrust_full_travel" />
 
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
-            android:defaultValue="@string/preferences_joystick_size_defaultValue"
             android:key="pref_touch_slider_size"
             android:title="@string/preferences_joystick_size_title"/>
 

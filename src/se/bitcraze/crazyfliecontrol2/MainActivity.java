@@ -197,6 +197,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
         //TODO: improve
+        PreferencesActivity.setDefaultJoystickSize(this);
         mDualJoystickView.setPreferences(mPreferences);
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
@@ -211,7 +212,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        onResume();
     }
 
     @Override
