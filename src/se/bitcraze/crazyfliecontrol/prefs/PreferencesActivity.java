@@ -33,7 +33,7 @@ import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectC
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.CrazyradioLink.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;

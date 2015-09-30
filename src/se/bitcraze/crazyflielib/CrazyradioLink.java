@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 public class CrazyradioLink extends AbstractLink {
@@ -84,31 +85,6 @@ public class CrazyradioLink extends AbstractLink {
     private final BlockingDeque<CrtpPacket> mSendQueue;
 
     private IUsbLink mUsbLink;
-
-    /**
-     * Holds information about a specific connection.
-     */
-    public static class ConnectionData {
-        private final int channel;
-        private final int dataRate;
-
-        public ConnectionData(int channel, int dataRate) {
-            this.channel = channel;
-            this.dataRate = dataRate;
-        }
-
-        public int getChannel() {
-            return channel;
-        }
-
-        public int getDataRate() {
-            return dataRate;
-        }
-
-        public String toString() {
-            return "Channel: " + channel + ", Datarate: " + dataRate;
-        }
-    }
 
     /**
      * Create a new link using the Crazyradio.
