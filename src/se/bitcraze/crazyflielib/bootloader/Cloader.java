@@ -14,6 +14,7 @@ import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crazyradio.RadioAck;
+import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket.Header;
@@ -311,8 +312,7 @@ public class Cloader {
             mLogger.debug("Trying to set new radio address...");
 
             //TODO: deal with other driver implementations
-//            CrazyradioLink crazyRadio = ((RadioDriver) this.mDriver).getRadio();
-            CrazyradioLink crazyRadio = null;
+            CrazyradioLink crazyRadio = ((RadioDriver) this.mDriver).getRadio();
 
             if (crazyRadio != null) {
                 // set standard address in Crazyradio

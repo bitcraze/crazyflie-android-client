@@ -91,6 +91,8 @@ public class CrazyradioLink extends AbstractLink {
     private final BlockingDeque<CrtpPacket> mSendQueue;
 
     private IUsbLink mUsbLink;
+    private float mVersion; // Crazyradio firmware version
+    private String mSerialNumber; // Crazyradio serial number
     private int mArc;
 
     /**
@@ -101,6 +103,9 @@ public class CrazyradioLink extends AbstractLink {
     public CrazyradioLink(IUsbLink usbLink) {
         this.mUsbLink = usbLink;
         this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
+
+        this.mVersion = usbLink.getFirmwareVersion();
+        this.mSerialNumber = usbLink.getSerialNumber();
     }
 
     /**
@@ -360,6 +365,14 @@ public class CrazyradioLink extends AbstractLink {
         }
         mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARC, arc, 0, null);
         this.mArc = arc;
+    }
+
+    public float getVersion() {
+        return this.mVersion;
+    }
+
+    public String getSerialNumber() {
+        return this.mSerialNumber;
     }
 
     /**
