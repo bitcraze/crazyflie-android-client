@@ -233,7 +233,7 @@ public class CrazyradioLink extends AbstractLink {
     }
 
     @Override
-    public void send(CrtpPacket p) {
+    public void sendPacket(CrtpPacket p) {
         this.mSendQueue.addLast(p);
     }
 

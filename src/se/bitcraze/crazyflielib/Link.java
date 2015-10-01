@@ -55,7 +55,7 @@ public interface Link {
      *
      * @param p the packet of data to send.
      */
-    public void send(CrtpPacket p);
+    public void sendPacket(CrtpPacket p);
 
     /**
      * Add a listener to receive notifications about the connection status.

@@ -509,7 +509,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     while (mLink != null) {
-                        mLink.send(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                        mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20, 0);

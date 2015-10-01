@@ -212,7 +212,7 @@ public class BleLink extends AbstractLink {
 
 	int ctr = 0;
 	@Override
-	public void send(CrtpPacket packet) {
+	public void sendPacket(CrtpPacket packet) {
 
 		// FIXME: Skipping half of the commander packets to avoid queuing up packets on slow BLE
 		if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0))
