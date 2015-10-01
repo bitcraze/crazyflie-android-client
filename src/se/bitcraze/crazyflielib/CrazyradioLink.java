@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.RadioAck;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 public class CrazyradioLink extends AbstractLink {
@@ -80,11 +81,17 @@ public class CrazyradioLink extends AbstractLink {
     private static final int REQUEST_GET_SCAN_CHANNELS = 0x21;
     private static final int REQUEST_LAUNCH_BOOTLOADER = 0xFF;
 
+    // configuration constants
+    public final static int DR_250KPS = 0;
+    public final static int DR_1MPS = 1;
+    public final static int DR_2MPS = 2;
+
     private Thread mRadioLinkThread;
 
     private final BlockingDeque<CrtpPacket> mSendQueue;
 
     private IUsbLink mUsbLink;
+    private int mArc;
 
     /**
      * Create a new link using the Crazyradio.
@@ -179,6 +186,17 @@ public class CrazyradioLink extends AbstractLink {
         return result;
     }
 
+    public boolean scanSelected(int channel, int datarate, byte[] packet) {
+        setDataRate(datarate);
+        return scanSelected(channel, packet);
+    }
+
+    private boolean scanSelected(int channel, byte[] packet) {
+        setRadioChannel(channel);
+        RadioAck status = sendPacket(packet);
+        return (status != null && status.isAck());
+    }
+
     /**
      * Connect to the Crazyflie.
      *
@@ -212,6 +230,10 @@ public class CrazyradioLink extends AbstractLink {
             mRadioLinkThread = null;
         }
 
+        if(mUsbLink != null) {
+            mUsbLink.releaseInterface();
+        }
+
         notifyDisconnected();
     }
 
@@ -223,6 +245,35 @@ public class CrazyradioLink extends AbstractLink {
     @Override
     public void sendPacket(CrtpPacket p) {
         this.mSendQueue.addLast(p);
+    }
+
+    /**
+     * Send a packet and receive the ack from the radio dongle.
+     * The ack contains information about the packet transmission
+     * and a data payload if the ack packet contained any
+     *
+     * @param dataOut
+     */
+    public RadioAck sendPacket(byte[] dataOut) {
+        RadioAck ackIn = null;
+        byte[] data = new byte[33]; // 33?
+
+        if (mUsbLink == null || !mUsbLink.isUsbConnected()) {
+            return null;
+        }
+        mUsbLink.sendBulkTransfer(dataOut, data);
+
+        // if data is not None:
+        ackIn = new RadioAck();
+        if (data[0] != 0) {
+            ackIn.setAck((data[0] & 0x01) != 0);
+            ackIn.setPowerDet((data[0] & 0x02) != 0);
+            ackIn.setRetry(data[0] >> 4);
+            ackIn.setData(Arrays.copyOfRange(data, 1, data.length));
+        } else {
+            ackIn.setRetry(mArc);
+        }
+        return ackIn;
     }
 
     /**
@@ -300,14 +351,15 @@ public class CrazyradioLink extends AbstractLink {
      * Set how often the radio will retry a transfer if the ACK has not been
      * received.
      *
-     * @param count the number of retries.
+     * @param arc the number of retries.
      * @throws IllegalArgumentException if the number of retries is not in range 0-15.
      */
-    public void setAutoRetryARC(int count) {
-        if (count < 0 || count > 15) {
+    public void setAutoRetryARC(int arc) {
+        if (arc < 0 || arc > 15) {
             throw new IllegalArgumentException("count must be in range 0-15");
         }
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARC, count, 0, null);
+        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARC, arc, 0, null);
+        this.mArc = arc;
     }
 
     /**
@@ -373,12 +425,6 @@ public class CrazyradioLink extends AbstractLink {
     public CrtpPacket receivePacket(int wait) {
         // TODO Auto-generated method stub
         return null;
-    }
-
-    @Override
-    public boolean scanSelected(int channel, int datarate, byte[] packet) {
-        // TODO Auto-generated method stub
-        return false;
     }
 
 }
