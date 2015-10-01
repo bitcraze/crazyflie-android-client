@@ -394,7 +394,7 @@ public class MainActivity extends Activity {
         try {
             // create link
             try {
-                mLink = new CrazyradioLink(new UsbLinkAndroid(this), new ConnectionData(radioChannel, radioDatarate));
+                mLink = new CrazyradioLink(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
@@ -486,9 +486,8 @@ public class MainActivity extends Activity {
                 }
             });
 
-            // connect and start thread to periodically send commands containing
-            // the user input
-            mLink.connect();
+            // connect and start thread to periodically send commands containing the user input
+            mLink.connect(new ConnectionData(radioChannel, radioDatarate));
 //            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
 //
 //                @Override
@@ -512,7 +511,7 @@ public class MainActivity extends Activity {
                         mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
-                            Thread.sleep(20, 0);
+                            Thread.sleep(20);
                         } catch (InterruptedException e) {
                             break;
                         }

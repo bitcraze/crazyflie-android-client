@@ -5,6 +5,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -151,7 +152,8 @@ public class BleLink extends AbstractLink {
 	};
 
 	@Override
-	public void connect() {
+	public void connect(ConnectionData connectionData) {
+	    // TODO: connectionData is unused until BLE can address specific quadcopter
 		if (state != State.IDLE) {
 			throw new IllegalArgumentException("Connection already started");
 		}

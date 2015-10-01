@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyflielib;
 
+import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 /**
@@ -35,8 +36,10 @@ import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 public interface Link {
     /**
      * Connect to the Crazyflie.
+     *
+     * @param connectionData
      */
-    public void connect();
+    public void connect(ConnectionData connectionData);
 
     /**
      * Disconnect from the Crazyflie.
