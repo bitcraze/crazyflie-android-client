@@ -39,9 +39,9 @@ import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
-import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
+import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
-    private Link mLink;
+    private CrtpDriver mLink;
 
     private SharedPreferences mPreferences;
 
@@ -529,7 +529,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    public Link getCrazyflieLink(){
+    public CrtpDriver getCrazyflieLink(){
         return mLink;
     }
 

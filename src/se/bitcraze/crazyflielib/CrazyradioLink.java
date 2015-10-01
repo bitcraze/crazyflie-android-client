@@ -369,4 +369,16 @@ public class CrazyradioLink extends AbstractLink {
         }
     };
 
+    @Override
+    public CrtpPacket receivePacket(int wait) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean scanSelected(int channel, int datarate, byte[] packet) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }
