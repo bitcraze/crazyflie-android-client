@@ -33,54 +33,54 @@ package se.bitcraze.crazyflielib;
 public interface ConnectionListener {
 
     /**
-     * Called when a request has been made to the library to establish a connection.
+     * Callback when the user requests a connection
      *
-     * @param l the link where the request has been made
+     * @param connectionInfo
      */
-    public void connectionInitiated(Link l);
+    public void connectionRequested(String connectionInfo);
 
     /**
      * Callback when the first packet in a new link is received
      *
-     * @param l the link where the request has been made
+     * @param connectionInfo
      */
-    public void connected(Link l);
+    public void connected(String connectionInfo);
 
     /**
-     * Called when the connection has been established and the log/param TOC has been downloaded.
+     * Callback when a Crazyflie has been connected and the TOCs have been downloaded.
      *
-     * @param l the link where the connection has been established
+     * @param connectionInfo
      */
-    public void connectionSetupFinished(Link l);
+    public void setupFinished(String connectionInfo);
 
     /**
-     * Called when the connection has been closed (both when requested and not requested to close).
+     * Callback when connection initial connection fails (i.e no Crazyflie at the specified address)
      *
-     * @param l the link which was disconnected
+     * @param connectionInfo
+     * @param msg
      */
-    public void disconnected(Link l);
+    public void connectionFailed(String connectionInfo, String msg);
 
     /**
-     * Called when the connection has been closed (without being requested to be closed).
+     * Callback when disconnected after a connection has been made (i.e Crazyflie moves out of range)
      *
-     * @param l the link where the connection has been closed
+     * @param connectionInfo
+     * @param msg
      */
-    public void connectionLost(Link l);
+    public void connectionLost(String connectionInfo, String msg);
 
     /**
-     * Called if the connection fails when it is being established (between the
-     * request and connection setup finished).
+     * Callback when the Crazyflie is disconnected (called in all cases)
      *
-     * @param l the link where the connection has failed
+     * @param connectionInfo
      */
-    public void connectionFailed(Link l);
+    public void disconnected(String connectionInfo);
 
     /**
-     * Called periodically to report link status. The quantity of updates is at
-     * the discretion of the link implementation.
+     * Called when the link driver updates the link quality measurement
      *
-     * @param l the link which reports the link status.
-     * @param quality the quality in range from 0-100. 0 means bad quality, 100 is best quality.
+     * @param percent
      */
-    public void linkQualityUpdate(Link l, int quality);
+    public void linkQualityUpdated(int percent);
+
 }

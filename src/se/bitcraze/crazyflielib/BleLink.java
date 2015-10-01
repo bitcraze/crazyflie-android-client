@@ -65,7 +65,7 @@ public class BleLink extends AbstractLink {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				mConnected = false;
 				state = State.IDLE;
-				notifyConnectionLost();
+				notifyConnectionLost("BLE connection lost");
 			}
 		}
 
@@ -178,12 +178,12 @@ public class BleLink extends AbstractLink {
 			public void run() {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				state = State.IDLE;
-				notifyConnectionFailed();
+				notifyConnectionFailed("BLE connection timeout");
 			}
 		}, 10000);
 
 		state = State.CONNECTING;
-		notifyConnectionInitiated();
+		notifyConnectionRequested();
 	}
 
 	@Override
