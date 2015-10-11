@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">Crazyflie Client</string>
@@ -7,7 +8,6 @@
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_preferences">Preferences</string>
-
     <string name="preferences_title">Crazyflie Client settings</string>
 
     <!-- Connection settings -->
@@ -24,7 +24,6 @@
     <string name="select_connection_dialog_title">Select Connection</string>
     <string name="preferences_radio_stats">Radio stats</string>
     <string name="preferences_radio_stats_summary">Not attached</string>
-
     <string name="preferences_category_bluetooth">Bluetooth Settings</string>
     <string name="preferences_ble_latency_fix">Bluetooth latency workaround</string>
     <string name="preferences_ble_latency_fix_summary">Check if you experience big latency (seconds of latency).</string>
@@ -57,21 +56,17 @@
 
     <!-- Controller settings -->
     <string name="preferences_controller_title">Controller settings</string>
-
     <string name="preferences_controller_defaultValue">0</string>
     <string name="preferences_controller">Controller</string>
     <string name="preferences_controller_summary">Choose input controller</string>
-
     <string name="preferences_use_gyro_bool_summary_on">Use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_summary_off">Do not use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_title">Use gyroscope sensors</string>
     <string name="preferences_touch_thrust_full_travel">Use full travel for thrust</string>
     <string name="preferences_touch_thrust_full_travel_summary_on">On the touch controller, use the full travel from bottom to top to control thrust</string>
     <string name="preferences_touch_thrust_full_travel_summary_off">On the touch controller, use the travel from center to top to control thrust</string>
-
     <string name="preferences_joystick_size_title">Virtual joystick size (%)</string>
     <string name="preferences_joystick_size_defaultValue">80</string>
-
     <string name="preferences_btn_title">Gamepad axis and button mapping</string>
     <string name="preferences_category_axes">Axes</string>
     <string name="preferences_right_analog_x_axis_title">Right analog X axis</string>
@@ -110,6 +105,9 @@
     <string name="preferences_screen_rotation_lock_summary"></string>
     <string name="preferences_immersive_mode_title">Full screen mode</string>
     <string name="preferences_immersive_mode_summary">Requires Android 4.4</string>
+
+    <string name="preferences_bootload_summary">Bootloader summary</string>
+    <string name="preferences_bootload_title">Bootloader</string>
     
     <!-- FlightDataView -->
     <string name="pitch">Pitch: %3.0f</string>
@@ -117,5 +115,13 @@
     <string name="thrust">Thrust: % 3.0f%%</string>
     <string name="yaw">Yaw: % 3.0f</string>
     <string name="linkQuality">Link: %1$s</string>
+
+    <!-- Bootloader screen -->
+    <string name="title_activity_bootloader">BootloaderActivity</string>
+    <string name="bootloader_title">Bootloader:</string>
+    <string name="action_settings">Settings</string>
+    <string name="bootloader_update_check">Check for updates</string>
+    <string name="bootloader_flash_firmware">Flash firmware</string>
+    <string name="statusLine">Status</string>
 
 </resources>
