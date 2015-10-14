@@ -48,7 +48,7 @@
                 android:value="se.bitcraze.crazyfliecontrol2.MainActivity" />
         </activity>
         <activity
-            android:name="se.bitcraze.crazyfliecontrol2.BootloaderActivity"
+            android:name="se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity"
             android:theme="@android:style/Theme.Holo.Light" >
             android:label="@string/title_activity_bootloader"
             android:parentActivityName="se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity" >

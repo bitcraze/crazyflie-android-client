@@ -1,4 +1,4 @@
-package se.bitcraze.crazyfliecontrol2;
+package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +18,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import se.bitcraze.crazyfliecontrol2.BootloaderActivity.Firmware.Asset;
+import se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity.Firmware.Asset;
+import se.bitcraze.crazyfliecontrol2.R;
+import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;

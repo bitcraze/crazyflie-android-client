@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="se.bitcraze.crazyfliecontrol2.BootloaderActivity" >
+    tools:context="se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity" >
 
     <TextView
         android:id="@+id/bootloader_title"
