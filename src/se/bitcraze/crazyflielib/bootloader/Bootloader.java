@@ -175,7 +175,7 @@ public class Bootloader {
     }
 
     public void close() {
-        mLogger.debug("Bootloader close");
+        mLogger.debug("Bootloader close()");
         if (this.mCload != null) {
             this.mCload.close();
         }

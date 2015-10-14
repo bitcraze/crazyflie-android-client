@@ -75,6 +75,11 @@ public class RadioDriver extends AbstractLink{
      */
     public void connect(ConnectionData connectionData) {
         if(mCradio == null) {
+            try {
+                mUsbInterface.initDevice();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             this.mCradio = new CrazyradioLink(mUsbInterface);
         } else {
             mLogger.error("Crazyradio already open");
@@ -171,7 +176,7 @@ public class RadioDriver extends AbstractLink{
      */
     @Override
     public void disconnect() {
-        mLogger.debug("disconnect");
+        mLogger.debug("RadioDriver disconnect()");
         // Stop the comm thread
         if (this.mRadioDriverThread != null) {
             this.mRadioDriverThread.interrupt();

@@ -1,5 +1,7 @@
 package se.bitcraze.crazyflielib;
 
+import java.io.IOException;
+
 public interface IUsbLink {
 
     /**
@@ -51,4 +53,6 @@ public interface IUsbLink {
      * @return serial number
      */
     public String getSerialNumber();
+
+    public void initDevice() throws IOException;
 }

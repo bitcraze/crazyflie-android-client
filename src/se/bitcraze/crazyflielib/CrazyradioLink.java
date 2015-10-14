@@ -229,7 +229,7 @@ public class CrazyradioLink extends AbstractLink {
 
     @Override
     public void disconnect() {
-        mLogger.debug("disconnect()");
+        mLogger.debug("CrazyradioLink disconnect()");
         if (mRadioLinkThread != null) {
             mRadioLinkThread.interrupt();
             mRadioLinkThread = null;

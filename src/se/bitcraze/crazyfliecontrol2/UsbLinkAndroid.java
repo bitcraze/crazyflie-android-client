@@ -47,7 +47,7 @@ public class UsbLinkAndroid implements IUsbLink{
      *
      * @throws IOException if the device cannot be opened
      */
-    private void initDevice() throws IOException {
+    public void initDevice() throws IOException {
         Log.d(LOG_TAG, "setDevice " + this.mUsbDevice);
         // find interface
         if (this.mUsbDevice.getInterfaceCount() != 1) {
