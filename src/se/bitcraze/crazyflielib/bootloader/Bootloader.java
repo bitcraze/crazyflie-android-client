@@ -5,6 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +30,8 @@ public class Bootloader {
 
     private Cloader mCload;
 
+    private List<BootloaderListener> mBootloaderListeners;
+
     /**
      * Init the communication class by starting to communicate with the
      * link given. clink is the link address used after resetting to the
@@ -36,6 +41,7 @@ public class Bootloader {
      */
     public Bootloader(CrtpDriver driver) {
         this.mCload = new Cloader(driver);
+        this.mBootloaderListeners = Collections.synchronizedList(new LinkedList<BootloaderListener>());
     }
 
     public Cloader getCloader() {
@@ -122,14 +128,14 @@ public class Bootloader {
         if (fileData.length > 0) {
             internalFlash(target, fileData, "CF1 firmware", target.getStartPage());
         } else {
-            System.out.println("File size is 0.");
+            mLogger.error("File size is 0.");
         }
     }
 
     //TODO: improve
     private byte[] readFile(File file) {
         byte[] fileData = new byte[(int) file.length()];
-        System.out.println("File size: " +  file.length());
+        mLogger.debug("File size: " +  file.length());
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(file.getAbsoluteFile(), "r");
@@ -181,8 +187,9 @@ public class Bootloader {
         Target t_data = target;
         int pageSize = t_data.getPageSize();
 
-        mLogger.info("Flashing to " + TargetTypes.toString(t_data.getId()) + " (" + type + ")");
-        System.out.println("Flashing to " + TargetTypes.toString(t_data.getId()) + " (" + type + ")");
+        String flashingTo = "Flashing to " + TargetTypes.toString(t_data.getId()) + " (" + type + ")";
+        mLogger.info(flashingTo);
+        notifyUpdateStatus(flashingTo);
 
         //if len(image) > ((t_data.flash_pages - start_page) * t_data.page_size):
         if (image.length > ((t_data.getFlashPages() - startPage) * pageSize)) {
@@ -209,18 +216,17 @@ public class Bootloader {
             this.mCload.uploadBuffer(t_data.getId(), bufferCounter, 0, buffer);
 
             bufferCounter++;
-            System.out.print(".");
 
             // Flash when the complete buffers are full
             if (bufferCounter >= t_data.getBufferPages()) {
-                mLogger.info("BufferCounter: " + bufferCounter);
-                mLogger.info("Buffers full. Flashing page " + i + "...");
-                System.out.println("\nBuffers full. Flashing page " + i + "...");
+                String buffersFull = "Buffers full. Flashing page " + (i+1) + "...";
+                mLogger.info(buffersFull);
+                notifyUpdateStatus(buffersFull);
+                notifyUpdateProgress(i+1);
                 if (!this.mCload.writeFlash(t_data.getId(), 0, startPage + i - (bufferCounter - 1), bufferCounter)) {
-                    mLogger.error("Error during flash operation (" + this.mCload.getErrorMessage() + "). Maybe wrong radio link?");
+                    handleFlashError();
                     //raise Exception()
                     return;
-
                 }
                 bufferCounter = 0;
             }
@@ -228,14 +234,56 @@ public class Bootloader {
         if (bufferCounter > 0) {
             mLogger.info("BufferCounter: " + bufferCounter);
             if (!this.mCload.writeFlash(t_data.getId(), 0, (startPage + ((image.length - 1) / pageSize)) - (bufferCounter - 1), bufferCounter)) {
-                mLogger.error("Error during flash operation (" + this.mCload.getErrorMessage() + "). Maybe wrong radio link?");
-                System.err.println("Error during flash operation (" + this.mCload.getErrorMessage() + "). Maybe wrong radio link?");
+                handleFlashError();
                 //raise Exception()
                 return;
             }
         }
         mLogger.info("Flashing done!");
-        System.out.println("Flashing done!");
+        notifyUpdateStatus("Flashing done!");
     }
 
+    private void handleFlashError() {
+        String errorMessage = "Error during flash operation (" + this.mCload.getErrorMessage() + "). Maybe wrong radio link?";
+        mLogger.error(errorMessage);
+        notifyUpdateError(errorMessage);
+    }
+
+
+
+    public void addBootloaderListener(BootloaderListener bl) {
+        this.mBootloaderListeners.add(bl);
+    }
+
+    public void removeBootloaderListener(BootloaderListener bl) {
+        this.mBootloaderListeners.remove(bl);
+    }
+
+    public void notifyUpdateProgress(int progress) {
+        for (BootloaderListener bootloaderListener : mBootloaderListeners) {
+            bootloaderListener.updateProgress(progress);
+        }
+    }
+
+    public void notifyUpdateStatus(String status) {
+        for (BootloaderListener bootloaderListener : mBootloaderListeners) {
+            bootloaderListener.updateStatus(status);
+        }
+    }
+
+    public void notifyUpdateError(String error) {
+        for (BootloaderListener bootloaderListener : mBootloaderListeners) {
+            bootloaderListener.updateError(error);
+        }
+    }
+
+    public interface BootloaderListener {
+
+        public void updateProgress(int progress);
+
+        public void updateStatus(String status);
+
+        public void updateError(String error);
+
+    }
 }
