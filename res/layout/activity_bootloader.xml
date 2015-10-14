@@ -8,43 +8,59 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="se.bitcraze.crazyfliecontrol2.BootloaderActivity" >
 
+    <TextView
+        android:id="@+id/bootloader_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="false"
+        android:text="@string/bootloader_title" />
+
     <LinearLayout
         android:id="@+id/linearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentTop="false"
+        android:layout_below="@id/bootloader_title"
         android:orientation="horizontal" >
-        
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bootloader_title" />
-    
+
          <Button
+            android:id="@+id/bootloader_checkUpdate"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:text="@string/bootloader_update_check"
+            android:text="@string/bootloader_updateCheck"
             android:onClick="checkForFirmwareUpdate" />
 
          <Button
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="@string/bootloader_flash_firmware"
-            android:onClick="flashFirmware" />
+             android:id="@+id/bootloader_flashFirmware"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:enabled="false"
+             android:onClick="flashFirmware"
+             android:text="@string/bootloader_flashFirmware" />
 
     </LinearLayout>
     
     <Spinner
-        android:id="@+id/firmwareSpinner"
+        android:id="@+id/bootloader_firmwareSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout1" />
+        android:layout_below="@+id/linearLayout1"
+        android:visibility="invisible" />
 
     <TextView
-        android:id="@+id/statusLine"
+        android:id="@+id/bootloader_statusLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/statusLine"
+        android:text="@string/bootloader_statusLine"
         android:layout_alignParentBottom="true" />
+
+    <ProgressBar
+        android:id="@+id/bootloader_progressBar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bootloader_statusLine"
+        android:paddingBottom="5dp" />
+
 
 </RelativeLayout>

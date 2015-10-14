@@ -1,6 +1,7 @@
 package se.bitcraze.crazyfliecontrol2;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,18 +19,28 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.bitcraze.crazyfliecontrol2.BootloaderActivity.Firmware.Asset;
+import se.bitcraze.crazyflielib.bootloader.Bootloader;
+import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
+import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
+import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,33 +48,45 @@ import android.widget.Toast;
 public class BootloaderActivity extends Activity {
 
     private static final String LOG_TAG = "Bootloader";
-    private TextView statusLine;
-    private Spinner firmwareSpinner;
+    private Button mCheckUpdateButton;
+    private Button mFlashFirmwareButton;
+    private Spinner mFirmwareSpinner;
+    private ProgressBar mProgressBar;
+    private TextView mStatusLineTextView;
+
+    private Firmware mSelectedFirmware = null;
+    private String mDownloadDirectory = "CrazyflieControl";
+
+    private List<Firmware> mFirmwares = new ArrayList<Firmware>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bootloader);
-        statusLine = (TextView) findViewById(R.id.statusLine);
-        firmwareSpinner = (Spinner) findViewById(R.id.firmwareSpinner);
+        mCheckUpdateButton = (Button) findViewById(R.id.bootloader_checkUpdate);
+        mFlashFirmwareButton = (Button) findViewById(R.id.bootloader_flashFirmware);
+        mFirmwareSpinner = (Spinner) findViewById(R.id.bootloader_firmwareSpinner);
+        mProgressBar = (ProgressBar) findViewById(R.id.bootloader_progressBar);
+        mStatusLineTextView = (TextView) findViewById(R.id.bootloader_statusLine);
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
     }
+
 
     public void checkForFirmwareUpdate(View view) {
         String releaseURL = "https://api.github.com/repos/bitcraze/crazyflie-firmware/releases";
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            statusLine.setText("Status: Checking for updates...");
+            mStatusLineTextView.setText("Status: Checking for updates...");
+            mCheckUpdateButton.setEnabled(false);
             new DownloadWebpageTask().execute(releaseURL);
         } else {
-            statusLine.setText("Status: No internet connection available.");
+            mStatusLineTextView.setText("Status: No internet connection available.");
         }
     }
 
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
-        List<Firmware> firmwares = new ArrayList<Firmware>();
 
         @Override
         protected String doInBackground(String... urls) {
@@ -71,9 +94,9 @@ public class BootloaderActivity extends Activity {
             // params comes from the execute() call: params[0] is the url.
             try {
                 String input = downloadUrl(urls[0]);
-                firmwares = parseJson(input);
+                mFirmwares = parseJson(input);
 
-                return "Status: Found " + firmwares.size() + " firmwares.";
+                return "Status: Found " + mFirmwares.size() + " firmwares.";
             } catch (IOException e) {
                 return "Unable to retrieve web page. URL may be invalid.";
             } catch (JSONException e) {
@@ -83,25 +106,31 @@ public class BootloaderActivity extends Activity {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            if (!firmwares.isEmpty()) {
-                ArrayAdapter<Firmware> dataAdapter = new ArrayAdapter<BootloaderActivity.Firmware>(BootloaderActivity.this, android.R.layout.simple_spinner_item, firmwares);
+            mCheckUpdateButton.setEnabled(true);
+            if (!mFirmwares.isEmpty()) {
+                mFirmwareSpinner.setVisibility(View.VISIBLE);
+                ArrayAdapter<Firmware> dataAdapter = new ArrayAdapter<BootloaderActivity.Firmware>(BootloaderActivity.this, android.R.layout.simple_spinner_item, mFirmwares);
                 dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                firmwareSpinner.setAdapter(dataAdapter);
-                firmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+                mFirmwareSpinner.setAdapter(dataAdapter);
+                mFirmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        // TODO Auto-generated method stub
+                        Firmware firmware = (Firmware) mFirmwareSpinner.getSelectedItem();
+                        mSelectedFirmware = firmware;
+                        mFlashFirmwareButton.setEnabled(true);
                     }
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-
+                        mFlashFirmwareButton.setEnabled(false);
                     }
 
                 });
+            } else {
+                //TODO
             }
-            statusLine.setText(result);
+            mStatusLineTextView.setText(result);
        }
     }
 
@@ -249,6 +278,165 @@ public class BootloaderActivity extends Activity {
 
 
     public void flashFirmware(View view) {
+        //TODO: enable wakelock
+
+        // disable buttons and spinner
+        mCheckUpdateButton.setEnabled(false);
+        mFlashFirmwareButton.setEnabled(false);
+        mFirmwareSpinner.setEnabled(false);
+
+        mStatusLineTextView.setText("Downloading firmware...");
+
+        if (this.mSelectedFirmware != null && mSelectedFirmware.getAssets().size() > 0) {
+            for (Asset asset : this.mSelectedFirmware.getAssets()) {
+                //check if file is already downloaded
+                if (isFileAlreadyDownloaded(asset)) {
+                    Log.d(LOG_TAG, "File " + asset.getName() + " already downloaded.");
+                } else {
+                    String browserDownloadUrl = asset.getBrowserDownloadUrl();
+                    downloadFile(browserDownloadUrl, asset.getName());
+                }
+            }
+        } else {
+            mStatusLineTextView.setText("Selected firmware does not have assets.");
+            return;
+        }
+
         Toast.makeText(this, "Flashing firmware...", Toast.LENGTH_SHORT).show();
+
+        new FlashFirmwareTask().execute();
+    }
+
+    private boolean isFileAlreadyDownloaded (Asset asset) {
+        int assetSize = asset.getSize();
+        File sdcard = Environment.getExternalStorageDirectory();
+        File firmwareFile = new File(sdcard, mDownloadDirectory + "/" + asset.getName());
+        return firmwareFile.exists() && firmwareFile.length() == assetSize;
+    }
+
+    public void downloadFile (String url, String fileName) {
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDescription("Some description");
+        request.setTitle(fileName);
+        // in order for this if to run, you must use the android 3.2 to compile your app
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        }
+        request.setDestinationInExternalPublicDir(mDownloadDirectory, fileName);
+
+        // get download service and enqueue file
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(request);
+    }
+
+    private class FlashFirmwareTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            Bootloader bootloader = null;
+            try {
+                bootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
+
+                bootloader.addBootloaderListener(new BootloaderListener() {
+
+                    @Override
+                    public void updateStatus(String status) {
+                        publishProgress(new String[]{status, null, null});
+                        Log.d(LOG_TAG, "Status: " + status);
+                    }
+
+                    @Override
+                    public void updateProgress(int progress) {
+                        publishProgress(new String[]{null, "" + progress, null});
+                        Log.d(LOG_TAG, "Progress: " + progress);
+                    }
+
+                    @Override
+                    public void updateError(String error) {
+                        publishProgress(new String[]{null, null, error});
+                        Log.d(LOG_TAG, "Error: " + error);
+                    }
+                });
+
+                //mDetails.setText("Restart the Crazyflie you want to bootload in the next 10 seconds ...");
+                if (bootloader.startBootloader(false)) {
+
+                    //TODO: externalize
+                    int protocolVersion = bootloader.getProtocolVersion();
+                    boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
+                                        protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
+
+                    publishProgress(new String[]{"Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".", null, null});
+                    Log.d(LOG_TAG, "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".");
+
+                    //TODO: deal with Zip files
+                    String fileName = null;
+                    if (mSelectedFirmware != null && mSelectedFirmware.getAssets().size() > 0) {
+                        for (Asset asset : mSelectedFirmware.getAssets()) {
+                            if (cfType2 && "cf2".equals(asset.getType())) {
+                                fileName = asset.getName();
+                                break;
+                            } else if (!cfType2 && "cf1".equals(asset.getType())) {
+                                fileName = asset.getName();
+                            }
+                        }
+                    }
+
+                    File sdcard = Environment.getExternalStorageDirectory();
+                    File firmwareFile = new File(sdcard, mDownloadDirectory + "/" + fileName);
+                    if (firmwareFile == null || !firmwareFile.exists()) {
+                        return "Problems with downloaded firmware files.";
+                    }
+                    long startTime = System.currentTimeMillis();
+//                    bootloader.flash(firmwareFile, TargetTypes.STM32);
+                    String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
+                    Log.d(LOG_TAG, flashTime);
+                    bootloader.resetToFirmware();
+                    return flashTime;
+                } else {
+                    return "Bootloader problem.";
+                }
+            } catch (IOException e) {
+                return "Bootloader problem: " + e.getMessage();
+            } catch (IllegalArgumentException iae) {
+                return "Bootloader problem: " + iae.getMessage();
+            } finally {
+                if (bootloader != null) {
+                    bootloader.close();
+                }
+            }
+        }
+
+        @Override
+        protected void onProgressUpdate(String... progress) {
+            if (progress[0] != null) {
+                mStatusLineTextView.setText("Status: " + progress[0]);
+            } else if (progress[1] != null) {
+                mProgressBar.setProgress(Integer.parseInt(progress[1]));
+            } else if (progress[2] != null) {
+                mStatusLineTextView.setText("Status: " + progress[2]);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mStatusLineTextView.setText("Status: " + result);
+            mCheckUpdateButton.setEnabled(true);
+            mFlashFirmwareButton.setEnabled(true);
+            mFirmwareSpinner.setEnabled(true);
+        }
+    }
+
+    /**
+     * @param context used to check the device version and DownloadManager information
+     * @return true if the download manager is available
+     */
+    public static boolean isDownloadManagerAvailable(Context context) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            return true;
+        }
+        return false;
     }
 }

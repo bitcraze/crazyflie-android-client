@@ -119,9 +119,8 @@
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>
     <string name="bootloader_title">Bootloader:</string>
-    <string name="action_settings">Settings</string>
-    <string name="bootloader_update_check">Check for updates</string>
-    <string name="bootloader_flash_firmware">Flash firmware</string>
-    <string name="statusLine">Status</string>
+    <string name="bootloader_updateCheck">Check for updates</string>
+    <string name="bootloader_flashFirmware">Flash firmware</string>
+    <string name="bootloader_statusLine">Status</string>
 
 </resources>
