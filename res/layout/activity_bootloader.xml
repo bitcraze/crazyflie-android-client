@@ -44,8 +44,7 @@
         android:id="@+id/bootloader_firmwareSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout1"
-        android:visibility="invisible" />
+        android:layout_below="@+id/linearLayout1" />
 
     <TextView
         android:id="@+id/bootloader_statusLine"

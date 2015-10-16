@@ -163,7 +163,12 @@ public class FirmwareDownloader {
                     firmware.addAsset(asset);
                 }
             }
-            firmwares.add(firmware);
+            // Filter out firmwares without assets
+            if (firmware.getAssets().size() > 0) {
+                firmwares.add(firmware);
+            } else {
+                Log.d(LOG_TAG, "Firmware " + tagName + " was filtered out, because it has no assets.");
+            }
         }
         return firmwares;
     }

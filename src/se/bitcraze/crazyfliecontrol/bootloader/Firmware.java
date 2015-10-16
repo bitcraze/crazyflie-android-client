@@ -1,6 +1,9 @@
 package se.bitcraze.crazyfliecontrol.bootloader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Firmware {
@@ -11,13 +14,22 @@ public class Firmware {
 
     private List<Asset> mAssets = new ArrayList<Asset>();
 
+    private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
     public Firmware() {
     }
 
     public Firmware(String tagName, String name, String createdAt) {
         this.mTagName = tagName;
         this.mName = name;
-        this.mCreatedAt = createdAt;
+
+        try {
+            Date date = inputFormatter.parse(createdAt);
+            this.mCreatedAt = outputFormatter.format(date);
+        } catch (ParseException e) {
+            this.mCreatedAt = createdAt;
+        }
     }
 
     public String getTagName() {

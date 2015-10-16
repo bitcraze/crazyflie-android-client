@@ -71,7 +71,6 @@ public class BootloaderActivity extends Activity {
     public void updateFirmwareSpinner(List<Firmware> firmwares) {
         mCheckUpdateButton.setEnabled(true);
         if (!firmwares.isEmpty()) {
-            mFirmwareSpinner.setVisibility(View.VISIBLE);
             ArrayAdapter<Firmware> dataAdapter = new ArrayAdapter<Firmware>(BootloaderActivity.this, android.R.layout.simple_spinner_item, firmwares);
             dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             mFirmwareSpinner.setAdapter(dataAdapter);
