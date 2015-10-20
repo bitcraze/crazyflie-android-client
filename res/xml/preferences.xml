@@ -38,16 +38,6 @@
                 android:key="pref_radio_stats"
                 android:summary="@string/preferences_radio_stats_summary"
                 android:title="@string/preferences_radio_stats" />
-            <Preference
-                android:key="pref_bootload"
-                android:summary="@string/preferences_bootload_summary"
-                android:title="@string/preferences_bootload_title">
-
-                <intent 
-                     android:action="android.intent.action.VIEW"
-                     android:targetPackage="se.bitcraze.crazyfliecontrol2"
-                     android:targetClass="se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity"/>
-            </Preference>
 
         </PreferenceCategory>
         <PreferenceCategory android:title="@string/preferences_category_bluetooth">
@@ -262,5 +252,16 @@
             android:title="@string/preferences_immersive_mode_title"
             android:summary="@string/preferences_immersive_mode_summary" />
     </PreferenceScreen>
+
+    <Preference
+        android:key="pref_bootload"
+        android:title="@string/preferences_bootload_title">
+
+        <intent 
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="se.bitcraze.crazyfliecontrol2"
+            android:targetClass="se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity"/>
+
+    </Preference>
 
 </PreferenceScreen>

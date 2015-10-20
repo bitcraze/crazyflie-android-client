@@ -11,7 +11,9 @@ import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,7 +25,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -32,8 +34,8 @@ import android.widget.Toast;
 public class BootloaderActivity extends Activity {
 
     private static final String LOG_TAG = "Bootloader";
-    private Button mCheckUpdateButton;
-    private Button mFlashFirmwareButton;
+    private ImageButton mCheckUpdateButton;
+    private ImageButton mFlashFirmwareButton;
     private Spinner mFirmwareSpinner;
     private ProgressBar mProgressBar;
     private TextView mStatusLineTextView;
@@ -45,8 +47,8 @@ public class BootloaderActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bootloader);
-        mCheckUpdateButton = (Button) findViewById(R.id.bootloader_checkUpdate);
-        mFlashFirmwareButton = (Button) findViewById(R.id.bootloader_flashFirmware);
+        mCheckUpdateButton = (ImageButton) findViewById(R.id.bootloader_checkUpdate);
+        mFlashFirmwareButton = (ImageButton) findViewById(R.id.bootloader_flashFirmware);
         mFirmwareSpinner = (Spinner) findViewById(R.id.bootloader_firmwareSpinner);
         mProgressBar = (ProgressBar) findViewById(R.id.bootloader_progressBar);
         mStatusLineTextView = (TextView) findViewById(R.id.bootloader_statusLine);
@@ -54,6 +56,14 @@ public class BootloaderActivity extends Activity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
         mFirmwareDownloader = new FirmwareDownloader(this);
+
+        this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.unregisterReceiver(mFirmwareDownloader.onComplete);
     }
 
     public void checkForFirmwareUpdate(View view) {
@@ -157,7 +167,7 @@ public class BootloaderActivity extends Activity {
                     publishProgress(new String[]{"Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".", null, null});
                     Log.d(LOG_TAG, "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".");
 
-                    //TODO: deal with Zip files
+                    //TODO: deal with Zip files and manifest.json
                     Asset selectedAsset = null;
                     if (mSelectedFirmware != null && mSelectedFirmware.getAssets().size() > 0) {
                         for (Asset asset : mSelectedFirmware.getAssets()) {
@@ -170,7 +180,7 @@ public class BootloaderActivity extends Activity {
                         }
                     }
 
-                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(selectedAsset)) {
+                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(selectedAsset, mSelectedFirmware.getTagName())) {
                         return "Problem with downloaded firmware files.";
                     }
                     long startTime = System.currentTimeMillis();
