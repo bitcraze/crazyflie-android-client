@@ -58,7 +58,13 @@ public class Firmware {
 
     @Override
     public String toString() {
-        return mTagName + " (" + mCreatedAt + ")"; //used by spinner
+        StringBuffer sb = new StringBuffer();
+        for (Asset a : getAssets()) {
+            sb.append(a.getType());
+            sb.append(" ");
+        }
+
+        return mTagName + " (" + mCreatedAt + ") Type: " + sb.toString(); //used by spinner
     }
 
     public class Asset {
@@ -89,7 +95,7 @@ public class Firmware {
             // TODO: make this more reliable
             if (mAssetName.startsWith("cf1") || mAssetName.startsWith("Crazyflie1")) {
                 return "cf1";
-            } else if (mAssetName.startsWith("cf2") || mAssetName.startsWith("Crazyflie2")) {
+            } else if (mAssetName.startsWith("cf2") || mAssetName.startsWith("Crazyflie2") || mAssetName.startsWith("cflie2")) {
                 return "cf2";
             } else {
                 return "unknown";

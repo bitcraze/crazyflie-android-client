@@ -123,6 +123,11 @@ public class Bootloader {
     }
 
     public void flash(File file, int targetId) {
+        if (!file.exists()) {
+            mLogger.error("File " + file + " does not exist.");
+            return;
+        }
+
         Target target = this.mCload.getTargets().get(targetId);
         byte[] fileData = readFile(file);
         if (fileData.length > 0) {
