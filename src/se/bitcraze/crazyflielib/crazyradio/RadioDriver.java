@@ -281,7 +281,7 @@ public class RadioDriver extends AbstractLink{
             double waitTime = 0;
             int emptyCtr = 0;
 
-            while(mCradio != null) {
+            while(mCradio != null && !Thread.currentThread().isInterrupted()) {
                 try {
 
                     /*
