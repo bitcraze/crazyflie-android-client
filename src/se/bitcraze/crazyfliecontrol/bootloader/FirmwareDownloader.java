@@ -43,7 +43,7 @@ public class FirmwareDownloader {
 
     private static final String LOG_TAG = "FirmwareDownloader";
     private Context mContext;
-    private String mDownloadDirectory = "CrazyflieControl";
+    public final static String DOWNLOAD_DIRECTORY = "CrazyflieControl";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
     private long mDownloadReference;
     private DownloadManager mManager;
@@ -103,7 +103,7 @@ public class FirmwareDownloader {
     public boolean isFileAlreadyDownloaded (Asset asset, String tagName) {
         int assetSize = asset.getSize();
         File sdcard = Environment.getExternalStorageDirectory();
-        File firmwareFile = new File(sdcard, mDownloadDirectory + "/" + tagName + "/" + asset.getName());
+        File firmwareFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + tagName + "/" + asset.getName());
         return firmwareFile.exists() && firmwareFile.length() == assetSize;
     }
 
@@ -116,7 +116,7 @@ public class FirmwareDownloader {
             request.allowScanningByMediaScanner();
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
         }
-        request.setDestinationInExternalPublicDir(mDownloadDirectory, tagName + "/" + fileName);
+        request.setDestinationInExternalPublicDir(DOWNLOAD_DIRECTORY, tagName + "/" + fileName);
 
         // get download service and enqueue file
         mManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
