@@ -131,7 +131,7 @@ public class Bootloader {
         Target target = this.mCload.getTargets().get(targetId);
         byte[] fileData = readFile(file);
         if (fileData.length > 0) {
-            internalFlash(target, fileData, "CF1 firmware", target.getStartPage());
+            internalFlash(target, fileData, "Firmware", target.getStartPage());
         } else {
             mLogger.error("File size is 0.");
         }
