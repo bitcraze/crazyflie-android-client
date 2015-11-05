@@ -9,7 +9,6 @@ import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
-import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
@@ -191,7 +190,7 @@ public class BootloaderActivity extends Activity {
                     }
 
                     long startTime = System.currentTimeMillis();
-                    bootloader.flash(firmwareFile, TargetTypes.STM32);
+                    bootloader.flash(firmwareFile, (String[]) null);
                     String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
                     Log.d(LOG_TAG, flashTime);
                     bootloader.resetToFirmware();

@@ -1,13 +1,24 @@
 package se.bitcraze.crazyflielib.bootloader;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +28,24 @@ import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 /**
  * Bootloading utilities for the Crazyflie.
  *
  */
 //TODO: fix targetId and addr confusion
-//TODO: add flash method (for multiple targets)
 //TODO: fix warmboot
+//TODO: throw FileNotFoundException all the way to the top?
 public class Bootloader {
 
     final Logger mLogger = LoggerFactory.getLogger("Bootloader");
+
+    private static ObjectMapper mMapper = new ObjectMapper(); // can reuse, share globally
 
     private Cloader mCload;
 
@@ -119,22 +138,8 @@ public class Bootloader {
         int configPage = target.getFlashPages() - 1;
 
         //to_flash = {"target": target, "data": data, "type": "CF1 config", "start_page": config_page}
-        internalFlash(target, data, "CF1 config", configPage);
-    }
-
-    public void flash(File file, int targetId) {
-        if (!file.exists()) {
-            mLogger.error("File " + file + " does not exist.");
-            return;
-        }
-
-        Target target = this.mCload.getTargets().get(targetId);
-        byte[] fileData = readFile(file);
-        if (fileData.length > 0) {
-            internalFlash(target, fileData, "Firmware", target.getStartPage());
-        } else {
-            mLogger.error("File size is 0.");
-        }
+        FlashTarget toFlash = new FlashTarget(target, data, "CF1 config", configPage);
+        internalFlash(toFlash);
     }
 
     //TODO: improve
@@ -161,8 +166,186 @@ public class Bootloader {
         return fileData;
     }
 
-    // TODO: def flash(self, filename, targets):
+    public boolean flash(File file, String... targetNames) {
+        List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
+        if (filesToFlash.isEmpty()) {
+            mLogger.error("Found no files to flash.");
+            return false;
+        }
+        int fileCounter = 0;
+        for (FlashTarget ft : filesToFlash) {
+            internalFlash(ft, fileCounter, filesToFlash.size());
+            fileCounter++;
+        }
+        return true;
+    }
 
+    //TODO: deal with different platforms (CF1, CF2)!?
+    public List<FlashTarget> getFlashTargets(File file, String... targetNames) {
+        List<FlashTarget> filesToFlash = new ArrayList<FlashTarget>();
+
+        if (!file.exists()) {
+            mLogger.error(file + " not found.");
+            return filesToFlash;
+        }
+
+        // check if supplied targetNames are known TargetTypes, if so, continue, else return
+
+        if (isZipFile(file)) {
+            // unzip
+            unzip(file);
+
+            // read manifest.json
+            String manifestFilename = "manifest.json";
+            File basePath = new File(file.getAbsoluteFile().getParent() + "/" + getFileNameWithoutExtension(file));
+            File manifestFile = new File(basePath.getAbsolutePath() + "/" + manifestFilename);
+            if (basePath.exists() && manifestFile.exists()) {
+                Manifest mf = readManifest(manifestFile);
+                //TODO: improve error handling
+                if (mf == null) {
+                    return filesToFlash;
+                }
+                Set<String> files = mf.getFiles().keySet();
+
+                // iterate over file names in manifest.json
+                for (String fileName : files) {
+                    FirmwareDetails firmwareDetails = mf.getFiles().get(fileName);
+                    Target t = this.mCload.getTargets().get(TargetTypes.fromString(firmwareDetails.getTarget()));
+                    if (t != null) {
+                        // use path to extracted file
+                        //File flashFile = new File(file.getParent() + "/" + file.getName() + "/" + fileName);
+                        File flashFile = new File(basePath.getAbsolutePath() + "/" + fileName);
+                        FlashTarget ft = new FlashTarget(t, readFile(flashFile), firmwareDetails.getType(), t.getStartPage()); //TODO: does startPage HAVE to be an extra argument!? (it's already included in Target)
+                        // add flash target
+                        // if no target names are specified, flash everything
+                        if (targetNames.length == 0 || targetNames[0].isEmpty()) {
+                            filesToFlash.add(ft);
+                        } else {
+                            // else flash only files whose targets are contained in targetNames
+                            if (Arrays.asList(targetNames).contains(firmwareDetails.getTarget())) {
+                                filesToFlash.add(ft);
+                            }
+                        }
+                    } else {
+                        mLogger.error("No target found for " + firmwareDetails.getTarget());
+                    }
+                }
+            } else {
+                mLogger.error("Zip file " + file.getName() + " does not include a " + manifestFilename);
+            }
+        } else { // File is not a Zip file
+            // add single flash target
+            if (targetNames.length != 1) {
+                mLogger.error("Not an archive, must supply ONE target to flash.");
+            } else {
+
+//                // assume stm32 if no target name is specified and file extension is ".bin"
+//                if (targetNames[0].isEmpty() && file.getName().endsWith(".bin")) {
+//                    targetNames = new String[] {"stm32"};
+//                }
+
+                for (String tn : targetNames) {
+                    if (tn.isEmpty()) {
+                        continue;
+                    }
+                    Target target = this.mCload.getTargets().get(TargetTypes.fromString(tn));
+                    FlashTarget ft = new FlashTarget(target, readFile(file), "binary", target.getStartPage());
+                    filesToFlash.add(ft);
+                }
+            }
+        }
+        return filesToFlash;
+    }
+
+    public void unzip(File zipFile) {
+        mLogger.debug("Trying to unzip " + zipFile + "...");
+        InputStream fis = null;
+        ZipInputStream zis = null;
+        FileOutputStream fos = null;
+        String parent = zipFile.getAbsoluteFile().getParent();
+
+        try {
+            fis = new FileInputStream(zipFile);
+            zis = new ZipInputStream(new BufferedInputStream(fis));
+            ZipEntry ze;
+            while ((ze = zis.getNextEntry()) != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int count;
+                while ((count = zis.read(buffer)) != -1) {
+                    baos.write(buffer, 0, count);
+                }
+                String filename = ze.getName();
+                byte[] bytes = baos.toByteArray();
+                // write files
+                File filePath = new File(parent + "/" + getFileNameWithoutExtension(zipFile) + "/" + filename);
+                // create subdir
+                filePath.getParentFile().mkdirs();
+                fos = new FileOutputStream(filePath);
+                fos.write(bytes);
+                //check
+                if(filePath.exists() && filePath.length() > 0) {
+                    mLogger.debug(filename + " successfully extracted to " + filePath.getAbsolutePath());
+                } else {
+                    mLogger.error(filename + " was not extracted.");
+                }
+            }
+        } catch (FileNotFoundException ffe) {
+            mLogger.error(ffe.getMessage());
+        } catch (IOException ioe) {
+            mLogger.error(ioe.getMessage());
+        } finally {
+            if (zis != null) {
+                try {
+                    zis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+    public static String getFileNameWithoutExtension (File file) {
+        return file.getName().substring(0, file.getName().length()-4);
+    }
+
+    /**
+     * Basic check if a file is a Zip file
+     *
+     * @param file
+     * @return true if file is a Zip file, false otherwise
+     */
+    //TODO: how can this be improved?
+    public boolean isZipFile(File file) {
+        if (file != null && file.exists() && file.getName().endsWith(".zip")) {
+            ZipFile zf = null;
+            try {
+                zf = new ZipFile(file);
+                return zf.size() > 0;
+            } catch (ZipException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (zf != null) {
+                    try {
+                        zf.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Reset to firmware depending on protocol version
@@ -186,13 +369,18 @@ public class Bootloader {
         }
     }
 
-    // def _internal_flash(self, target, current_file_number=1, total_files=1):
-    public void internalFlash(Target target, byte[] data, String type, int startPage) {
-        byte[] image = data;
-        Target t_data = target;
-        int pageSize = t_data.getPageSize();
+    public void internalFlash(FlashTarget target) {
+        internalFlash(target, 1, 1);
+    }
 
-        String flashingTo = "Flashing to " + TargetTypes.toString(t_data.getId()) + " (" + type + ")";
+    // def _internal_flash(self, target, current_file_number=1, total_files=1):
+    public void internalFlash(FlashTarget flashTarget, int currentFileNo, int totalFiles) {
+        Target t_data = flashTarget.getTarget();
+        byte[] image = flashTarget.getData();
+        int pageSize = t_data.getPageSize();
+        int startPage = flashTarget.getStartPage();
+
+        String flashingTo = "Flashing to " + TargetTypes.toString(t_data.getId()) + " (" + flashTarget.getType() + ")";
         mLogger.info(flashingTo);
         notifyUpdateStatus(flashingTo);
 
@@ -290,5 +478,73 @@ public class Bootloader {
 
         public void updateError(String error);
 
+    }
+
+    public class FlashTarget {
+
+        private Target mTarget;
+        private byte[] mData = new byte[0];
+        private String mType = "";
+        private int mStartPage;
+
+        public FlashTarget(Target target, byte[] data, String type, int startPage) {
+            this.mTarget = target;
+            this.mData = data;
+            this.mType = type;
+            this.mStartPage = startPage;
+        }
+
+        public byte[] getData() {
+            return mData;
+        }
+
+        public Target getTarget() {
+            return mTarget;
+        }
+
+        public int getStartPage() {
+            return mStartPage;
+        }
+
+        public String getType() {
+            return mType;
+        }
+
+        @Override
+        public String toString() {
+            return "FlashTarget [target ID=" + TargetTypes.toString(mTarget.getId()) + ", data.length=" + mData.length + ", type=" + mType + ", startPage=" + mStartPage + "]";
+        }
+
+    }
+
+    public static Manifest readManifest (File file) {
+        String errorMessage = "";
+        try {
+            Manifest readValue = mMapper.readValue(file, Manifest.class);
+            return readValue;
+        } catch (JsonParseException jpe) {
+            errorMessage = jpe.getMessage();
+        } catch (JsonMappingException jme) {
+            errorMessage = jme.getMessage();
+        } catch (IOException ioe) {
+            errorMessage = ioe.getMessage();
+        }
+        LoggerFactory.getLogger("Bootloader").error("Error while parsing manifest " + file.getName() + ": " + errorMessage);
+        return null;
+    }
+
+    public static void writeManifest (String fileName, Manifest manifest) {
+        String errorMessage = "";
+        mMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        try {
+            mMapper.writeValue(new File(fileName), manifest);
+        } catch (JsonGenerationException jge) {
+            errorMessage = jge.getMessage();
+        } catch (JsonMappingException jme) {
+            errorMessage = jme.getMessage();
+        } catch (IOException ioe) {
+            errorMessage = ioe.getMessage();
+        }
+        LoggerFactory.getLogger("Bootloader").error("Could not save manifest to file " + fileName + ".\n" + errorMessage);
     }
 }

@@ -183,4 +183,7 @@ public class UsbLinkAndroid implements IUsbLink{
         return mUsbDevice != null && mConnection != null;
     }
 
+    public static boolean isCrazyradioAvailable(Context context, UsbManager usbManager) {
+        return searchForCrazyradio(context, usbManager) != null;
+    }
 }

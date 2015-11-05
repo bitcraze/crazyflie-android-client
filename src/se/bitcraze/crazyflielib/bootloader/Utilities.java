@@ -42,4 +42,5 @@ public class Utilities {
         System.arraycopy(array, offset, strippedArray, 0, strippedArray.length);
         return strippedArray;
     }
+
 }

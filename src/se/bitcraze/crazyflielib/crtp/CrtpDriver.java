@@ -124,4 +124,8 @@ public abstract class CrtpDriver {
      * @param linkListener
      */
     public abstract void addConnectionListener(ConnectionListener listener);
+
+    public abstract void startSendReceiveThread();
+
+    public abstract void stopSendReceiveThread();
 }

@@ -109,12 +109,7 @@ public class RadioDriver extends AbstractLink{
          */
 
         // Launch the comm thread
-        if (mRadioDriverThread == null) {
-            //self._thread = _RadioDriverThread(self.cradio, self.in_queue, self.out_queue, link_quality_callback, link_error_callback)
-            RadioDriverThread rDT = new RadioDriverThread();
-            mRadioDriverThread = new Thread(rDT);
-            mRadioDriverThread.start();
-        }
+        startSendReceiveThread();
     }
 
     /*
@@ -178,10 +173,7 @@ public class RadioDriver extends AbstractLink{
     public void disconnect() {
         mLogger.debug("RadioDriver disconnect()");
         // Stop the comm thread
-        if (this.mRadioDriverThread != null) {
-            this.mRadioDriverThread.interrupt();
-            this.mRadioDriverThread = null;
-        }
+        stopSendReceiveThread();
         if(this.mCradio != null) {
             this.mCradio.disconnect();
             this.mCradio = null;
@@ -250,6 +242,23 @@ public class RadioDriver extends AbstractLink{
 
     public CrazyradioLink getRadio() {
         return this.mCradio;
+    }
+
+
+    public void startSendReceiveThread() {
+        if (mRadioDriverThread == null) {
+            //self._thread = _RadioDriverThread(self.cradio, self.in_queue, self.out_queue, link_quality_callback, link_error_callback)
+            RadioDriverThread rDT = new RadioDriverThread();
+            mRadioDriverThread = new Thread(rDT);
+            mRadioDriverThread.start();
+        }
+    }
+
+    public void stopSendReceiveThread() {
+        if (this.mRadioDriverThread != null) {
+            this.mRadioDriverThread.interrupt();
+            this.mRadioDriverThread = null;
+        }
     }
 
     /**

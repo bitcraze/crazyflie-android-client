@@ -440,4 +440,16 @@ public class CrazyradioLink extends AbstractLink {
         return null;
     }
 
+    @Override
+    public void startSendReceiveThread() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void stopSendReceiveThread() {
+        // TODO Auto-generated method stub
+
+    }
+
 }

@@ -114,9 +114,9 @@ public class Target {
         }
 
         public static int fromString(String name) {
-            if (name == "stm32") {
+            if ("stm32".equalsIgnoreCase(name)) {
                 return TargetTypes.STM32;
-            } else if (name == "nrf51") {
+            } else if ("nrf51".equalsIgnoreCase(name)) {
                 return TargetTypes.NRF51;
             }
             return 0;

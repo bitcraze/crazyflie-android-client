@@ -118,7 +118,7 @@
 
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>
-    <string name="bootloader_title">Available firmwares:</string>
+    <string name="bootloader_title">Available firmware versions:</string>
     <string name="bootloader_checkUpdate">Check for updates</string>
     <string name="bootloader_flashFirmware">Flash firmware</string>
     <string name="bootloader_firmwareSpinner_label">Available firmwares:</string>

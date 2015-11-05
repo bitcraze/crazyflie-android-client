@@ -41,12 +41,12 @@ public class Cloader {
     private int mProtocolVersion = 0xFF;
 
     // Bootloader commands
-    private int GET_INFO = 0x10;
-    private int SET_ADDRESS = 0x11; // Only implemented on Crazyflie version 0x00
-    private int GET_MAPPING = 0x12; // Only implemented in version 0x10 target 0xFF
-    private int LOAD_BUFFER = 0x14;
-    private int WRITE_FLASH = 0x18;
-    private int READ_FLASH = 0x1C;
+    public static int GET_INFO = 0x10;
+    public static int SET_ADDRESS = 0x11; // Only implemented on Crazyflie version 0x00
+    public static int GET_MAPPING = 0x12; // Only implemented in version 0x10 target 0xFF
+    public static int LOAD_BUFFER = 0x14;
+    public static int WRITE_FLASH = 0x18;
+    public static int READ_FLASH = 0x1C;
 
 
     /**
@@ -144,7 +144,8 @@ public class Cloader {
      * Return true if the reset has been done and the contact with the
      * bootloader is established.
      */
-    //TODO: cpu_id = target id??
+    //TODO: cpu_id = target id?? NO!
+    //TODO: currently not used in python cflib
     public boolean resetToBootloader1(int cpuId) {
         /*
          * Send an echo request and wait for the answer
@@ -197,11 +198,11 @@ public class Cloader {
         //TODO: self.link = cflib.crtp.get_link_driver(self.clink_address)
         //time.sleep(0.1)
 
-        return updateInfo(cpuId); //cpuId = targetId?
+        return updateInfo(TargetTypes.STM32); //TODO: which targetId??
     }
 
     /**
-     * The parameter cpuid shall correspond to the device to reset.
+     * Reset to firmware.
      *
      * @param targetId
      * @return true if the reset has been done
@@ -274,20 +275,27 @@ public class Cloader {
                 if self._info_cb:
                     self._info_cb.call(self.targets[target_id])
                 */
-//                if (this.mProtocolVersion != 1) {
-//                    return true;
-//                }
+                if (this.mProtocolVersion != BootVersion.CF1_PROTO_VER_1) {
+                    return true;
+                }
+
                 // Set radio link to a random address
                 /*
                 addr = [0xbc] + map(lambda x: random.randint(0, 255), range(4))
                 return self._set_address(addr)
                 */
+                byte[] newAddress = new byte[5];
+                newAddress[0] = (byte) 0xbc;
+                for (int n = 1; n < 5; n++) {
+                    newAddress[n] = (byte) ((Math.random() * 1000) % 255);  //TODO: test
+                }
+                //return setAddress(newAddress);
                 return true;
             }
 
             //TODO: is this necessary?
             try {
-                Thread.sleep(2000);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -307,41 +315,38 @@ public class Cloader {
 
         mLogger.debug("Setting bootloader radio address to " + Utilities.getHexString(newAddress));
 
-        // TODO: self.link.pause()
+        // self.link.pause()
+        this.mDriver.stopSendReceiveThread();
 
-        for (int i = 0; i < 10; i++) {
-            mLogger.debug("Trying to set new radio address...");
-
-            //TODO: deal with other driver implementations
-            CrazyradioLink crazyRadio = ((RadioDriver) this.mDriver).getRadio();
-
-            if (crazyRadio != null) {
-                // set standard address in Crazyradio
-                crazyRadio.setRadioAddress(new byte[]{(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
-
-                // set standard address in Crazyfly
+        CrazyradioLink crazyRadio = ((RadioDriver) this.mDriver).getRadio();
                 //TODO: is there a more elegant way to do this?
                 //pkdata = (0xFF, 0xFF, 0x11) + tuple(new_address)
                 byte[] pkData = new byte[newAddress.length + 3];
                 pkData[0] = (byte) 0xFF;
                 pkData[1] = (byte) 0xFF;
                 pkData[2] = (byte) SET_ADDRESS;
+
+        for (int i = 0; i < 10; i++) {
+            mLogger.debug("Trying to set new radio address");
+            //self.link.cradio.set_address((0xE7,) * 5)
+            crazyRadio.setRadioAddress(new byte[]{(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
+
                 System.arraycopy(newAddress, 0, pkData, 3, newAddress.length);
                 crazyRadio.sendPacket(pkData);
 
-                // set new address in Crazyradio
-                crazyRadio.setRadioAddress(newAddress);
+            //self.link.cradio.set_address(tuple(new_address))
+            crazyRadio.setRadioAddress(newAddress);
 
+            //if self.link.cradio.send_packet((0xff,)).ack:
                 RadioAck ack = crazyRadio.sendPacket(new byte[] {(byte) 0xFF});
                 if (ack != null) {
                     mLogger.info("Bootloader set to radio address " + Utilities.getHexString(newAddress));;
-                    //TODO: this.mDriver.restart()
+                this.mDriver.startSendReceiveThread();
                     return true;
                 }
             }
-
-        }
-        //TODO: this.mDriver.restart();
+        //this.mDriver.restart();
+        this.mDriver.startSendReceiveThread();
         return false;
     }
 
@@ -435,7 +440,7 @@ public class Cloader {
     public void uploadBuffer(int targetId, int page, int address, byte[] buff) {
         int count = 0;
         //pk.data = struct.pack("=BBHH", target_id, 0x14, page, address)
-        ByteBuffer bb = ByteBuffer.allocate(6+buff.length).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer bb = ByteBuffer.allocate(31).order(ByteOrder.LITTLE_ENDIAN);
         bb.put((byte) targetId);
         bb.put((byte) LOAD_BUFFER);
         bb.putChar((char) page);
@@ -452,7 +457,7 @@ public class Cloader {
 
                 //pk.data = struct.pack("=BBHH", target_id, 0x14, page, i + address + 1)
                 //TODO: bb.clear() did not work as intended
-                bb = ByteBuffer.allocate(6+buff.length).order(ByteOrder.LITTLE_ENDIAN);
+                bb = ByteBuffer.allocate(31).order(ByteOrder.LITTLE_ENDIAN);
                 bb.put((byte) targetId);
                 bb.put((byte) LOAD_BUFFER);
                 bb.putChar((char) page);
