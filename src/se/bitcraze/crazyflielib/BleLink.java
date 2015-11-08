@@ -31,18 +31,19 @@ public class BleLink extends AbstractLink {
 	// Set to -40 to connect only to close-by Crazyflie
 	private static final int rssiThreshold = -100;
 
-	BluetoothAdapter mBluetoothAdapter;
-	private final static int REQUEST_ENABLE_BT = 1;
+	private BluetoothAdapter mBluetoothAdapter;
 	private BluetoothDevice mDevice;
-	private boolean mWriteWithAnswer;
-	protected BluetoothGattCharacteristic mLedChar;
-	protected BluetoothGatt mGatt;
-	protected boolean mConnected;
-	protected List<BluetoothGattCharacteristic> mLedsChars;
-	protected BluetoothGattCharacteristic mCrtpChar;
-	private static Activity mContext;
-	protected static boolean mWritten = true;
+	private BluetoothGattCharacteristic mLedChar;
+	private List<BluetoothGattCharacteristic> mLedsChars;
+	private BluetoothGatt mGatt;
+	private BluetoothGattCharacteristic mCrtpChar;
 	private Timer mScannTimer;
+
+	private final static int REQUEST_ENABLE_BT = 1;
+	protected boolean mWritten = true;
+	private Activity mContext;
+	private boolean mWriteWithAnswer;
+	protected boolean mConnected;
 
 	protected enum State {IDLE, CONNECTING, CONNECTED};
 	protected State state = State.IDLE;
@@ -55,8 +56,7 @@ public class BleLink extends AbstractLink {
 	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
 
 		@Override
-		public void onConnectionStateChange(BluetoothGatt gatt, int status,
-				int newState) {
+		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			super.onConnectionStateChange(gatt, status, newState);
 			if (newState ==BluetoothProfile.STATE_CONNECTED) {
 				gatt.discoverServices();
@@ -95,32 +95,27 @@ public class BleLink extends AbstractLink {
 		}
 
 		@Override
-		public void onCharacteristicWrite(BluetoothGatt gatt,
-				BluetoothGattCharacteristic characteristic, int status) {
+		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 			super.onCharacteristicWrite(gatt, characteristic, status);
 			//Log.d(TAG, "On write called for char: " + characteristic.getUuid().toString());
-			BleLink.mWritten  = true;
+			mWritten  = true;
 		}
 
 		@Override
-		public void onDescriptorWrite(BluetoothGatt gatt,
-				BluetoothGattDescriptor descritor, int status) {
-			super.onDescriptorWrite(gatt, descritor, status);
-			Log.d(TAG, "On write called for descriptor: " + descritor.getUuid().toString());
+		public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+			super.onDescriptorWrite(gatt, descriptor, status);
+			Log.d(TAG, "On write called for descriptor: " + descriptor.getUuid().toString());
 			mWritten = true;
 		}
 
 		@Override
-        public void onCharacteristicRead(BluetoothGatt gatt,
-                                         BluetoothGattCharacteristic characteristic,
-                                         int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 			super.onCharacteristicRead(gatt, characteristic, status);
 			Log.d(TAG, "On read call for characteristic: " + characteristic.getUuid().toString());
         }
 
 		@Override
-		public void onCharacteristicChanged(BluetoothGatt gatt,
-		        BluetoothGattCharacteristic characteristic) {
+		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			//super.onCharacteristicChanged(gatt, characteristic);
 			Log.d(TAG, "On changed call for characteristic: " + characteristic.getUuid().toString());
 		}
@@ -143,7 +138,7 @@ public class BleLink extends AbstractLink {
 					mContext.runOnUiThread(new Runnable() {
 						@Override
                         public void run() {
-							mDevice.connectGatt(BleLink.mContext, false, mGattCallback);
+							mDevice.connectGatt(mContext, false, mGattCallback);
 						}
 					});
 				}
@@ -158,8 +153,7 @@ public class BleLink extends AbstractLink {
 			throw new IllegalArgumentException("Connection already started");
 		}
 
-		final BluetoothManager bluetoothManager =
-		        (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+		final BluetoothManager bluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
 		mBluetoothAdapter = bluetoothManager.getAdapter();
 
 		if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
@@ -170,8 +164,9 @@ public class BleLink extends AbstractLink {
 
 		mBluetoothAdapter.stopLeScan(mLeScanCallback);
 		mBluetoothAdapter.startLeScan(mLeScanCallback);
-		if (mScannTimer != null)
+		if (mScannTimer != null) {
 			mScannTimer.cancel();
+		}
 		mScannTimer = new Timer();
 		mScannTimer.schedule(new TimerTask() {
 			@Override
@@ -217,8 +212,9 @@ public class BleLink extends AbstractLink {
 	public void sendPacket(CrtpPacket packet) {
 
 		// FIXME: Skipping half of the commander packets to avoid queuing up packets on slow BLE
-		if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0))
+		if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0)) {
 			return;
+		}
 
 		class SendBlePacket implements Runnable {
 			CrtpPacket pk;
