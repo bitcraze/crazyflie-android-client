@@ -39,6 +39,7 @@ public class BootloaderActivity extends Activity {
     private ImageButton mCheckUpdateButton;
     private ImageButton mFlashFirmwareButton;
     private Spinner mFirmwareSpinner;
+    private CustomSpinnerAdapter mSpinnerAdapter;
     private ProgressBar mProgressBar;
     private TextView mStatusLineTextView;
 
@@ -57,6 +58,7 @@ public class BootloaderActivity extends Activity {
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
+        initializeFirmwareSpinner();
         mFirmwareDownloader = new FirmwareDownloader(this);
 
         this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
@@ -80,30 +82,33 @@ public class BootloaderActivity extends Activity {
         }
     }
 
-    public void updateFirmwareSpinner(List<Firmware> firmwares) {
-        mCheckUpdateButton.setEnabled(true);
-        if (!firmwares.isEmpty()) {
-            CustomSpinnerAdapter spinnerAdapter = new CustomSpinnerAdapter(BootloaderActivity.this, R.layout.spinner_rows, new ArrayList<Firmware>());
-            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            mFirmwareSpinner.setAdapter(spinnerAdapter);
-            mFirmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+    private void initializeFirmwareSpinner() {
+        mSpinnerAdapter = new CustomSpinnerAdapter(BootloaderActivity.this, R.layout.spinner_rows, new ArrayList<Firmware>());
+        mSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mFirmwareSpinner.setAdapter(mSpinnerAdapter);
+        mFirmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Firmware firmware = (Firmware) mFirmwareSpinner.getSelectedItem();
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Firmware firmware = (Firmware) mFirmwareSpinner.getSelectedItem();
+                if (firmware != null) {
                     mSelectedFirmware = firmware;
                     mFlashFirmwareButton.setEnabled(true);
                 }
+            }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                    mFlashFirmwareButton.setEnabled(false);
-                }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mFlashFirmwareButton.setEnabled(false);
+            }
 
-            });
-        } else {
-            //TODO
-        }
+        });
+    }
+
+    public void updateFirmwareSpinner(List<Firmware> firmwares) {
+        mCheckUpdateButton.setEnabled(true);
+        mSpinnerAdapter.clear();
+        mSpinnerAdapter.addAll(firmwares);
     }
 
     public void setStatusLine (String status) {
