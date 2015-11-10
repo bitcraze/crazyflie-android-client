@@ -2,6 +2,7 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import se.bitcraze.crazyfliecontrol.bootloader.Firmware.Asset;
@@ -26,7 +27,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -83,9 +83,9 @@ public class BootloaderActivity extends Activity {
     public void updateFirmwareSpinner(List<Firmware> firmwares) {
         mCheckUpdateButton.setEnabled(true);
         if (!firmwares.isEmpty()) {
-            ArrayAdapter<Firmware> dataAdapter = new ArrayAdapter<Firmware>(BootloaderActivity.this, android.R.layout.simple_spinner_item, firmwares);
-            dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            mFirmwareSpinner.setAdapter(dataAdapter);
+            CustomSpinnerAdapter spinnerAdapter = new CustomSpinnerAdapter(BootloaderActivity.this, R.layout.spinner_rows, new ArrayList<Firmware>());
+            spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            mFirmwareSpinner.setAdapter(spinnerAdapter);
             mFirmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
                 @Override
