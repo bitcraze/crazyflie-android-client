@@ -143,9 +143,9 @@ public class Bootloader {
     }
 
     //TODO: improve
-    private byte[] readFile(File file) {
+    public static byte[] readFile(File file) {
         byte[] fileData = new byte[(int) file.length()];
-        mLogger.debug("File size: " +  file.length());
+        LoggerFactory.getLogger("Bootloader").debug("File size: " +  file.length());
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(file.getAbsoluteFile(), "r");

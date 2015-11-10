@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Firmware {
 
@@ -14,8 +15,8 @@ public class Firmware {
 
     private List<Asset> mAssets = new ArrayList<Asset>();
 
-    private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+    private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
     public Firmware() {
     }
@@ -58,14 +59,9 @@ public class Firmware {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        for (Asset a : getAssets()) {
-            sb.append(a.getType());
-            sb.append(" ");
-        }
-
-        return mTagName + " (" + mCreatedAt + ") Type: " + sb.toString(); //used by spinner
+        return "Firmware [mTagName=" + mTagName + ", mName=" + mName + ", mCreatedAt=" + mCreatedAt + "]";
     }
+
 
     public class Asset {
 
@@ -94,11 +90,11 @@ public class Firmware {
         public String getType() {
             // TODO: make this more reliable
             if (mAssetName.startsWith("cf1") || mAssetName.startsWith("Crazyflie1")) {
-                return "cf1";
+                return "CF1";
             } else if (mAssetName.startsWith("cf2") || mAssetName.startsWith("Crazyflie2") || mAssetName.startsWith("cflie2")) {
-                return "cf2";
+                return "CF2";
             } else {
-                return "unknown";
+                return "Unknown";
             }
         }
     }
