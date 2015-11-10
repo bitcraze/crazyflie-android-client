@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -26,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import se.bitcraze.crazyfliecontrol.bootloader.Firmware.Asset;
+import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,6 +46,7 @@ public class FirmwareDownloader {
     private static final String LOG_TAG = "FirmwareDownloader";
     private Context mContext;
     public final static String DOWNLOAD_DIRECTORY = "CrazyflieControl";
+    public final static String RELEASES_JSON = "cf_releases.json";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
     private long mDownloadReference;
     private DownloadManager mManager;
@@ -61,18 +64,37 @@ public class FirmwareDownloader {
 
         @Override
         protected String doInBackground(String... urls) {
-
-            // params comes from the execute() call: params[0] is the url.
+            String input = null;
             try {
-                String input = downloadUrl(urls[0]);
+                if (!isFileAlreadyDownloaded(RELEASES_JSON)) {
+                    Log.d(LOG_TAG, "Releases JSON downloaded.");
+                    input = downloadUrl(urls[0]);
+                } else {
+                    Log.d(LOG_TAG, "Releases JSON loaded from file.");
+                    File sdcard = Environment.getExternalStorageDirectory();
+                    File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
+                    input = new String(Bootloader.readFile(releasesFile));
+                }
                 mFirmwares = parseJson(input);
-
-                return "Status: Found " + mFirmwares.size() + " firmwares.";
-            } catch (IOException e) {
+            } catch (IOException ioe) {
+                Log.d(LOG_TAG, ioe.getMessage());
                 return "Unable to retrieve web page. URL may be invalid.";
-            } catch (JSONException e) {
+            } catch (JSONException je) {
+                Log.d(LOG_TAG, je.getMessage());
                 return "Error during parsing JSON content.";
             }
+            //TODO: simplify
+            if (!isFileAlreadyDownloaded(RELEASES_JSON)) {
+                // Write JSON to disk
+                try {
+                    writeToReleaseJsonFile(input);
+                    Log.d(LOG_TAG, "Wrote JSON file.");
+                } catch (IOException ioe) {
+                    Log.d(LOG_TAG, ioe.getMessage());
+                    return "Unable to save JSON file.";
+                }
+            }
+            return "Status: Found " + mFirmwares.size() + " firmwares.";
         }
 
         @Override
@@ -82,11 +104,23 @@ public class FirmwareDownloader {
         }
     }
 
+    private void writeToReleaseJsonFile(String input) throws IOException {
+        File sdcard = Environment.getExternalStorageDirectory();
+        File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
+        if (!releasesFile.exists()) {
+            releasesFile.createNewFile();
+        }
+        PrintWriter out = new PrintWriter(releasesFile);
+        out.println(input);
+        out.flush();
+        out.close();
+    }
+
     public void downloadFirmware(Firmware selectedFirmware) {
         if (selectedFirmware != null && selectedFirmware.getAssets().size() > 0) {
             for (Asset asset : selectedFirmware.getAssets()) {
                 //check if file is already downloaded
-                if (isFileAlreadyDownloaded(asset, selectedFirmware.getTagName())) {
+                if (isFileAlreadyDownloaded(selectedFirmware.getTagName() + "/" + asset.getName())) {
                     Log.d(LOG_TAG, "File " + asset.getName() + " already downloaded.");
                 } else {
                     String browserDownloadUrl = asset.getBrowserDownloadUrl();
@@ -100,11 +134,10 @@ public class FirmwareDownloader {
         }
     }
 
-    public boolean isFileAlreadyDownloaded (Asset asset, String tagName) {
-        int assetSize = asset.getSize();
+    public boolean isFileAlreadyDownloaded (String path) {
         File sdcard = Environment.getExternalStorageDirectory();
-        File firmwareFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + tagName + "/" + asset.getName());
-        return firmwareFile.exists() && firmwareFile.length() == assetSize;
+        File firmwareFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + path);
+        return firmwareFile.exists() && firmwareFile.length() > 0;
     }
 
     public void downloadFile (String url, String fileName, String tagName) {

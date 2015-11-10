@@ -70,6 +70,17 @@ public class BootloaderActivity extends Activity {
         this.unregisterReceiver(mFirmwareDownloader.onComplete);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mFirmwareDownloader.isFileAlreadyDownloaded(FirmwareDownloader.RELEASES_JSON)) {
+            mFirmwareDownloader.checkForFirmwareUpdate();
+        } else {
+            mFlashFirmwareButton.setEnabled(false);
+            //TODO: force update of spinner adapter even though firmware list is empty
+        }
+    }
+
     public void checkForFirmwareUpdate(View view) {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -190,7 +201,7 @@ public class BootloaderActivity extends Activity {
                     File sdcard = Environment.getExternalStorageDirectory();
                     File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + selectedAsset.getName());
 
-                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(selectedAsset, mSelectedFirmware.getTagName())) {
+                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + selectedAsset.getName())) {
                         return "Problem with downloaded firmware files.";
                     }
 
