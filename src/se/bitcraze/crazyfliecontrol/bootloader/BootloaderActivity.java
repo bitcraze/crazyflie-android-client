@@ -10,6 +10,7 @@ import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
+import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
@@ -31,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BootloaderActivity extends Activity {
 
@@ -44,6 +46,7 @@ public class BootloaderActivity extends Activity {
 
     private Firmware mSelectedFirmware = null;
     private FirmwareDownloader mFirmwareDownloader;
+    private Bootloader mBootloader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,13 +128,15 @@ public class BootloaderActivity extends Activity {
         this.mStatusLineTextView.setText(status);
     }
 
-    public void flashFirmware(View view) {
+    public void startFlashProcess(final View view) {
         //TODO: enable wakelock
 
         // disable buttons and spinner
         mCheckUpdateButton.setEnabled(false);
         mFlashFirmwareButton.setEnabled(false);
         mFirmwareSpinner.setEnabled(false);
+
+        // download firmware file
 
         // TODO: not visible
         mStatusLineTextView.setText("Downloading firmware...");
@@ -140,91 +145,109 @@ public class BootloaderActivity extends Activity {
 
             @Override
             public void downloadFinished() {
-                new FlashFirmwareTask().execute();
+                //flash firmware once firmware is downloaded
+                mStatusLineTextView.setText("Firmware downloaded.");
+                flashFirmware(view);
             }
         });
         mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
-
     }
 
+    //TODO: simplify
+    //TODO: mStatusLineTextView.setText("Status: Restart the Crazyflie you want to bootload in the next 10 seconds ...");
+    public void flashFirmware(View view) {
+        String result = "";
+        try {
+            mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
 
+            // start in async task?
+            if (mBootloader.startBootloader(false)) {
+
+                //TODO: externalize
+                //Check if firmware is compatible with Crazyflie
+                int protocolVersion = mBootloader.getProtocolVersion();
+                boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
+                                    protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
+
+                String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
+                mStatusLineTextView.setText(cfversion);
+                Log.d(LOG_TAG, cfversion);
+
+                if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
+                    ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
+                    mBootloader.resetToFirmware();
+                    Log.d(LOG_TAG, "Incompatible firmware version.");
+                    mStatusLineTextView.setText("Status: Incompatible firmware version.");
+                    reenableWidgets();
+                    return;
+                }
+
+                if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
+                    mStatusLineTextView.setText("Status: Firmware file can not be found.");
+                    reenableWidgets();
+                    return;
+                }
+
+                //set progress bar max
+                //TODO: progress bar max is reset when activity is resumed
+                int pageSize = mBootloader.getTarget(TargetTypes.STM32).getPageSize();
+                Log.d(LOG_TAG, "pageSize: " + pageSize);
+                int firmwareSize = mSelectedFirmware.getAssetSize();
+                Log.d(LOG_TAG, "firmwareSize: " + firmwareSize);
+                int max = ((firmwareSize / pageSize) + 1);
+                Log.d(LOG_TAG, "setMax: " + max);
+                mProgressBar.setMax(max);
+
+                Toast.makeText(this, "Flashing ...", Toast.LENGTH_SHORT).show();
+                AsyncTask<String, String, String> task = new FlashFirmwareTask();
+                task.execute();
+                //TODO: wait for finished task
+            } else {
+                result = "Bootloader problem.";
+            }
+        } catch (IOException e) {
+            result = "Bootloader problem: " + e.getMessage();
+        } catch (IllegalArgumentException iae) {
+            result = "Bootloader problem: " + iae.getMessage();
+        }
+        mStatusLineTextView.setText("Status: " + result);
+    }
 
     private class FlashFirmwareTask extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            Bootloader bootloader = null;
-            try {
-                bootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
 
-                bootloader.addBootloaderListener(new BootloaderListener() {
+            mBootloader.addBootloaderListener(new BootloaderListener() {
 
-                    @Override
-                    public void updateStatus(String status) {
-                        publishProgress(new String[]{status, null, null});
-                        Log.d(LOG_TAG, "Status: " + status);
-                    }
-
-                    @Override
-                    public void updateProgress(int progress) {
-                        publishProgress(new String[]{null, "" + progress, null});
-                        Log.d(LOG_TAG, "Progress: " + progress);
-                    }
-
-                    @Override
-                    public void updateError(String error) {
-                        publishProgress(new String[]{null, null, error});
-                        Log.d(LOG_TAG, "Error: " + error);
-                    }
-                });
-
-                //mDetails.setText("Restart the Crazyflie you want to bootload in the next 10 seconds ...");
-                if (bootloader.startBootloader(false)) {
-
-                    //TODO: externalize
-                    //Check if firmware is compatible with Crazyflie
-                    int protocolVersion = bootloader.getProtocolVersion();
-                    boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
-                                        protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
-
-                    String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
-                    publishProgress(new String[]{cfversion, null, null});
-                    Log.d(LOG_TAG, cfversion);
-
-                    if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
-                        ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
-                        bootloader.resetToFirmware();
-                        Log.d(LOG_TAG, "Incompatible firmware version.");
-                        return "Incompatible firmware version.";
-                    }
-
-                    //TODO: simplify
-                    File sdcard = Environment.getExternalStorageDirectory();
-                    File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
-
-                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
-                        return "Firmware file can not be found.";
-                    }
-
-                    long startTime = System.currentTimeMillis();
-                    //TODO: fix for NRF51 files
-                    bootloader.flash(firmwareFile, "stm32");
-                    String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
-                    Log.d(LOG_TAG, flashTime);
-                    bootloader.resetToFirmware();
-                    return flashTime;
-                } else {
-                    return "Bootloader problem.";
+                @Override
+                public void updateStatus(String status) {
+                    publishProgress(new String[]{status, null, null});
+                    Log.d(LOG_TAG, "Status: " + status);
                 }
-            } catch (IOException e) {
-                return "Bootloader problem: " + e.getMessage();
-            } catch (IllegalArgumentException iae) {
-                return "Bootloader problem: " + iae.getMessage();
-            } finally {
-                if (bootloader != null) {
-                    bootloader.close();
+
+                @Override
+                public void updateProgress(int progress) {
+                    publishProgress(new String[]{null, "" + progress, null});
+                    Log.d(LOG_TAG, "Progress: " + progress);
                 }
-            }
+
+                @Override
+                public void updateError(String error) {
+                    publishProgress(new String[]{null, null, error});
+                    Log.d(LOG_TAG, "Error: " + error);
+                }
+            });
+
+            File sdcard = Environment.getExternalStorageDirectory();
+            File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
+
+            long startTime = System.currentTimeMillis();
+            //TODO: fix for NRF51 files
+            mBootloader.flash(firmwareFile, "stm32");
+            String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
+            Log.d(LOG_TAG, flashTime);
+            return flashTime;
         }
 
         @Override
@@ -240,11 +263,19 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            mStatusLineTextView.setText("Status: " + result);
-            mCheckUpdateButton.setEnabled(true);
-            mFlashFirmwareButton.setEnabled(true);
-            mFirmwareSpinner.setEnabled(true);
+            mBootloader.resetToFirmware();
+            if (mBootloader != null) {
+                mBootloader.close();
+            }
+            reenableWidgets();
+            mProgressBar.setProgress(0);
         }
+    }
+
+    public void reenableWidgets() {
+        mCheckUpdateButton.setEnabled(true);
+        mFlashFirmwareButton.setEnabled(true);
+        mFirmwareSpinner.setEnabled(true);
     }
 
     /**

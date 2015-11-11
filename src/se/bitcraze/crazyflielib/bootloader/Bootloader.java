@@ -395,7 +395,8 @@ public class Bootloader {
 
         // For each page
         int bufferCounter = 0; // Buffer counter
-        for (int i = 0; i < ((image.length - 1) / pageSize) + 1; i++) {
+        int i = 0;
+        for (i = 0; i < ((image.length - 1) / pageSize) + 1; i++) {
             // Load the buffer
             int end = 0;
             if (((i + 1) * pageSize) > image.length) {
@@ -426,6 +427,7 @@ public class Bootloader {
         }
         if (bufferCounter > 0) {
             mLogger.info("BufferCounter: " + bufferCounter);
+            notifyUpdateProgress(i);
             if (!this.mCload.writeFlash(t_data.getId(), 0, (startPage + ((image.length - 1) / pageSize)) - (bufferCounter - 1), bufferCounter)) {
                 handleFlashError();
                 //raise Exception()
