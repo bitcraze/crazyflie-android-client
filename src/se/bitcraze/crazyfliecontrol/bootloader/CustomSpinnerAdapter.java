@@ -2,7 +2,6 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.util.List;
 
-import se.bitcraze.crazyfliecontrol.bootloader.Firmware.Asset;
 import se.bitcraze.crazyfliecontrol2.R;
 import android.app.Activity;
 import android.content.Context;
@@ -48,12 +47,7 @@ public class CustomSpinnerAdapter extends ArrayAdapter<Firmware> {
         // Set values for each spinner row
         label.setText(firmware.getTagName());
         sub.setText(firmware.getCreatedAt());
-        StringBuffer sb = new StringBuffer();
-        for (Asset asset : firmware.getAssets()) {
-            sb.append(asset.getType());
-            sb.append(" ");
-        }
-        type.setText(sb.toString());
+        type.setText(firmware.getType());
         return row;
     }
 }

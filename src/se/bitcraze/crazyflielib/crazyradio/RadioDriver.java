@@ -355,7 +355,7 @@ public class RadioDriver extends AbstractLink{
                     } else {
                         dataOut = new byte[]{(byte) 0xFF};
                     }
-                    Thread.sleep(20);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     mLogger.debug("RadioDriverThread was interrupted.");
                     break;

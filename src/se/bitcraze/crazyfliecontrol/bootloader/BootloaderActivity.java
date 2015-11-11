@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import se.bitcraze.crazyfliecontrol.bootloader.Firmware.Asset;
+import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.DownloadListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
@@ -31,7 +31,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class BootloaderActivity extends Activity {
 
@@ -137,10 +136,15 @@ public class BootloaderActivity extends Activity {
         // TODO: not visible
         mStatusLineTextView.setText("Downloading firmware...");
 
+        mFirmwareDownloader.addDownloadListener(new DownloadListener() {
+
+            @Override
+            public void downloadFinished() {
+                new FlashFirmwareTask().execute();
+            }
+        });
         mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
 
-        Toast.makeText(this, "Flashing firmware...", Toast.LENGTH_SHORT).show();
-        new FlashFirmwareTask().execute();
     }
 
 
@@ -178,35 +182,33 @@ public class BootloaderActivity extends Activity {
                 if (bootloader.startBootloader(false)) {
 
                     //TODO: externalize
+                    //Check if firmware is compatible with Crazyflie
                     int protocolVersion = bootloader.getProtocolVersion();
                     boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
                                         protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
 
-                    publishProgress(new String[]{"Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".", null, null});
-                    Log.d(LOG_TAG, "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".");
+                    String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
+                    publishProgress(new String[]{cfversion, null, null});
+                    Log.d(LOG_TAG, cfversion);
 
-                    //TODO: deal with Zip files and manifest.json
-                    Asset selectedAsset = null;
-                    if (mSelectedFirmware != null && mSelectedFirmware.getAssets().size() > 0) {
-                        for (Asset asset : mSelectedFirmware.getAssets()) {
-                            if (cfType2 && "cf2".equals(asset.getType())) {
-                                selectedAsset = asset;;
-                                break;
-                            } else if (!cfType2 && "cf1".equals(asset.getType())) {
-                                selectedAsset = asset;;
-                            }
-                        }
+                    if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
+                        ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
+                        bootloader.resetToFirmware();
+                        Log.d(LOG_TAG, "Incompatible firmware version.");
+                        return "Incompatible firmware version.";
                     }
 
+                    //TODO: simplify
                     File sdcard = Environment.getExternalStorageDirectory();
-                    File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + selectedAsset.getName());
+                    File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
 
-                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + selectedAsset.getName())) {
-                        return "Problem with downloaded firmware files.";
+                    if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
+                        return "Firmware file can not be found.";
                     }
 
                     long startTime = System.currentTimeMillis();
-                    bootloader.flash(firmwareFile, (String[]) null);
+                    //TODO: fix for NRF51 files
+                    bootloader.flash(firmwareFile, "stm32");
                     String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
                     Log.d(LOG_TAG, flashTime);
                     bootloader.resetToFirmware();

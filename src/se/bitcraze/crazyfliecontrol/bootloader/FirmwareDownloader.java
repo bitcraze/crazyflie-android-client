@@ -1,20 +1,15 @@
 package se.bitcraze.crazyfliecontrol.bootloader;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -26,7 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import se.bitcraze.crazyfliecontrol.bootloader.Firmware.Asset;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -51,8 +45,11 @@ public class FirmwareDownloader {
     private long mDownloadReference;
     private DownloadManager mManager;
 
+    private List<DownloadListener> mDownloadListeners;
+
     public FirmwareDownloader(Context context) {
         this.mContext = context;
+        this.mDownloadListeners = Collections.synchronizedList(new LinkedList<DownloadListener>());
     }
 
     public void checkForFirmwareUpdate() {
@@ -94,7 +91,7 @@ public class FirmwareDownloader {
                     return "Unable to save JSON file.";
                 }
             }
-            return "Status: Found " + mFirmwares.size() + " firmwares.";
+            return "Status: Found " + mFirmwares.size() + " firmware files.";
         }
 
         @Override
@@ -117,16 +114,15 @@ public class FirmwareDownloader {
     }
 
     public void downloadFirmware(Firmware selectedFirmware) {
-        if (selectedFirmware != null && selectedFirmware.getAssets().size() > 0) {
-            for (Asset asset : selectedFirmware.getAssets()) {
-                //check if file is already downloaded
-                if (isFileAlreadyDownloaded(selectedFirmware.getTagName() + "/" + asset.getName())) {
-                    Log.d(LOG_TAG, "File " + asset.getName() + " already downloaded.");
-                } else {
-                    String browserDownloadUrl = asset.getBrowserDownloadUrl();
-                    downloadFile(browserDownloadUrl, asset.getName(), selectedFirmware.getTagName());
-                }
+        if (selectedFirmware != null) {
+
+            if (isFileAlreadyDownloaded(selectedFirmware.getTagName() + "/" + selectedFirmware.getAssetName())) {
+                notifyDownloadFinished();
+                return;
             }
+
+            String browserDownloadUrl = selectedFirmware.getBrowserDownloadUrl();
+            downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
         } else {
             Log.d(LOG_TAG, "Selected firmware does not have assets.");
             ((BootloaderActivity) mContext).setStatusLine("Selected firmware does not have assets.");
@@ -134,7 +130,13 @@ public class FirmwareDownloader {
         }
     }
 
-    public boolean isFileAlreadyDownloaded (String path) {
+    /**
+     * Base path is CrazyflieControl directory
+     *
+     * @param path
+     * @return
+     */
+    public boolean isFileAlreadyDownloaded(String path) {
         File sdcard = Environment.getExternalStorageDirectory();
         File firmwareFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + path);
         return firmwareFile.exists() && firmwareFile.length() > 0;
@@ -154,7 +156,6 @@ public class FirmwareDownloader {
         // get download service and enqueue file
         mManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
         mDownloadReference = mManager.enqueue(request);
-
     }
 
     private String downloadUrl(String myUrl) throws IOException {
@@ -199,7 +200,6 @@ public class FirmwareDownloader {
             String tagName = releaseObject.getString("tag_name");
             String name = releaseObject.getString("name");
             String createdAt = releaseObject.getString("created_at");
-            Firmware firmware = new Firmware(tagName, name, createdAt);
             JSONArray assetsArray = releaseObject.getJSONArray("assets");
             if (assetsArray != null && assetsArray.length() > 0) {
                 for (int n = 0; n < assetsArray.length(); n++) {
@@ -207,21 +207,23 @@ public class FirmwareDownloader {
                     String assetName = assetsObject.getString("name");
                     int size = assetsObject.getInt("size");
                     String downloadURL = assetsObject.getString("browser_download_url");
-                    Asset asset = new Firmware().new Asset(assetName, size, downloadURL);
-                    firmware.addAsset(asset);
+                    // hardcoded filter for DFU zip file (find a better way to handle this)
+                    if (assetName.contains("_dfu")) {
+                        continue;
+                    }
+                    Firmware firmware = new Firmware(tagName, name, createdAt);
+                    firmware.setAsset(assetName, size, downloadURL);
+                    firmwares.add(firmware);
                 }
-            }
-            // Filter out firmwares without assets
-            if (firmware.getAssets().size() > 0) {
-                firmwares.add(firmware);
             } else {
+                // Filter out firmwares without assets
                 Log.d(LOG_TAG, "Firmware " + tagName + " was filtered out, because it has no assets.");
             }
         }
         return firmwares;
     }
 
-    public BroadcastReceiver onComplete=new BroadcastReceiver() {
+    public BroadcastReceiver onComplete = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -245,9 +247,11 @@ public class FirmwareDownloader {
                         String filename = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length());
 
                         Toast.makeText(mContext, "Download successful: " + filename, Toast.LENGTH_SHORT).show();
-                        if (filename.endsWith(".zip")) {
-                            unzip(new File(filePath));
-                        }
+
+//                        if (filename.endsWith(".zip")) {
+//                            unzip(new File(filePath));
+//                        }
+                        notifyDownloadFinished();
                     }
                 }
                 c.close();
@@ -255,57 +259,27 @@ public class FirmwareDownloader {
         }
       };
 
-    public void unzip(File zipFile) {
-        Log.d(LOG_TAG, "Trying to unzip file " + zipFile + "...");
-        InputStream fis = null;
-        ZipInputStream zis = null;
-        FileOutputStream fos = null;
-        String parent = zipFile.getParent();
 
-        try {
-            fis = new FileInputStream(zipFile);
-            zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry ze;
-            while ((ze = zis.getNextEntry()) != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] buffer = new byte[1024];
-                int count;
-                while ((count = zis.read(buffer)) != -1) {
-                    baos.write(buffer, 0, count);
-                }
-                String filename = ze.getName();
-                byte[] bytes = baos.toByteArray();
-                // write files
-                File filePath = new File(parent + "/" + filename);
-                fos = new FileOutputStream(filePath);
-                fos.write(bytes);
-                //check
-                if(filePath.exists() && filePath.length() > 0) {
-                    Log.d(LOG_TAG, "File " + filename + " successfully unzipped.");
-                } else {
-                    Log.d(LOG_TAG, "Problems writing file " + filename + ".");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (zis != null) {
-                try {
-                    zis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+      /* Download listener */
 
-        }
-    }
+      public void addDownloadListener(DownloadListener dl) {
+          this.mDownloadListeners.add(dl);
+      }
+
+      public void removeDownloadListener(DownloadListener dl) {
+          this.mDownloadListeners.remove(dl);
+      }
+
+      public void notifyDownloadFinished() {
+          for (DownloadListener downloadListener : mDownloadListeners) {
+              downloadListener.downloadFinished();
+          }
+      }
+
+      public interface DownloadListener {
+
+          public void downloadFinished();
+
+      }
+
 }

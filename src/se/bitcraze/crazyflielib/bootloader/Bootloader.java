@@ -145,7 +145,7 @@ public class Bootloader {
     //TODO: improve
     public static byte[] readFile(File file) {
         byte[] fileData = new byte[(int) file.length()];
-        LoggerFactory.getLogger("Bootloader").debug("File size: " +  file.length());
+        LoggerFactory.getLogger("Bootloader").debug("readFile: " + file.getName() +  ", size: " +  file.length());
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(file.getAbsoluteFile(), "r");
@@ -235,7 +235,7 @@ public class Bootloader {
             }
         } else { // File is not a Zip file
             // add single flash target
-            if (targetNames.length != 1) {
+            if (targetNames == null || targetNames.length != 1) {
                 mLogger.error("Not an archive, must supply ONE target to flash.");
             } else {
 

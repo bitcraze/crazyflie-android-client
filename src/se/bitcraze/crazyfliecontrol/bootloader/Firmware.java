@@ -2,9 +2,7 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class Firmware {
@@ -13,7 +11,9 @@ public class Firmware {
     private String mName;
     private String mCreatedAt;
 
-    private List<Asset> mAssets = new ArrayList<Asset>();
+    private String mAssetName;
+    private int mSize;
+    private String mBrowserDownloadUrl;
 
     private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
     private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -45,58 +45,39 @@ public class Firmware {
         return mCreatedAt;
     }
 
-    public List<Asset> getAssets() {
-        return mAssets;
+    public void setAsset(String assetName, int assetSize, String URL) {
+        this.mAssetName = assetName;
+        this.mSize = assetSize;
+        this.mBrowserDownloadUrl = URL;
     }
 
-    public void setAssets(List<Asset> mAssets) {
-        this.mAssets = mAssets;
+    public String getAssetName() {
+        return mAssetName;
     }
 
-    public void addAsset(Asset asset) {
-        this.mAssets.add(asset);
+    public int getAssetSize() {
+        return mSize;
+    }
+
+    public String getBrowserDownloadUrl() {
+        return mBrowserDownloadUrl;
+    }
+
+    public String getType() {
+        // TODO: make this more reliable
+        String lcAssetName = mAssetName.toLowerCase(Locale.US);
+        if (lcAssetName.startsWith("cf1") || lcAssetName.startsWith("crazyflie1")) {
+            return "CF1";
+        } else if (lcAssetName.startsWith("cf2") || lcAssetName.startsWith("crazyflie2") || lcAssetName.startsWith("cflie2")) {
+            return "CF2";
+        } else {
+            return "Unknown";
+        }
     }
 
     @Override
     public String toString() {
         return "Firmware [mTagName=" + mTagName + ", mName=" + mName + ", mCreatedAt=" + mCreatedAt + "]";
-    }
-
-
-    public class Asset {
-
-        private String mAssetName;
-        private int mSize;
-        private String mBrowserDownloadUrl;
-
-        public Asset(String name, int size, String browserDownloadUrl) {
-            this.mAssetName = name;
-            this.mSize = size;
-            this.mBrowserDownloadUrl = browserDownloadUrl;
-        }
-
-        public String getName() {
-            return mAssetName;
-        }
-
-        public int getSize() {
-            return mSize;
-        }
-
-        public String getBrowserDownloadUrl() {
-            return mBrowserDownloadUrl;
-        }
-
-        public String getType() {
-            // TODO: make this more reliable
-            if (mAssetName.startsWith("cf1") || mAssetName.startsWith("Crazyflie1")) {
-                return "CF1";
-            } else if (mAssetName.startsWith("cf2") || mAssetName.startsWith("Crazyflie2") || mAssetName.startsWith("cflie2")) {
-                return "CF2";
-            } else {
-                return "Unknown";
-            }
-        }
     }
 
 }
