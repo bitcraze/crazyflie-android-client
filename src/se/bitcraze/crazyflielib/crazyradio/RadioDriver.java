@@ -178,10 +178,11 @@ public class RadioDriver extends AbstractLink{
             this.mCradio.disconnect();
             this.mCradio = null;
         }
-        if(this.mUsbInterface != null) {
-            this.mUsbInterface.releaseInterface();
-//            this.mUsbInterface = null;
-        }
+        //redundant
+//        if(this.mUsbInterface != null) {
+//            this.mUsbInterface.releaseInterface();
+////            this.mUsbInterface = null;
+//        }
     }
 
     public List<ConnectionData> scanInterface() {

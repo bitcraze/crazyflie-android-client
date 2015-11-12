@@ -169,6 +169,7 @@ public class UsbLinkAndroid implements IUsbLink{
      * @see se.bitcraze.crazyflie.lib.IUsbLink#releaseInterface()
      */
     public void releaseInterface() {
+        Log.d(LOG_TAG, "releaseInterface()");
         if (mConnection != null && mIntf != null){
             mConnection.releaseInterface(mIntf);
             mConnection = null;
