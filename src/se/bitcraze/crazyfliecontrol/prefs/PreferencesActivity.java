@@ -284,8 +284,10 @@ public class PreferencesActivity extends PreferenceActivity {
             Preference pref = findPreference(KEY_PREF_RADIO_STATS);
             String defaultValue = getResources().getString(R.string.preferences_radio_stats_summary);
 
+            UsbLinkAndroid usbLinkAndroid = null;
+
             try {
-                UsbLinkAndroid usbLinkAndroid = new UsbLinkAndroid(getActivity());
+                usbLinkAndroid = new UsbLinkAndroid(getActivity());
                 if (usbLinkAndroid != null) {
                     if(usbLinkAndroid.isUsbConnected() && usbLinkAndroid.isCrazyradio()){
                         pref.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
@@ -302,6 +304,10 @@ public class PreferencesActivity extends PreferenceActivity {
                 Log.e(LOG_TAG, iae.getMessage());
 //                Toast.makeText(this, iae.getMessage(), Toast.LENGTH_SHORT).show();
                 pref.setSummary(defaultValue);
+            } finally {
+                if (usbLinkAndroid != null) {
+                    usbLinkAndroid.releaseInterface();
+                }
             }
         }
 
@@ -515,11 +521,13 @@ public class PreferencesActivity extends PreferenceActivity {
 
                 @Override
                 protected ConnectionData[] doInBackground(Void... arg0) {
+                    UsbLinkAndroid usbLinkAndroid = null;
+                    CrazyradioLink crlink = null;
                     try {
+                        usbLinkAndroid = new UsbLinkAndroid(getActivity());
+                        crlink = new CrazyradioLink(usbLinkAndroid);
                         //For testing purposes only
 //                        return new ConnectionData[0];
-                        UsbLinkAndroid usbLinkAndroid = new UsbLinkAndroid(getActivity());
-                        CrazyradioLink crlink = new CrazyradioLink(usbLinkAndroid);
                         boolean useSlowScan = false;
                         //Use slow scan, when Crazyradio firmware version is 0.52 or 0.53
                         if(0.52f == usbLinkAndroid.getFirmwareVersion() ||
@@ -533,6 +541,10 @@ public class PreferencesActivity extends PreferenceActivity {
                     } catch(IllegalArgumentException iae) {
                         mException = iae;
                         return new ConnectionData[0];
+                    } finally {
+                        if (crlink != null) {
+                            crlink.disconnect();
+                        }
                     }
                 }
 
