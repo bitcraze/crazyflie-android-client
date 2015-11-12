@@ -391,7 +391,8 @@ public class Bootloader {
             return;
         }
 
-        mLogger.info(image.length - 1 + " bytes (" + ((image.length / pageSize) + 1) + " pages) ");
+        int noOfPages = (image.length / pageSize) + 1;
+        mLogger.info(image.length - 1 + " bytes (" + noOfPages + " pages) ");
 
         // For each page
         int bufferCounter = 0; // Buffer counter
@@ -416,7 +417,7 @@ public class Bootloader {
                 String buffersFull = "Buffers full. Flashing page " + (i+1) + "...";
                 mLogger.info(buffersFull);
                 notifyUpdateStatus(buffersFull);
-                notifyUpdateProgress(i+1);
+                notifyUpdateProgress(i+1, noOfPages);
                 if (!this.mCload.writeFlash(t_data.getId(), 0, startPage + i - (bufferCounter - 1), bufferCounter)) {
                     handleFlashError();
                     //raise Exception()
@@ -427,7 +428,7 @@ public class Bootloader {
         }
         if (bufferCounter > 0) {
             mLogger.info("BufferCounter: " + bufferCounter);
-            notifyUpdateProgress(i);
+            notifyUpdateProgress(i, noOfPages);
             if (!this.mCload.writeFlash(t_data.getId(), 0, (startPage + ((image.length - 1) / pageSize)) - (bufferCounter - 1), bufferCounter)) {
                 handleFlashError();
                 //raise Exception()
@@ -454,9 +455,9 @@ public class Bootloader {
         this.mBootloaderListeners.remove(bl);
     }
 
-    public void notifyUpdateProgress(int progress) {
+    public void notifyUpdateProgress(int progress, int max) {
         for (BootloaderListener bootloaderListener : mBootloaderListeners) {
-            bootloaderListener.updateProgress(progress);
+            bootloaderListener.updateProgress(progress, max);
         }
     }
 
@@ -474,7 +475,7 @@ public class Bootloader {
 
     public interface BootloaderListener {
 
-        public void updateProgress(int progress);
+        public void updateProgress(int progress, int max);
 
         public void updateStatus(String status);
 
