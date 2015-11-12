@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ImageButton;
@@ -70,6 +71,7 @@ public class BootloaderActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         this.unregisterReceiver(mFirmwareDownloader.onComplete);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -154,6 +156,7 @@ public class BootloaderActivity extends Activity {
     }
 
     private void startBootloader() {
+
         try {
             mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
         } catch (IOException e) {
@@ -179,7 +182,7 @@ public class BootloaderActivity extends Activity {
             protected void onPostExecute(Boolean result) {
                 mProgress.dismiss();
                 if (!result) {
-                    Toast.makeText(BootloaderActivity.this, "No Crazyflie in bootloader mode found.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BootloaderActivity.this, "No Crazyflie found in bootloader mode.", Toast.LENGTH_SHORT).show();
                     reenableWidgets();
                     mFirmwareDownloader.removeDownloadListener(mDownloadListener);
                     return;
@@ -217,6 +220,8 @@ public class BootloaderActivity extends Activity {
             return;
         }
 
+        //keep the screen on during flashing
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         new FlashFirmwareTask().execute();
         //TODO: wait for finished task
     }
@@ -225,7 +230,7 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-            Toast.makeText(BootloaderActivity.this, "Flashing ...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(BootloaderActivity.this, "Flashing firmware ...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -276,12 +281,14 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
+            Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();
             mBootloader.resetToFirmware();
             if (mBootloader != null) {
                 mBootloader.close();
             }
             reenableWidgets();
             mProgressBar.setProgress(0);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
