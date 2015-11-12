@@ -45,11 +45,11 @@ public class FirmwareDownloader {
     private long mDownloadReference;
     private DownloadManager mManager;
 
-    private List<DownloadListener> mDownloadListeners;
+    private List<FirmwareDownloadListener> mDownloadListeners;
 
     public FirmwareDownloader(Context context) {
         this.mContext = context;
-        this.mDownloadListeners = Collections.synchronizedList(new LinkedList<DownloadListener>());
+        this.mDownloadListeners = Collections.synchronizedList(new LinkedList<FirmwareDownloadListener>());
     }
 
     public void checkForFirmwareUpdate() {
@@ -262,21 +262,21 @@ public class FirmwareDownloader {
 
       /* Download listener */
 
-      public void addDownloadListener(DownloadListener dl) {
+      public void addDownloadListener(FirmwareDownloadListener dl) {
           this.mDownloadListeners.add(dl);
       }
 
-      public void removeDownloadListener(DownloadListener dl) {
+      public void removeDownloadListener(FirmwareDownloadListener dl) {
           this.mDownloadListeners.remove(dl);
       }
 
       public void notifyDownloadFinished() {
-          for (DownloadListener downloadListener : mDownloadListeners) {
+          for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
               downloadListener.downloadFinished();
           }
       }
 
-      public interface DownloadListener {
+      public interface FirmwareDownloadListener {
 
           public void downloadFinished();
 

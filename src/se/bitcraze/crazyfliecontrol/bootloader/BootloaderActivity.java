@@ -5,16 +5,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.DownloadListener;
+import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
-import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
@@ -36,7 +36,7 @@ import android.widget.Toast;
 
 public class BootloaderActivity extends Activity {
 
-    private static final String LOG_TAG = "Bootloader";
+    private static final String LOG_TAG = "BootloaderActivity";
     private ImageButton mCheckUpdateButton;
     private ImageButton mFlashFirmwareButton;
     private Spinner mFirmwareSpinner;
@@ -128,6 +128,14 @@ public class BootloaderActivity extends Activity {
         this.mStatusLineTextView.setText(status);
     }
 
+    private FirmwareDownloadListener mDownloadListener = new FirmwareDownloadListener () {
+        public void downloadFinished() {
+            //flash firmware once firmware is downloaded
+            mStatusLineTextView.setText("Firmware downloaded.");
+            startBootloader();
+        }
+    };
+
     public void startFlashProcess(final View view) {
         //TODO: enable wakelock
 
@@ -141,79 +149,84 @@ public class BootloaderActivity extends Activity {
         // TODO: not visible
         mStatusLineTextView.setText("Downloading firmware...");
 
-        mFirmwareDownloader.addDownloadListener(new DownloadListener() {
+        mFirmwareDownloader.addDownloadListener(mDownloadListener);
+        mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
+    }
+
+    private void startBootloader() {
+        try {
+            mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
+        } catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage());
+            return;
+        }
+
+        new AsyncTask<Void, Void, Boolean>() {
+
+            private ProgressDialog mProgress;
 
             @Override
-            public void downloadFinished() {
-                //flash firmware once firmware is downloaded
-                mStatusLineTextView.setText("Firmware downloaded.");
-                flashFirmware(view);
+            protected void onPreExecute() {
+                mProgress = ProgressDialog.show(BootloaderActivity.this, "Start bootloader", "Searching for Crazyflie in bootloader mode...", true, false);
             }
-        });
-        mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
+
+            @Override
+            protected Boolean doInBackground(Void... arg0) {
+                return mBootloader.startBootloader(false);
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                mProgress.dismiss();
+                if (!result) {
+                    Toast.makeText(BootloaderActivity.this, "No Crazyflie in bootloader mode found.", Toast.LENGTH_SHORT).show();
+                    reenableWidgets();
+                    mFirmwareDownloader.removeDownloadListener(mDownloadListener);
+                    return;
+                }
+                flashFirmware();
+            }
+        }.execute();
     }
 
     //TODO: simplify
     //TODO: mStatusLineTextView.setText("Status: Restart the Crazyflie you want to bootload in the next 10 seconds ...");
-    public void flashFirmware(View view) {
-        String result = "";
-        try {
-            mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
+    public void flashFirmware() {
+        //TODO: externalize
+        //Check if firmware is compatible with Crazyflie
+        int protocolVersion = mBootloader.getProtocolVersion();
+        boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
+                            protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
 
-            // start in async task?
-            if (mBootloader.startBootloader(false)) {
+        String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
+        mStatusLineTextView.setText(cfversion);
+        Log.d(LOG_TAG, cfversion);
 
-                //TODO: externalize
-                //Check if firmware is compatible with Crazyflie
-                int protocolVersion = mBootloader.getProtocolVersion();
-                boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
-                                    protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
-
-                String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
-                mStatusLineTextView.setText(cfversion);
-                Log.d(LOG_TAG, cfversion);
-
-                if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
-                    ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
-                    mBootloader.resetToFirmware();
-                    Log.d(LOG_TAG, "Incompatible firmware version.");
-                    mStatusLineTextView.setText("Status: Incompatible firmware version.");
-                    reenableWidgets();
-                    return;
-                }
-
-                if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
-                    mStatusLineTextView.setText("Status: Firmware file can not be found.");
-                    reenableWidgets();
-                    return;
-                }
-
-                //set progress bar max
-                //TODO: progress bar max is reset when activity is resumed
-                int pageSize = mBootloader.getTarget(TargetTypes.STM32).getPageSize();
-                Log.d(LOG_TAG, "pageSize: " + pageSize);
-                int firmwareSize = mSelectedFirmware.getAssetSize();
-                Log.d(LOG_TAG, "firmwareSize: " + firmwareSize);
-                int max = ((firmwareSize / pageSize) + 1);
-                Log.d(LOG_TAG, "setMax: " + max);
-                mProgressBar.setMax(max);
-
-                Toast.makeText(this, "Flashing ...", Toast.LENGTH_SHORT).show();
-                AsyncTask<String, String, String> task = new FlashFirmwareTask();
-                task.execute();
-                //TODO: wait for finished task
-            } else {
-                result = "Bootloader problem.";
-            }
-        } catch (IOException e) {
-            result = "Bootloader problem: " + e.getMessage();
-        } catch (IllegalArgumentException iae) {
-            result = "Bootloader problem: " + iae.getMessage();
+        if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
+            ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
+            mBootloader.resetToFirmware();
+            Log.d(LOG_TAG, "Incompatible firmware version.");
+            mStatusLineTextView.setText("Status: Incompatible firmware version.");
+            reenableWidgets();
+            return;
         }
-        mStatusLineTextView.setText("Status: " + result);
+
+        if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
+            mStatusLineTextView.setText("Status: Firmware file can not be found.");
+            reenableWidgets();
+            return;
+        }
+
+        new FlashFirmwareTask().execute();
+        //TODO: wait for finished task
     }
 
     private class FlashFirmwareTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected void onPreExecute() {
+            Toast.makeText(BootloaderActivity.this, "Flashing ...", Toast.LENGTH_SHORT).show();
+        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -222,20 +235,17 @@ public class BootloaderActivity extends Activity {
 
                 @Override
                 public void updateStatus(String status) {
-                    publishProgress(new String[]{status, null, null});
-                    Log.d(LOG_TAG, "Status: " + status);
+                    publishProgress(new String[]{status, null, null, null});
                 }
 
                 @Override
-                public void updateProgress(int progress) {
-                    publishProgress(new String[]{null, "" + progress, null});
-                    Log.d(LOG_TAG, "Progress: " + progress);
+                public void updateProgress(int progress, int max) {
+                    publishProgress(new String[]{null, "" + progress, "" + max,  null});
                 }
 
                 @Override
                 public void updateError(String error) {
-                    publishProgress(new String[]{null, null, error});
-                    Log.d(LOG_TAG, "Error: " + error);
+                    publishProgress(new String[]{null, null, null, error});
                 }
             });
 
@@ -254,10 +264,13 @@ public class BootloaderActivity extends Activity {
         protected void onProgressUpdate(String... progress) {
             if (progress[0] != null) {
                 mStatusLineTextView.setText("Status: " + progress[0]);
-            } else if (progress[1] != null) {
+            } else if (progress[1] != null && progress[2] != null) {
                 mProgressBar.setProgress(Integer.parseInt(progress[1]));
-            } else if (progress[2] != null) {
-                mStatusLineTextView.setText("Status: " + progress[2]);
+                // TODO: progress bar max is reset when activity is resumed
+                mProgressBar.setMax(Integer.parseInt(progress[2]));
+                Log.d(LOG_TAG, "setMax: " + Integer.parseInt(progress[2]));
+            } else if (progress[3] != null) {
+                mStatusLineTextView.setText("Status: " + progress[3]);
             }
         }
 
