@@ -286,7 +286,8 @@ public class RadioDriver extends AbstractLink{
          * @see java.lang.Runnable#run()
          */
         public void run() {
-            byte[] dataOut = new byte[] {(byte) 0xFF}; //Null packet
+            byte[] NULL_PACKET = new byte[] {(byte) 0xFF}; //Null packet
+            byte[] dataOut = NULL_PACKET;
 
             double waitTime = 0;
             int emptyCtr = 0;
@@ -340,21 +341,21 @@ public class RadioDriver extends AbstractLink{
                         emptyCtr += 1;
                         if (emptyCtr > 10) {
                             emptyCtr = 10;
-                            // Relaxation time if the last 10 packet where empty
-                            waitTime = 0.01;
+                            // Relaxation time if the last 10 packets where empty
+                            waitTime = 10;
                         } else {
                             waitTime = 0;
                         }
                     }
 
-                    // get the next packet to send of relaxation (wait 10ms)
+                    // get the next packet to send after relaxation (wait 10ms)
                     CrtpPacket outPacket = null;
                     outPacket = mOutQueue.pollFirst((long) waitTime, TimeUnit.MILLISECONDS);
 
                     if (outPacket != null) {
                         dataOut = outPacket.toByteArray();
                     } else {
-                        dataOut = new byte[]{(byte) 0xFF};
+                        dataOut = NULL_PACKET;
                     }
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
