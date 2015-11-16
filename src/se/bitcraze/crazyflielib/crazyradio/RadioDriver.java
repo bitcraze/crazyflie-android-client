@@ -174,6 +174,12 @@ public class RadioDriver extends AbstractLink{
         mLogger.debug("RadioDriver disconnect()");
         // Stop the comm thread
         stopSendReceiveThread();
+        // Avoid NPE because packets are still processed
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if(this.mCradio != null) {
             this.mCradio.disconnect();
             this.mCradio = null;
