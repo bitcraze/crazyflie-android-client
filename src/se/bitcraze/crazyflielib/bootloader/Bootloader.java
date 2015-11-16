@@ -23,6 +23,7 @@ import java.util.zip.ZipInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.bitcraze.crazyflielib.bootloader.Manifest.FirmwareDetails;
 import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
