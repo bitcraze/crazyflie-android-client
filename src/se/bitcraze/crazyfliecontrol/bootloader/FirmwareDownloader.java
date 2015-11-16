@@ -105,6 +105,7 @@ public class FirmwareDownloader {
         File sdcard = Environment.getExternalStorageDirectory();
         File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
         if (!releasesFile.exists()) {
+            releasesFile.getParentFile().mkdirs();
             releasesFile.createNewFile();
         }
         PrintWriter out = new PrintWriter(releasesFile);
