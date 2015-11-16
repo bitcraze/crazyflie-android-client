@@ -166,6 +166,15 @@ public class Bootloader {
         return fileData;
     }
 
+    public boolean flash(File file) {
+        // assume stm32 if no target name is specified and file extension is ".bin"
+        if (file.getName().endsWith(".bin")) {
+            mLogger.info("Assuming STM32 for file " + file.getName() + ".");
+            return flash(file, "stm32");
+        }
+        return flash(file, "");
+    }
+
     public boolean flash(File file, String... targetNames) {
         List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
         if (filesToFlash.isEmpty()) {
@@ -218,7 +227,7 @@ public class Bootloader {
                         FlashTarget ft = new FlashTarget(t, readFile(flashFile), firmwareDetails.getType(), t.getStartPage()); //TODO: does startPage HAVE to be an extra argument!? (it's already included in Target)
                         // add flash target
                         // if no target names are specified, flash everything
-                        if (targetNames.length == 0 || targetNames[0].isEmpty()) {
+                        if (targetNames == null || targetNames.length == 0 || targetNames[0].isEmpty()) {
                             filesToFlash.add(ft);
                         } else {
                             // else flash only files whose targets are contained in targetNames
@@ -238,19 +247,12 @@ public class Bootloader {
             if (targetNames == null || targetNames.length != 1) {
                 mLogger.error("Not an archive, must supply ONE target to flash.");
             } else {
-
-//                // assume stm32 if no target name is specified and file extension is ".bin"
-//                if (targetNames[0].isEmpty() && file.getName().endsWith(".bin")) {
-//                    targetNames = new String[] {"stm32"};
-//                }
-
                 for (String tn : targetNames) {
-                    if (tn.isEmpty()) {
-                        continue;
+                    if (!tn.isEmpty()) {
+                        Target target = this.mCload.getTargets().get(TargetTypes.fromString(tn));
+                        FlashTarget ft = new FlashTarget(target, readFile(file), "binary", target.getStartPage());
+                        filesToFlash.add(ft);
                     }
-                    Target target = this.mCload.getTargets().get(TargetTypes.fromString(tn));
-                    FlashTarget ft = new FlashTarget(target, readFile(file), "binary", target.getStartPage());
-                    filesToFlash.add(ft);
                 }
             }
         }
@@ -414,7 +416,7 @@ public class Bootloader {
 
             // Flash when the complete buffers are full
             if (bufferCounter >= t_data.getBufferPages()) {
-                String buffersFull = "Buffers full. Flashing page " + (i+1) + "...";
+                String buffersFull = "Flashing page " + (i+1) + "...";
                 mLogger.info(buffersFull);
                 notifyUpdateStatus(buffersFull);
                 notifyUpdateProgress(i+1, noOfPages);

@@ -139,8 +139,6 @@ public class BootloaderActivity extends Activity {
     };
 
     public void startFlashProcess(final View view) {
-        //TODO: enable wakelock
-
         // disable buttons and spinner
         mCheckUpdateButton.setEnabled(false);
         mFlashFirmwareButton.setEnabled(false);
@@ -156,6 +154,11 @@ public class BootloaderActivity extends Activity {
     }
 
     private void startBootloader() {
+
+        if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
+            stopFlashProcess("Firmware file can not be found.", false);
+            return;
+        }
 
         try {
             mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
@@ -182,9 +185,7 @@ public class BootloaderActivity extends Activity {
             protected void onPostExecute(Boolean result) {
                 mProgress.dismiss();
                 if (!result) {
-                    Toast.makeText(BootloaderActivity.this, "No Crazyflie found in bootloader mode.", Toast.LENGTH_SHORT).show();
-                    reenableWidgets();
-                    mFirmwareDownloader.removeDownloadListener(mDownloadListener);
+                    stopFlashProcess("No Crazyflie found in bootloader mode.", false);
                     return;
                 }
                 flashFirmware();
@@ -207,16 +208,7 @@ public class BootloaderActivity extends Activity {
 
         if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
             ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
-            mBootloader.resetToFirmware();
-            Log.d(LOG_TAG, "Incompatible firmware version.");
-            mStatusLineTextView.setText("Status: Incompatible firmware version.");
-            reenableWidgets();
-            return;
-        }
-
-        if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
-            mStatusLineTextView.setText("Status: Firmware file can not be found.");
-            reenableWidgets();
+            stopFlashProcess("Incompatible firmware version.", false);
             return;
         }
 
@@ -258,11 +250,10 @@ public class BootloaderActivity extends Activity {
             File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
 
             long startTime = System.currentTimeMillis();
-            //TODO: fix for NRF51 files
-            mBootloader.flash(firmwareFile, "stm32");
+            boolean flashSuccessful = mBootloader.flash(firmwareFile);
             String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
             Log.d(LOG_TAG, flashTime);
-            return flashTime;
+            return flashSuccessful ? ("Flashing successful. " + flashTime) : "Flashing not successful.";
         }
 
         @Override
@@ -281,21 +272,30 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();
-            mBootloader.resetToFirmware();
-            if (mBootloader != null) {
-                mBootloader.close();
-            }
-            reenableWidgets();
-            mProgressBar.setProgress(0);
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            stopFlashProcess(result, true);
         }
     }
 
-    public void reenableWidgets() {
+    private void stopFlashProcess(String result, boolean reset) {
+        if(!result.isEmpty()) {
+            Log.d(LOG_TAG, result);
+            mStatusLineTextView.setText("Status: " + result);
+        }
+        if (reset) {
+            Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();
+            mBootloader.resetToFirmware();
+        }
+        if (mBootloader != null) {
+            mBootloader.close();
+        }
+        mFirmwareDownloader.removeDownloadListener(mDownloadListener);
+        //re-enable widgets
         mCheckUpdateButton.setEnabled(true);
         mFlashFirmwareButton.setEnabled(true);
         mFirmwareSpinner.setEnabled(true);
+
+        mProgressBar.setProgress(0);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     /**
