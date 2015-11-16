@@ -392,6 +392,7 @@ public class MainActivity extends Activity {
         int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
         try {
+            //TODO: use UsbLinkAndroid.isCrazyradioAvailable() instead of try/catch
             // create link
             try {
                 mLink = new CrazyradioLink(new UsbLinkAndroid(this));
