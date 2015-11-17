@@ -80,6 +80,10 @@ public class Cloader {
      * @return always the first available bootloader connection
      */
     public ConnectionData scanForBootloader() {
+        // workaround for Bluetooth driver
+        if (!(this.mDriver instanceof RadioDriver)) {
+            return new ConnectionData(0,0);
+        }
         long startTime = System.currentTimeMillis();
         List<ConnectionData> resultList = new ArrayList<ConnectionData>();
         while (resultList.size() == 0 && (System.currentTimeMillis() - startTime) < 10000) {
@@ -276,6 +280,11 @@ public class Cloader {
                     self._info_cb.call(self.targets[target_id])
                 */
                 if (this.mProtocolVersion != BootVersion.CF1_PROTO_VER_1) {
+                    return true;
+                }
+
+                // only setAddress when using Crazyradio
+                if (!(this.mDriver instanceof RadioDriver)) {
                     return true;
                 }
 

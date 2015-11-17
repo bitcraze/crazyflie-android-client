@@ -8,16 +8,20 @@ import java.util.List;
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
+import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
+import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -160,37 +164,59 @@ public class BootloaderActivity extends Activity {
             return;
         }
 
-        try {
-            mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
-        } catch (IOException e) {
-            Log.e(LOG_TAG, e.getMessage());
-            return;
+        CrtpDriver driver = null;
+
+        if (UsbLinkAndroid.isCrazyradioAvailable(this, (UsbManager) this.getSystemService(Context.USB_SERVICE))) {
+            try {
+                driver = new RadioDriver(new UsbLinkAndroid(this));
+            } catch (IOException e) {
+                Log.e(LOG_TAG, e.getMessage());
+                return;
+            }
+        } else {
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+//                if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
+//                    Log.d(LOG_TAG, "Using bluetooth write with response");
+//                    mLink = new BleLink(this, true);
+//                } else {
+//                    Log.d(LOG_TAG, "Using bluetooth write without response");
+//                    mLink = new BleLink(this, false);
+//                }
+                driver = new BleLink(this, false, true);
+            } else {
+                // TODO: improve error message
+                Log.e(LOG_TAG, "No BLE support available.");
+                return;
+            }
         }
 
-        new AsyncTask<Void, Void, Boolean>() {
+        if (driver != null) {
+            mBootloader = new Bootloader(driver);
+            new AsyncTask<Void, Void, Boolean>() {
 
-            private ProgressDialog mProgress;
+                private ProgressDialog mProgress;
 
-            @Override
-            protected void onPreExecute() {
-                mProgress = ProgressDialog.show(BootloaderActivity.this, "Start bootloader", "Searching for Crazyflie in bootloader mode...", true, false);
-            }
-
-            @Override
-            protected Boolean doInBackground(Void... arg0) {
-                return mBootloader.startBootloader(false);
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                mProgress.dismiss();
-                if (!result) {
-                    stopFlashProcess("No Crazyflie found in bootloader mode.", false);
-                    return;
+                @Override
+                protected void onPreExecute() {
+                    mProgress = ProgressDialog.show(BootloaderActivity.this, "Start bootloader", "Searching for Crazyflie in bootloader mode...", true, false);
                 }
-                flashFirmware();
-            }
-        }.execute();
+
+                @Override
+                protected Boolean doInBackground(Void... arg0) {
+                    return mBootloader.startBootloader(false);
+                }
+
+                @Override
+                protected void onPostExecute(Boolean result) {
+                    mProgress.dismiss();
+                    if (!result) {
+                        stopFlashProcess("No Crazyflie found in bootloader mode.", false);
+                        return;
+                    }
+                    flashFirmware();
+                }
+            }.execute();
+        }
     }
 
     //TODO: simplify
