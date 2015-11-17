@@ -25,10 +25,10 @@
  *
  */
 
-package se.bitcraze.crazyflielib;
+package se.bitcraze.crazyflielib.crazyflie;
 
 /**
- * Interface for receiving notifications about the connection status of a {@link Link}.
+ * Interface for receiving notifications about the connection status.
  */
 public interface ConnectionListener {
 
@@ -54,7 +54,7 @@ public interface ConnectionListener {
     public void setupFinished(String connectionInfo);
 
     /**
-     * Callback when connection initial connection fails (i.e no Crazyflie at the specified address)
+     * Callback when initial connection fails (i.e no Crazyflie at the specified address)
      *
      * @param connectionInfo
      * @param msg

@@ -25,14 +25,13 @@
  *
  */
 
-package se.bitcraze.crazyflielib;
+package se.bitcraze.crazyflielib.crazyflie;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
 
 /**
- * Interface for receiving notifications about data received from the Crazyflie
- * on a {@link Link}.
+ * Interface for receiving notifications about data received from the Crazyflie.
  */
 public abstract class DataListener {
 

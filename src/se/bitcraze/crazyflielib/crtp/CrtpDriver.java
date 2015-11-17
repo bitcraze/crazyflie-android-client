@@ -30,7 +30,7 @@ package se.bitcraze.crazyflielib.crtp;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import se.bitcraze.crazyflielib.ConnectionListener;
+import se.bitcraze.crazyflielib.crazyflie.ConnectionListener;
 import se.bitcraze.crazyflielib.crazyflie.LinkListener;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 

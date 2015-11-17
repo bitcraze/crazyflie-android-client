@@ -37,7 +37,7 @@ import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyflielib.BleLink;
-import se.bitcraze.crazyflielib.ConnectionAdapter;
+import se.bitcraze.crazyflielib.crazyflie.ConnectionAdapter;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
