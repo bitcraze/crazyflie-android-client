@@ -38,8 +38,8 @@ import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
-import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import android.annotation.TargetApi;
@@ -395,7 +395,7 @@ public class MainActivity extends Activity {
             //TODO: use UsbLinkAndroid.isCrazyradioAvailable() instead of try/catch
             // create link
             try {
-                mLink = new CrazyradioLink(new UsbLinkAndroid(this));
+                mLink = new Crazyradio(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){

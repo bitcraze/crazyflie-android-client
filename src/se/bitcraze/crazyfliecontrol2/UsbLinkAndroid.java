@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.IUsbLink;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -162,7 +162,7 @@ public class UsbLinkAndroid implements IUsbLink{
     }
 
     public static boolean isCrazyradio(UsbDevice device){
-        return device.getVendorId() == CrazyradioLink.VENDOR_ID && device.getProductId() == CrazyradioLink.PRODUCT_ID;
+        return device.getVendorId() == Crazyradio.VENDOR_ID && device.getProductId() == Crazyradio.PRODUCT_ID;
     }
 
     /* (non-Javadoc)

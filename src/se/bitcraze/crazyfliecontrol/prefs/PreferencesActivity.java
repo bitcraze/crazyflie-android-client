@@ -32,8 +32,8 @@ import java.io.IOException;
 import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
-import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -522,10 +522,10 @@ public class PreferencesActivity extends PreferenceActivity {
                 @Override
                 protected ConnectionData[] doInBackground(Void... arg0) {
                     UsbLinkAndroid usbLinkAndroid = null;
-                    CrazyradioLink crlink = null;
+                    Crazyradio crlink = null;
                     try {
                         usbLinkAndroid = new UsbLinkAndroid(getActivity());
-                        crlink = new CrazyradioLink(usbLinkAndroid);
+                        crlink = new Crazyradio(usbLinkAndroid);
                         //For testing purposes only
 //                        return new ConnectionData[0];
                         boolean useSlowScan = false;

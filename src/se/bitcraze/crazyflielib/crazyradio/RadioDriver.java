@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.AbstractLink;
-import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.IUsbLink;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
@@ -51,7 +50,7 @@ public class RadioDriver extends AbstractLink{
 
     final static Logger mLogger = LoggerFactory.getLogger("RadioDriver");
 
-    private CrazyradioLink mCradio;
+    private Crazyradio mCradio;
     private Thread mRadioDriverThread;
 
     private IUsbLink mUsbInterface;
@@ -80,7 +79,7 @@ public class RadioDriver extends AbstractLink{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            this.mCradio = new CrazyradioLink(mUsbInterface);
+            this.mCradio = new Crazyradio(mUsbInterface);
         } else {
             mLogger.error("Crazyradio already open");
         }
@@ -198,11 +197,11 @@ public class RadioDriver extends AbstractLink{
     /**
      * Scan interface for Crazyflies
      */
-    public static List<ConnectionData> scanInterface(CrazyradioLink crazyRadio, IUsbLink crazyUsbInterface) {
+    public static List<ConnectionData> scanInterface(Crazyradio crazyRadio, IUsbLink crazyUsbInterface) {
         List<ConnectionData> connectionDataList = new ArrayList<ConnectionData>();
 
         if(crazyRadio == null) {
-            crazyRadio = new CrazyradioLink(crazyUsbInterface);
+            crazyRadio = new Crazyradio(crazyUsbInterface);
         } else {
             mLogger.error("Cannot scan for links while the link is open!");
             //TODO: throw exception?
@@ -242,12 +241,12 @@ public class RadioDriver extends AbstractLink{
 
     public boolean scanSelected(int channel, int datarate, byte[] packet) {
         if (mCradio == null) {
-            mCradio = new CrazyradioLink(mUsbInterface);
+            mCradio = new Crazyradio(mUsbInterface);
         }
         return mCradio.scanSelected(channel, datarate, packet);
     }
 
-    public CrazyradioLink getRadio() {
+    public Crazyradio getRadio() {
         return this.mCradio;
     }
 

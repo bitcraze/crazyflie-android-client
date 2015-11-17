@@ -10,10 +10,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflielib.CrazyradioLink;
 import se.bitcraze.crazyflielib.bootloader.Target.TargetTypes;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioAck;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
@@ -60,8 +60,8 @@ public class Cloader {
         this.mDriver = driver;
 
         //self._available_boot_uri = ("radio://0/110/2M", "radio://0/0/2M")
-        mAvailableBootConnections.add(new ConnectionData(110, CrazyradioLink.DR_2MPS));
-        mAvailableBootConnections.add(new ConnectionData(0, CrazyradioLink.DR_2MPS));
+        mAvailableBootConnections.add(new ConnectionData(110, Crazyradio.DR_2MPS));
+        mAvailableBootConnections.add(new ConnectionData(0, Crazyradio.DR_2MPS));
     }
 
     /**
@@ -318,7 +318,7 @@ public class Cloader {
         // self.link.pause()
         this.mDriver.stopSendReceiveThread();
 
-        CrazyradioLink crazyRadio = ((RadioDriver) this.mDriver).getRadio();
+        Crazyradio crazyRadio = ((RadioDriver) this.mDriver).getRadio();
                 //TODO: is there a more elegant way to do this?
                 //pkdata = (0xFF, 0xFF, 0x11) + tuple(new_address)
                 byte[] pkData = new byte[newAddress.length + 3];

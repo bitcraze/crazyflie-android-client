@@ -25,7 +25,7 @@
  *
  */
 
-package se.bitcraze.crazyflielib;
+package se.bitcraze.crazyflielib.crazyradio;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,11 +38,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
-import se.bitcraze.crazyflielib.crazyradio.RadioAck;
+import se.bitcraze.crazyflielib.AbstractLink;
+import se.bitcraze.crazyflielib.IUsbLink;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
-public class CrazyradioLink extends AbstractLink {
+public class Crazyradio extends AbstractLink {
 
     final Logger mLogger = LoggerFactory.getLogger("CrazyradioLink");
 
@@ -100,7 +100,7 @@ public class CrazyradioLink extends AbstractLink {
      *
      * @param usbLink
      */
-    public CrazyradioLink(IUsbLink usbLink) {
+    public Crazyradio(IUsbLink usbLink) {
         this.mUsbLink = usbLink;
         this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
 
