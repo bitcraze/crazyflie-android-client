@@ -21,9 +21,11 @@ import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -48,6 +50,8 @@ public class BootloaderActivity extends Activity {
     private Firmware mSelectedFirmware = null;
     private FirmwareDownloader mFirmwareDownloader;
     private Bootloader mBootloader;
+    private FlashFirmwareTask mFlashFirmwareTask;
+    private boolean mDoubleBackToExitPressedOnce = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,36 @@ public class BootloaderActivity extends Activity {
             //TODO: force update of spinner adapter even though firmware list is empty
         }
     }
+
+    @Override
+    protected void onPause() {
+        //TODO: improve
+        //TODO: why does resetToFirmware not work?
+        Log.d(LOG_TAG, "OnPause: stop bootloader.");
+        stopFlashProcess("stop bootloader", false);
+        super.onPause();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
+            if (mDoubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                return;
+            }
+            this.mDoubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to cancel flashing and exit", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    mDoubleBackToExitPressedOnce = false;
+
+                }
+            }, 2000);
+        }
+    }
+
 
     public void checkForFirmwareUpdate(View view) {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -214,7 +248,8 @@ public class BootloaderActivity extends Activity {
 
         //keep the screen on during flashing
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        new FlashFirmwareTask().execute();
+        mFlashFirmwareTask = new FlashFirmwareTask();
+        mFlashFirmwareTask.execute();
         //TODO: wait for finished task
     }
 
