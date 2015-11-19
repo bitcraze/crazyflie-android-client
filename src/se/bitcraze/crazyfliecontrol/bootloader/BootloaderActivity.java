@@ -33,6 +33,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,8 +45,9 @@ public class BootloaderActivity extends Activity {
     private ImageButton mFlashFirmwareButton;
     private Spinner mFirmwareSpinner;
     private CustomSpinnerAdapter mSpinnerAdapter;
+    private ScrollView mScrollView;
+    private TextView mConsoleTextView;
     private ProgressBar mProgressBar;
-    private TextView mStatusLineTextView;
 
     private Firmware mSelectedFirmware = null;
     private FirmwareDownloader mFirmwareDownloader;
@@ -60,8 +62,9 @@ public class BootloaderActivity extends Activity {
         mCheckUpdateButton = (ImageButton) findViewById(R.id.bootloader_checkUpdate);
         mFlashFirmwareButton = (ImageButton) findViewById(R.id.bootloader_flashFirmware);
         mFirmwareSpinner = (Spinner) findViewById(R.id.bootloader_firmwareSpinner);
+        mScrollView = (ScrollView) findViewById(R.id.bootloader_scrollView);
+        mConsoleTextView = (TextView) findViewById(R.id.bootloader_statusLine);
         mProgressBar = (ProgressBar) findViewById(R.id.bootloader_progressBar);
-        mStatusLineTextView = (TextView) findViewById(R.id.bootloader_statusLine);
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
@@ -123,11 +126,11 @@ public class BootloaderActivity extends Activity {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            mStatusLineTextView.setText("Status: Checking for updates...");
+            appendConsole("Checking for updates...");
             mCheckUpdateButton.setEnabled(false);
             mFirmwareDownloader.checkForFirmwareUpdate();
         } else {
-            mStatusLineTextView.setText("Status: No internet connection available.");
+            appendConsole("No internet connection available.");
         }
     }
 
@@ -160,14 +163,15 @@ public class BootloaderActivity extends Activity {
         mSpinnerAdapter.addAll(firmwares);
     }
 
-    public void setStatusLine (String status) {
-        this.mStatusLineTextView.setText(status);
+    public void appendConsole(String status) {
+        this.mConsoleTextView.append("\n" + status);
+        mScrollView.fullScroll(View.FOCUS_DOWN);
     }
 
     private FirmwareDownloadListener mDownloadListener = new FirmwareDownloadListener () {
         public void downloadFinished() {
             //flash firmware once firmware is downloaded
-            mStatusLineTextView.setText("Firmware downloaded.");
+            appendConsole("Firmware downloaded.");
             startBootloader();
         }
     };
@@ -178,10 +182,13 @@ public class BootloaderActivity extends Activity {
         mFlashFirmwareButton.setEnabled(false);
         mFirmwareSpinner.setEnabled(false);
 
+        //clear console
+        mConsoleTextView.setText("");
+
         // download firmware file
 
         // TODO: not visible
-        mStatusLineTextView.setText("Downloading firmware...");
+        appendConsole("Downloading firmware...");
 
         mFirmwareDownloader.addDownloadListener(mDownloadListener);
         mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
@@ -233,7 +240,7 @@ public class BootloaderActivity extends Activity {
     }
 
     //TODO: simplify
-    //TODO: mStatusLineTextView.setText("Status: Restart the Crazyflie you want to bootload in the next 10 seconds ...");
+    //TODO: appendConsole("Restart the Crazyflie you want to bootload in the next 10 seconds ...");
     public void flashFirmware() {
         //TODO: externalize
         //Check if firmware is compatible with Crazyflie
@@ -242,7 +249,7 @@ public class BootloaderActivity extends Activity {
                             protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
 
         String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
-        mStatusLineTextView.setText(cfversion);
+        appendConsole(cfversion);
         Log.d(LOG_TAG, cfversion);
 
         if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
@@ -299,14 +306,14 @@ public class BootloaderActivity extends Activity {
         @Override
         protected void onProgressUpdate(String... progress) {
             if (progress[0] != null) {
-                mStatusLineTextView.setText("Status: " + progress[0]);
+                appendConsole(progress[0]);
             } else if (progress[1] != null && progress[2] != null) {
                 mProgressBar.setProgress(Integer.parseInt(progress[1]));
                 // TODO: progress bar max is reset when activity is resumed
                 mProgressBar.setMax(Integer.parseInt(progress[2]));
                 Log.d(LOG_TAG, "setMax: " + Integer.parseInt(progress[2]));
             } else if (progress[3] != null) {
-                mStatusLineTextView.setText("Status: " + progress[3]);
+                appendConsole(progress[3]);
             }
         }
 
@@ -319,7 +326,7 @@ public class BootloaderActivity extends Activity {
     private void stopFlashProcess(String result, boolean reset) {
         if(!result.isEmpty()) {
             Log.d(LOG_TAG, result);
-            mStatusLineTextView.setText("Status: " + result);
+            appendConsole(result);
         }
         if (reset) {
             Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();

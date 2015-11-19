@@ -91,13 +91,13 @@ public class FirmwareDownloader {
                     return "Unable to save JSON file.";
                 }
             }
-            return "Status: Found " + mFirmwares.size() + " firmware files.";
+            return "Found " + mFirmwares.size() + " firmware files.";
         }
 
         @Override
         protected void onPostExecute(String result) {
             ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwares);
-            ((BootloaderActivity) mContext).setStatusLine(result);
+            ((BootloaderActivity) mContext).appendConsole(result);
         }
     }
 
@@ -126,7 +126,7 @@ public class FirmwareDownloader {
             downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
         } else {
             Log.d(LOG_TAG, "Selected firmware does not have assets.");
-            ((BootloaderActivity) mContext).setStatusLine("Selected firmware does not have assets.");
+            ((BootloaderActivity) mContext).appendConsole("Selected firmware does not have assets.");
             return;
         }
     }

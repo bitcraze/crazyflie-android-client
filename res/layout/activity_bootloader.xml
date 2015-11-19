@@ -23,7 +23,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="false"
         android:layout_below="@id/bootloader_title"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:paddingBottom="10dp" >
         
         <Spinner
             android:id="@+id/bootloader_firmwareSpinner"
@@ -54,14 +55,23 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/bootloader_statusLine"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="bottom"
+    <ScrollView
+        android:id="@+id/bootloader_scrollView"
+        android:layout_width="fill_parent"
+        android:layout_height="150dp"
+        android:scrollbars="vertical"
         android:layout_above="@+id/bootloader_progressBar"
         android:layout_below="@id/linearLayout1"
-        android:text="@string/bootloader_statusLine" />
+        android:fillViewport="true"
+        android:background="@drawable/stroke_bg" >
+    
+        <TextView
+            android:id="@+id/bootloader_statusLine"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:padding="3dp" />
+    </ScrollView>
 
     <ProgressBar
         android:id="@+id/bootloader_progressBar"
