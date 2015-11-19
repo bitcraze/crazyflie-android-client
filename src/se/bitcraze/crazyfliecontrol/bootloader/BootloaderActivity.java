@@ -196,8 +196,13 @@ public class BootloaderActivity extends Activity {
 
         try {
             mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
-        } catch (IOException e) {
-            Log.e(LOG_TAG, e.getMessage());
+        } catch (IOException ioe) {
+            Log.e(LOG_TAG, ioe.getMessage());
+            stopFlashProcess(ioe.getMessage(), false);
+            return;
+        } catch (IllegalArgumentException iae) {
+            Log.e(LOG_TAG, iae.getMessage());
+            stopFlashProcess(iae.getMessage(), false);
             return;
         }
 
