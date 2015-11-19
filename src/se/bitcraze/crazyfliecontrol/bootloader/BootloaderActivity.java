@@ -96,14 +96,16 @@ public class BootloaderActivity extends Activity {
     protected void onPause() {
         //TODO: improve
         //TODO: why does resetToFirmware not work?
-        Log.d(LOG_TAG, "OnPause: stop bootloader.");
-        stopFlashProcess("stop bootloader", false);
+        if (mFlashFirmwareTask != null && mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
+            Log.d(LOG_TAG, "OnPause: stop bootloader.");
+            stopFlashProcess("Stopping bootloader", false);
+        }
         super.onPause();
     }
 
     @Override
     public void onBackPressed() {
-        if (mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
+        if (mFlashFirmwareTask != null && mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
             if (mDoubleBackToExitPressedOnce) {
                 super.onBackPressed();
                 return;
@@ -118,6 +120,8 @@ public class BootloaderActivity extends Activity {
 
                 }
             }, 2000);
+        } else {
+            super.onBackPressed();
         }
     }
 
