@@ -42,19 +42,47 @@ import se.bitcraze.crazyflielib.AbstractLink;
 import se.bitcraze.crazyflielib.IUsbLink;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
+/**
+ * Used for communication with the Crazyradio USB dongle
+ *
+ */
 public class Crazyradio extends AbstractLink {
 
-    final Logger mLogger = LoggerFactory.getLogger("CrazyradioLink");
+    final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-    /**
-     * Vendor ID of the Crazyradio USB dongle.
-     */
-    public static final int VENDOR_ID = 0x1915;
+    // USB parameters
+    public final static int CRADIO_VID = 0x1915; //Vendor ID
+    public final static int CRADIO_PID = 0x7777; //Product ID
 
-    /**
-     * Product ID of the Crazyradio USB dongle.
-     */
-    public static final int PRODUCT_ID = 0x7777;
+    // Dongle configuration requests
+    // See http://wiki.bitcraze.se/projects:crazyradio:protocol for documentation
+    private final static int SET_RADIO_CHANNEL = 0x01;
+    private final static int SET_RADIO_ADDRESS = 0x02;
+    private final static int SET_DATA_RATE = 0x03;
+    private final static int SET_RADIO_POWER = 0x04;
+    private final static int SET_RADIO_ARD = 0x05;
+    private final static int SET_RADIO_ARC = 0x06;
+    private final static int ACK_ENABLE = 0x10;
+    private final static int SET_CONT_CARRIER = 0x20;
+    private final static int SCAN_CHANNELS = 0x21;
+    private final static int LAUNCH_BOOTLOADER = 0xFF;
+
+    // configuration constants
+    public final static int DR_250KPS = 0;
+    public final static int DR_1MPS = 1;
+    public final static int DR_2MPS = 2;
+
+    public final static int P_M18DBM = 0;
+    public final static int P_M12DBM = 1;
+    public final static int P_M6DBM = 2;
+    public final static int P_0DBM = 3;
+
+    private IUsbLink mUsbLink;
+    private int mArc;
+    private float mVersion; // Crazyradio firmware version
+    private String mSerialNumber; // Crazyradio serial number
+
+    public final static byte[] NULL_PACKET = new byte[] { (byte) 0xff };
 
     /**
      * Number of packets without acknowledgment before marking the connection as
@@ -67,33 +95,9 @@ public class Crazyradio extends AbstractLink {
      */
     public static final int PACKETS_BETWEEN_LINK_QUALITY_UPDATE = 5;
 
-    // Dongle configuration requests
-    // See http://wiki.bitcraze.se/projects:crazyradio:protocol for documentation
-    private static final int REQUEST_SET_RADIO_CHANNEL = 0x01;
-    private static final int REQUEST_SET_RADIO_ADDRESS = 0x02;
-    private static final int REQUEST_SET_DATA_RATE = 0x03;
-    private static final int REQUEST_SET_RADIO_POWER = 0x04;
-    private static final int REQUEST_SET_RADIO_ARD = 0x05;
-    private static final int REQUEST_SET_RADIO_ARC = 0x06;
-    private static final int REQUEST_ACK_ENABLE = 0x10;
-    private static final int REQUEST_SET_CONT_CARRIER = 0x20;
-    private static final int REQUEST_START_SCAN_CHANNELS = 0x21;
-    private static final int REQUEST_GET_SCAN_CHANNELS = 0x21;
-    private static final int REQUEST_LAUNCH_BOOTLOADER = 0xFF;
-
-    // configuration constants
-    public final static int DR_250KPS = 0;
-    public final static int DR_1MPS = 1;
-    public final static int DR_2MPS = 2;
-
     private Thread mRadioLinkThread;
 
     private final BlockingDeque<CrtpPacket> mSendQueue;
-
-    private IUsbLink mUsbLink;
-    private float mVersion; // Crazyradio firmware version
-    private String mSerialNumber; // Crazyradio serial number
-    private int mArc;
 
     /**
      * Create a new link using the Crazyradio.
@@ -139,14 +143,14 @@ public class Crazyradio extends AbstractLink {
             // scan for all 3 data rates
             for (int datarate = 0; datarate < 3; datarate++) {
                 // set data rate
-                mUsbLink.sendControlTransfer(0x40, REQUEST_SET_DATA_RATE, datarate, 0, null);
+                mUsbLink.sendControlTransfer(0x40, SET_DATA_RATE, datarate, 0, null);
                 if (useSlowScan) {
                     result.addAll(scanChannelsSlow(datarate));
                 } else {
                     mLogger.debug("Fast firmware scan...");
                     //long transfer timeout (1000) is important!
-                    mUsbLink.sendControlTransfer(0x40, REQUEST_START_SCAN_CHANNELS, 0, 125, packet);
-                    final int nfound = mUsbLink.sendControlTransfer(0xc0, REQUEST_GET_SCAN_CHANNELS, 0, 0, rdata);
+                    mUsbLink.sendControlTransfer(0x40, SCAN_CHANNELS, 0, 125, packet);
+                    final int nfound = mUsbLink.sendControlTransfer(0xc0, SCAN_CHANNELS, 0, 0, rdata);
                     for (int i = 0; i < nfound; i++) {
                         result.add(new ConnectionData(rdata[i], datarate));
                         mLogger.debug("Found channel: " + rdata[i] + " Data rate: " + datarate);
@@ -172,7 +176,7 @@ public class Crazyradio extends AbstractLink {
 
         for (int channel = 0; channel < 126; channel++) {
             // set channel
-            mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null);
+            mUsbLink.sendControlTransfer(0x40, SET_RADIO_CHANNEL, channel, 0, null);
 
             byte[] receiveData = new byte[33];
             final byte[] sendData = CrtpPacket.NULL_PACKET.toByteArray();
@@ -287,7 +291,7 @@ public class Crazyradio extends AbstractLink {
      * @param channel the new channel. Must be in range 0-125.
      */
     public void setRadioChannel(int channel) {
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_CHANNEL, channel, 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_RADIO_CHANNEL, channel, 0, null);
     }
 
     /**
@@ -296,7 +300,7 @@ public class Crazyradio extends AbstractLink {
      * @param rate new data rate. Possible values are in range 0-2.
      */
     public void setDataRate(int rate) {
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_DATA_RATE, rate, 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_DATA_RATE, rate, 0, null);
     }
 
     /**
@@ -310,7 +314,7 @@ public class Crazyradio extends AbstractLink {
         if (address.length != 5) {
             throw new IllegalArgumentException("radio address must be 5 bytes long");
         }
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ADDRESS, 0, 0, address);
+        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ADDRESS, 0, 0, address);
     }
 
     /**
@@ -321,7 +325,7 @@ public class Crazyradio extends AbstractLink {
      * @param continuous <code>true</code> to enable the continuous carrier mode
      */
     public void setContinuousCarrier(boolean continuous) {
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null);
     }
 
     /**
@@ -336,7 +340,7 @@ public class Crazyradio extends AbstractLink {
         } else if (param > 0xF) {
             param = 0xF;
         }
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARD, param, 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ARD, param, 0, null);
     }
 
     /**
@@ -349,7 +353,7 @@ public class Crazyradio extends AbstractLink {
         if (bytes < 0 || bytes > 32) {
             throw new IllegalArgumentException("payload length must be in range 0-32");
         }
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARD, 0x80 | bytes, 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ARD, 0x80 | bytes, 0, null);
     }
 
     /**
@@ -363,7 +367,7 @@ public class Crazyradio extends AbstractLink {
         if (arc < 0 || arc > 15) {
             throw new IllegalArgumentException("count must be in range 0-15");
         }
-        mUsbLink.sendControlTransfer(0x40, REQUEST_SET_RADIO_ARC, arc, 0, null);
+        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ARC, arc, 0, null);
         this.mArc = arc;
     }
 

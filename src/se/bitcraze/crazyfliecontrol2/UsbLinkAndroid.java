@@ -162,7 +162,7 @@ public class UsbLinkAndroid implements IUsbLink{
     }
 
     public static boolean isCrazyradio(UsbDevice device){
-        return device.getVendorId() == Crazyradio.VENDOR_ID && device.getProductId() == Crazyradio.PRODUCT_ID;
+        return device.getVendorId() == Crazyradio.CRADIO_VID && device.getProductId() == Crazyradio.CRADIO_PID;
     }
 
     /* (non-Javadoc)
