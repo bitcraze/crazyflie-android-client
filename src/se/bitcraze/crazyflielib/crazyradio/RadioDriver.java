@@ -374,8 +374,7 @@ public class RadioDriver extends AbstractLink{
 
     @Override
     public boolean isConnected() {
-        // TODO Auto-generated method stub
-        return false;
+        return this.mRadioDriverThread != null;
     }
 
 }

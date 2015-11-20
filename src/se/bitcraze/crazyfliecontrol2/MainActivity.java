@@ -36,6 +36,7 @@ import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyflielib.AbstractLink;
 import se.bitcraze.crazyflielib.BleLink;
 import se.bitcraze.crazyflielib.crazyflie.ConnectionAdapter;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
@@ -412,7 +413,7 @@ public class MainActivity extends Activity {
             }
 
             // add listener for connection status
-            mLink.addConnectionListener(new ConnectionAdapter() {
+            ((AbstractLink) mLink).addConnectionListener(new ConnectionAdapter() {
 
                 @Override
                 public void connectionRequested(String connectionInfo) {

@@ -76,11 +76,16 @@ public class ConsolePacket extends CrtpPacket {
     /**
      * Construct a console packet using given data.
      *
-     * @param data the data (must not include the CRTP header)
+     * @param payload the data (must not include the CRTP header)
      * @return parsed console packet
      */
-    public static ConsolePacket parse(byte[] data) {
-        return new ConsolePacket(new String(data, CHARSET));
+    public static ConsolePacket parse(byte[] payload) {
+        return new ConsolePacket(new String(payload, CHARSET));
+    }
+
+    @Override
+    public String toString() {
+        return "ConsolePacket: " + getText();
     }
 
 }

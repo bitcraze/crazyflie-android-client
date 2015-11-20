@@ -150,16 +150,6 @@ public class CrtpPacket {
      * @param channel channel to set in the header.
      * @param port port to set in the header.
      */
-    public CrtpPacket(int channel, int port) {
-        this(channel, CrtpPort.getByNumber((byte) port));
-    }
-
-    /**
-     * Create a new packet.
-     *
-     * @param channel channel to set in the header.
-     * @param port port to set in the header.
-     */
     public CrtpPacket(int channel, CrtpPort port) {
         this.mPacketHeader = new Header(channel, port);
         this.mPacketPayload = new byte[0];
