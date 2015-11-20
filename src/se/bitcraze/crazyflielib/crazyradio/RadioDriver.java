@@ -92,7 +92,7 @@ public class RadioDriver extends AbstractLink{
         */
 
         if (this.mCradio.getVersion() >= 0.4) {
-            this.mCradio.setAutoRetryARC(10);
+            this.mCradio.setArc(10);
         } else {
             mLogger.warn("Radio version <0.4 will be obsolete soon!");
         }
@@ -209,7 +209,7 @@ public class RadioDriver extends AbstractLink{
 
         mLogger.info("Found Crazyradio with version " + crazyRadio.getVersion() + " and serial number " + crazyRadio.getSerialNumber());
 
-        crazyRadio.setAutoRetryARC(1);
+        crazyRadio.setArc(1);
 
 //        crazyRadio.setDataRate(CrazyradioLink.DR_250KPS);
 //        List<Integer> scanRadioChannels250k = crazyRadio.scanChannels();
@@ -291,8 +291,7 @@ public class RadioDriver extends AbstractLink{
          * @see java.lang.Runnable#run()
          */
         public void run() {
-            byte[] NULL_PACKET = new byte[] {(byte) 0xFF}; //Null packet
-            byte[] dataOut = NULL_PACKET;
+            byte[] dataOut = Crazyradio.NULL_PACKET;
 
             double waitTime = 0;
             int emptyCtr = 0;
@@ -360,7 +359,7 @@ public class RadioDriver extends AbstractLink{
                     if (outPacket != null) {
                         dataOut = outPacket.toByteArray();
                     } else {
-                        dataOut = NULL_PACKET;
+                        dataOut = Crazyradio.NULL_PACKET;
                     }
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
