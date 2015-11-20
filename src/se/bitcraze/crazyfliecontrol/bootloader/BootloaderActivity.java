@@ -18,6 +18,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -26,6 +27,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -98,7 +101,7 @@ public class BootloaderActivity extends Activity {
         //TODO: why does resetToFirmware not work?
         if (mFlashFirmwareTask != null && mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
             Log.d(LOG_TAG, "OnPause: stop bootloader.");
-            stopFlashProcess("Stopping bootloader", false);
+            stopFlashProcess(false);
         }
         super.onPause();
     }
@@ -168,7 +171,18 @@ public class BootloaderActivity extends Activity {
     }
 
     public void appendConsole(String status) {
+        Log.d(LOG_TAG, status);
         this.mConsoleTextView.append("\n" + status);
+        mScrollView.fullScroll(View.FOCUS_DOWN);
+    }
+
+    public void appendConsoleError(String status) {
+        Log.e(LOG_TAG, status);
+        int start = this.mConsoleTextView.getText().length();
+        this.mConsoleTextView.append("\n" + status);
+        int end = this.mConsoleTextView.getText().length();
+        Spannable spannableText = (Spannable) this.mConsoleTextView.getText();
+        spannableText.setSpan(new ForegroundColorSpan(Color.RED), start, end, 0);
         mScrollView.fullScroll(View.FOCUS_DOWN);
     }
 
@@ -201,19 +215,20 @@ public class BootloaderActivity extends Activity {
     private void startBootloader() {
 
         if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
-            stopFlashProcess("Firmware file can not be found.", false);
+            appendConsoleError("Firmware file can not be found.");
+            stopFlashProcess(false);
             return;
         }
 
         try {
             mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
         } catch (IOException ioe) {
-            Log.e(LOG_TAG, ioe.getMessage());
-            stopFlashProcess(ioe.getMessage(), false);
+            appendConsoleError(ioe.getMessage());
+            stopFlashProcess(false);
             return;
         } catch (IllegalArgumentException iae) {
-            Log.e(LOG_TAG, iae.getMessage());
-            stopFlashProcess(iae.getMessage(), false);
+            appendConsoleError(iae.getMessage());
+            stopFlashProcess(false);
             return;
         }
 
@@ -235,7 +250,8 @@ public class BootloaderActivity extends Activity {
             protected void onPostExecute(Boolean result) {
                 mProgress.dismiss();
                 if (!result) {
-                    stopFlashProcess("No Crazyflie found in bootloader mode.", false);
+                    appendConsoleError("No Crazyflie found in bootloader mode.");
+                    stopFlashProcess(false);
                     return;
                 }
                 flashFirmware();
@@ -258,7 +274,8 @@ public class BootloaderActivity extends Activity {
 
         if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
             ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
-            stopFlashProcess("Incompatible firmware version.", false);
+            appendConsoleError("Incompatible firmware version.");
+            stopFlashProcess(false);
             return;
         }
 
@@ -323,15 +340,12 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            stopFlashProcess(result, true);
+            appendConsole(result);
+            stopFlashProcess(true);
         }
     }
 
-    private void stopFlashProcess(String result, boolean reset) {
-        if(!result.isEmpty()) {
-            Log.d(LOG_TAG, result);
-            appendConsole(result);
-        }
+    private void stopFlashProcess(boolean reset) {
         if (reset) {
             Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();
             mBootloader.resetToFirmware();
