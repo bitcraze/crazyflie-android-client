@@ -329,13 +329,13 @@ public class Cloader {
         for (int i = 0; i < 10; i++) {
             mLogger.debug("Trying to set new radio address");
             //self.link.cradio.set_address((0xE7,) * 5)
-            crazyRadio.setRadioAddress(new byte[]{(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
+            crazyRadio.setAddress(new byte[]{(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
 
                 System.arraycopy(newAddress, 0, pkData, 3, newAddress.length);
                 crazyRadio.sendPacket(pkData);
 
             //self.link.cradio.set_address(tuple(new_address))
-            crazyRadio.setRadioAddress(newAddress);
+            crazyRadio.setAddress(newAddress);
 
             //if self.link.cradio.send_packet((0xff,)).ack:
                 RadioAck ack = crazyRadio.sendPacket(new byte[] {(byte) 0xFF});

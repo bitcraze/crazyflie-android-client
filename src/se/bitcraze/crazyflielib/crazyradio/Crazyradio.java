@@ -196,12 +196,12 @@ public class Crazyradio extends AbstractLink {
     }
 
     public boolean scanSelected(int channel, int datarate, byte[] packet) {
-        setDataRate(datarate);
+        setDatarate(datarate);
         return scanSelected(channel, packet);
     }
 
     private boolean scanSelected(int channel, byte[] packet) {
-        setRadioChannel(channel);
+        setChannel(channel);
         RadioAck status = sendPacket(packet);
         return (status != null && status.isAck());
     }
@@ -213,8 +213,8 @@ public class Crazyradio extends AbstractLink {
      */
     @Override
     public void connect(ConnectionData connectionData) throws IllegalStateException {
-        setRadioChannel(connectionData.getChannel());
-        setDataRate(connectionData.getDataRate());
+        setChannel(connectionData.getChannel());
+        setDatarate(connectionData.getDataRate());
 
         mLogger.debug("connect()");
         notifyConnectionRequested();
@@ -285,36 +285,109 @@ public class Crazyradio extends AbstractLink {
         return ackIn;
     }
 
+    /* ### Dongle configuration ### */
+
     /**
-     * Set the radio channel.
+     * Set the radio channel to be used.
      *
      * @param channel the new channel. Must be in range 0-125.
      */
-    public void setRadioChannel(int channel) {
-        mUsbLink.sendControlTransfer(0x40, SET_RADIO_CHANNEL, channel, 0, null);
+    public void setChannel(int channel) {
+        if (channel < 0 || channel > 125) {
+            throw new IllegalArgumentException("Channel must be an integer value between 0 and 125");
+        }
+        sendVendorSetup(SET_RADIO_CHANNEL, channel, 0, null);
     }
 
     /**
-     * Set the data rate.
-     *
-     * @param rate new data rate. Possible values are in range 0-2.
-     */
-    public void setDataRate(int rate) {
-        mUsbLink.sendControlTransfer(0x40, SET_DATA_RATE, rate, 0, null);
-    }
-
-    /**
-     * Set the radio address. The same address must be configured in the
-     * receiver for the communication to work.
+     * Set the radio address to be used.
+     * The same address must be configured in the receiver for the communication to work.
      *
      * @param address the new address with a length of 5 byte.
      * @throws IllegalArgumentException if the length of the address doesn't equal 5 bytes
      */
-    public void setRadioAddress(byte[] address) {
+    public void setAddress(byte[] address) {
         if (address.length != 5) {
-            throw new IllegalArgumentException("radio address must be 5 bytes long");
+            throw new IllegalArgumentException("Radio address must be 5 bytes long");
         }
-        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ADDRESS, 0, 0, address);
+        sendVendorSetup(SET_RADIO_ADDRESS, 0, 0, address);
+    }
+
+    /**
+     * Set the radio data rate to be used.
+     *
+     * @param rate new data rate. Possible values are in range 0-2.
+     */
+    public void setDatarate(int datarate) {
+        if (datarate < 0 || datarate > 2) {
+            throw new IllegalArgumentException("Data rate must be an int value between 0 and 2");
+        }
+        sendVendorSetup(SET_DATA_RATE, datarate, 0, null);
+    }
+
+    /**
+     * Set the radio power to be used
+     *
+     * @param power
+     */
+    public void setPower(int power) {
+        //TODO: add argument check
+        sendVendorSetup(SET_RADIO_POWER, power, 0, null);
+    }
+
+    /**
+     * Set the ACK retry count for radio communication
+     *
+     * Set how often the radio will retry a transfer if the ACK has not been received.
+     *
+     * @param arc the number of retries.
+     * @throws IllegalArgumentException if the number of retries is not in range 0-15.
+     */
+    public void setArc(int arc) {
+        if (arc < 0 || arc > 15) {
+            throw new IllegalArgumentException("Count must be in range 0-15");
+        }
+        sendVendorSetup(SET_RADIO_ARC, arc, 0, null);
+        this.mArc = arc;
+    }
+
+    /**
+     * Set the ACK retry delay for radio communication
+     *
+     * Configure the time the radio waits for the acknowledge.
+     *
+     * @param us microseconds to wait. Will be rounded to the closest possible value supported by the radio.
+     */
+    public void setArdTime(int us) {
+        /*
+        # Auto Retransmit Delay:
+        # 0000 - Wait 250uS
+        # 0001 - Wait 500uS
+        # 0010 - Wait 750uS
+        # ........
+        # 1111 - Wait 4000uS
+        */
+        // Round down, to value representing a multiple of 250uS
+        int t = (int) Math.round(us / 250.0) - 1;
+        if (t < 0) {
+            t = 0;
+        } else if (t > 0xF) {
+            t = 0xF;
+        }
+        sendVendorSetup(SET_RADIO_ARD, t, 0, null);
+    }
+
+    /**
+     * Set the length of the ACK payload.
+     *
+     * @param nbytes number of bytes in the payload.
+     * @throws IllegalArgumentException if the payload length is not in range 0-32.
+     */
+    public void setArdBytes(int nbytes) {
+        if (nbytes < 0 || nbytes > 32) {
+            throw new IllegalArgumentException("Payload length must be in range 0-32");
+        }
+        sendVendorSetup(SET_RADIO_ARD, 0x80 | nbytes, 0, null);
     }
 
     /**
@@ -322,38 +395,10 @@ public class Crazyradio extends AbstractLink {
      * test mode in which a continuous non-modulated sine wave is emitted. When
      * this mode is activated the radio dongle does not transmit any packets.
      *
-     * @param continuous <code>true</code> to enable the continuous carrier mode
+     * @param active <code>true</code> to enable the continuous carrier mode
      */
-    public void setContinuousCarrier(boolean continuous) {
-        mUsbLink.sendControlTransfer(0x40, SET_CONT_CARRIER, (continuous ? 1 : 0), 0, null);
-    }
-
-    /**
-     * Configure the time the radio waits for the acknowledge.
-     *
-     * @param us microseconds to wait. Will be rounded to the closest possible value supported by the radio.
-     */
-    public void setAutoRetryADRTime(int us) {
-        int param = (int) Math.round(us / 250.0) - 1;
-        if (param < 0) {
-            param = 0;
-        } else if (param > 0xF) {
-            param = 0xF;
-        }
-        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ARD, param, 0, null);
-    }
-
-    /**
-     * Set the length of the ACK payload.
-     *
-     * @param bytes number of bytes in the payload.
-     * @throws IllegalArgumentException if the payload length is not in range 0-32.
-     */
-    public void setAutoRetryADRBytes(int bytes) {
-        if (bytes < 0 || bytes > 32) {
-            throw new IllegalArgumentException("payload length must be in range 0-32");
-        }
-        mUsbLink.sendControlTransfer(0x40, SET_RADIO_ARD, 0x80 | bytes, 0, null);
+    public void setContinuousCarrier(boolean active) {
+        sendVendorSetup(SET_CONT_CARRIER, (active ? 1 : 0), 0, null);
     }
 
     /**
@@ -437,6 +482,13 @@ public class Crazyradio extends AbstractLink {
             }
         }
     };
+
+
+    public void sendVendorSetup(int request, int value, int index, byte[] data) {
+        // usb.TYPE_VENDOR = 64 <=> 0x40
+        int usbTypeVendor = 0x40;
+        mUsbLink.sendControlTransfer(usbTypeVendor, request, value, index, data);
+    }
 
     @Override
     public CrtpPacket receivePacket(int wait) {

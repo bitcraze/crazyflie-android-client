@@ -97,8 +97,8 @@ public class RadioDriver extends AbstractLink{
             mLogger.warn("Radio version <0.4 will be obsolete soon!");
         }
 
-        this.mCradio.setRadioChannel(connectionData.getChannel());
-        this.mCradio.setDataRate(connectionData.getDataRate());
+        this.mCradio.setChannel(connectionData.getChannel());
+        this.mCradio.setDatarate(connectionData.getDataRate());
 
         /*
         if uri_data.group(9):
