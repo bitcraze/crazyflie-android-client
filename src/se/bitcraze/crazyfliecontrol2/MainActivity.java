@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
-    private CrtpDriver mLink;
+    private CrtpDriver mDriver;
 
     private SharedPreferences mPreferences;
 
@@ -174,7 +174,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 try {
-                    if (mLink != null && mLink.isConnected()) {
+                    if (mDriver != null && mDriver.isConnected()) {
                         linkDisconnect();
                     } else {
                         linkConnect();
@@ -222,7 +222,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mControls.resetAxisValues();
         mController.disable();
-        if (mLink != null) {
+        if (mDriver != null) {
             linkDisconnect();
         }
     }
@@ -362,7 +362,7 @@ public class MainActivity extends Activity {
                     Log.d(LOG_TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
-                    if (mLink != null) {
+                    if (mDriver != null) {
                         Log.d(LOG_TAG, "linkDisconnect()");
                         linkDisconnect();
                     }
@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
         if(isCrazyradioAvailable()) {
             //TODO: use RadioDriver
             try {
-                mLink = new Crazyradio(new UsbLinkAndroid(this));
+                mDriver = new Crazyradio(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -410,10 +410,10 @@ public class MainActivity extends Activity {
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
                 if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
                     Log.d(LOG_TAG, "Using bluetooth write with response");
-                    mLink = new BleLink(this, true);
+                    mDriver = new BleLink(this, true);
                 } else {
                     Log.d(LOG_TAG, "Using bluetooth write without response");
-                    mLink = new BleLink(this, false);
+                    mDriver = new BleLink(this, false);
                 }
             } else {
                 // TODO: improve error message
@@ -421,10 +421,10 @@ public class MainActivity extends Activity {
             }
         }
 
-        if (mLink != null) {
+        if (mDriver != null) {
 
             // add listener for connection status
-            ((AbstractLink) mLink).addConnectionListener(new ConnectionAdapter() {
+            ((AbstractLink) mDriver).addConnectionListener(new ConnectionAdapter() {
 
                 @Override
                 public void connectionRequested(String connectionInfo) {
@@ -442,7 +442,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
-                            if (mLink instanceof BleLink) {
+                            if (mDriver instanceof BleLink) {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
                             } else {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
@@ -502,7 +502,7 @@ public class MainActivity extends Activity {
 
             // connect and start thread to periodically send commands containing the user input
             try {
-                mLink.connect(new ConnectionData(radioChannel, radioDatarate));
+                mDriver.connect(new ConnectionData(radioChannel, radioDatarate));
             } catch (IOException ioe2) {
                 Log.d(LOG_TAG, ioe2.getMessage());
                 Toast.makeText(this, ioe2.getMessage(), Toast.LENGTH_SHORT).show();
@@ -526,8 +526,8 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (mLink != null) {
-                        mLink.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                    while (mDriver != null) {
+                        mDriver.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                         try {
                             Thread.sleep(20);
@@ -544,13 +544,13 @@ public class MainActivity extends Activity {
     }
 
     public CrtpDriver getCrazyflieLink(){
-        return mLink;
+        return mDriver;
     }
 
     public void linkDisconnect() {
-        if (mLink != null) {
-            mLink.disconnect();
-            mLink = null;
+        if (mDriver != null) {
+            mDriver.disconnect();
+            mDriver = null;
         }
         if (mSendJoystickDataThread != null) {
             mSendJoystickDataThread.interrupt();
