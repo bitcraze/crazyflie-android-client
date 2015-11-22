@@ -357,7 +357,7 @@ public class MainActivity extends Activity {
             }
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && UsbLinkAndroid.isCrazyradio(device)) {
+                if (device != null && Crazyradio.isCrazyradio(device)) {
                     Log.d(LOG_TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
@@ -369,7 +369,7 @@ public class MainActivity extends Activity {
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && UsbLinkAndroid.isCrazyradio(device)) {
+                if (device != null && Crazyradio.isCrazyradio(device)) {
                     Log.d(LOG_TAG, "Crazyradio attached");
                     Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundConnect);

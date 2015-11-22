@@ -27,10 +27,10 @@
 
 package se.bitcraze.crazyflielib.crtp;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import se.bitcraze.crazyflielib.crazyflie.ConnectionListener;
 import se.bitcraze.crazyflielib.crazyflie.LinkListener;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 
@@ -53,8 +53,9 @@ public abstract class CrtpDriver {
      * Connect the driver
      *
      * @param connectionData
+     * @throws IOException
      */
-    public abstract void connect(ConnectionData connectionData);
+    public abstract void connect(ConnectionData connectionData) throws IOException;
 
     /**
      * Close the link

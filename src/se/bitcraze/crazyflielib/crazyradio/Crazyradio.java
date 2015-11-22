@@ -39,8 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.AbstractLink;
-import se.bitcraze.crazyflielib.IUsbLink;
+import se.bitcraze.crazyflielib.CrazyUsbInterface;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+import android.hardware.usb.UsbDevice;
 
 /**
  * Used for communication with the Crazyradio USB dongle
@@ -77,7 +78,7 @@ public class Crazyradio extends AbstractLink {
     public final static int P_M6DBM = 2;
     public final static int P_0DBM = 3;
 
-    private IUsbLink mUsbInterface;
+    private CrazyUsbInterface mUsbInterface;
     private int mArc;
     private float mVersion; // Crazyradio firmware version
     private String mSerialNumber; // Crazyradio serial number
@@ -104,10 +105,10 @@ public class Crazyradio extends AbstractLink {
      *
      * @param usbInterface
      */
-    public Crazyradio(IUsbLink usbInterface) {
+    public Crazyradio(CrazyUsbInterface usbInterface) {
         this.mUsbInterface = usbInterface;
         try {
-            this.mUsbInterface.initDevice();
+            this.mUsbInterface.initDevice(CRADIO_VID, CRADIO_PID);
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -512,8 +513,9 @@ public class Crazyradio extends AbstractLink {
         return this.mSerialNumber;
     }
 
-
-
+    public static boolean isCrazyradio(UsbDevice device){
+        return device.getVendorId() == Crazyradio.CRADIO_VID && device.getProductId() == Crazyradio.CRADIO_PID;
+    }
 
     @Override
     public boolean isConnected() {

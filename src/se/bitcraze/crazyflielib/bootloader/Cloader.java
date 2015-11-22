@@ -1,5 +1,6 @@
 package se.bitcraze.crazyflielib.bootloader;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -249,7 +250,7 @@ public class Cloader {
         return true;
     }
 
-    public void openBootloaderConnection(ConnectionData connectionData) {
+    public void openBootloaderConnection(ConnectionData connectionData) throws IOException {
         if (this.mDriver != null) {
             this.mDriver.disconnect();
         }

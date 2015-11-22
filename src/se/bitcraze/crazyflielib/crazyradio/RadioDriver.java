@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.AbstractLink;
-import se.bitcraze.crazyflielib.IUsbLink;
+import se.bitcraze.crazyflielib.CrazyUsbInterface;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 
 /**
@@ -53,7 +53,7 @@ public class RadioDriver extends AbstractLink{
     private Crazyradio mCradio;
     private Thread mRadioDriverThread;
 
-    private IUsbLink mUsbInterface;
+    private CrazyUsbInterface mUsbInterface;
 
     private final BlockingDeque<CrtpPacket> mInQueue;
     private final BlockingDeque<CrtpPacket> mOutQueue;
@@ -61,7 +61,7 @@ public class RadioDriver extends AbstractLink{
     /**
      * Create the link driver
      */
-    public RadioDriver(IUsbLink usbInterface) {
+    public RadioDriver(CrazyUsbInterface usbInterface) {
         this.mUsbInterface = usbInterface;
         this.mCradio = null;
         this.mInQueue = new LinkedBlockingDeque<CrtpPacket>();
@@ -72,12 +72,12 @@ public class RadioDriver extends AbstractLink{
     /* (non-Javadoc)
      * @see se.bitcraze.crazyflie.lib.crtp.CrtpDriver#connect(se.bitcraze.crazyflie.lib.crazyradio.ConnectionData)
      */
-    public void connect(ConnectionData connectionData) {
+    public void connect(ConnectionData connectionData) throws IOException {
         if(mCradio == null) {
             try {
-                mUsbInterface.initDevice();
+                mUsbInterface.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new IOException("Make sure that the Crazyradio (PA) is connected.");
             }
             this.mCradio = new Crazyradio(mUsbInterface);
         } else {
@@ -197,7 +197,7 @@ public class RadioDriver extends AbstractLink{
     /**
      * Scan interface for Crazyflies
      */
-    public static List<ConnectionData> scanInterface(Crazyradio crazyRadio, IUsbLink crazyUsbInterface) {
+    public static List<ConnectionData> scanInterface(Crazyradio crazyRadio, CrazyUsbInterface crazyUsbInterface) {
         List<ConnectionData> connectionDataList = new ArrayList<ConnectionData>();
 
         if(crazyRadio == null) {
