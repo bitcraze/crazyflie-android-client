@@ -39,8 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflielib.AbstractLink;
-import se.bitcraze.crazyflielib.CrazyUsbInterface;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
 
 /**
  * Crazyradio link driver

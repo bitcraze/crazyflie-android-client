@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import se.bitcraze.crazyflielib.CrazyUsbInterface;
+import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;

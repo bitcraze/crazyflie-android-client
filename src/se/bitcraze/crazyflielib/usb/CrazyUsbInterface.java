@@ -26,7 +26,7 @@
  */
 
 
-package se.bitcraze.crazyflielib;
+package se.bitcraze.crazyflielib.usb;
 
 import java.io.IOException;
 import java.util.List;
