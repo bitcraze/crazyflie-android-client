@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import se.bitcraze.crazyflielib.AbstractLink;
 import se.bitcraze.crazyflielib.CrazyUsbInterface;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
-import android.hardware.usb.UsbDevice;
 
 /**
  * Used for communication with the Crazyradio USB dongle
@@ -511,10 +510,6 @@ public class Crazyradio extends AbstractLink {
 
     public String getSerialNumber() {
         return this.mSerialNumber;
-    }
-
-    public static boolean isCrazyradio(UsbDevice device){
-        return device.getVendorId() == Crazyradio.CRADIO_VID && device.getProductId() == Crazyradio.CRADIO_PID;
     }
 
     @Override

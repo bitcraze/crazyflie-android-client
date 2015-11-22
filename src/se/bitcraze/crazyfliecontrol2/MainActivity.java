@@ -28,6 +28,7 @@
 package se.bitcraze.crazyfliecontrol2;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 import se.bitcraze.crazyfliecontrol.controller.Controls;
@@ -357,7 +358,7 @@ public class MainActivity extends Activity {
             }
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && Crazyradio.isCrazyradio(device)) {
+                if (device != null && UsbLinkAndroid.isUsbDevice(device, Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
                     Log.d(LOG_TAG, "Crazyradio detached");
                     Toast.makeText(MainActivity.this, "Crazyradio detached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundDisconnect);
@@ -369,7 +370,7 @@ public class MainActivity extends Activity {
             }
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                if (device != null && Crazyradio.isCrazyradio(device)) {
+                if (device != null && UsbLinkAndroid.isUsbDevice(device, Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
                     Log.d(LOG_TAG, "Crazyradio attached");
                     Toast.makeText(MainActivity.this, "Crazyradio attached", Toast.LENGTH_SHORT).show();
                     playSound(mSoundConnect);
@@ -392,25 +393,35 @@ public class MainActivity extends Activity {
         int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
         int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
-        try {
-            //TODO: use UsbLinkAndroid.isCrazyradioAvailable() instead of try/catch
-            // create link
+        if(isCrazyradioAvailable()) {
+            //TODO: use RadioDriver
             try {
                 mLink = new Crazyradio(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
-                if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
-                    getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-                    if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
-                        Log.d(LOG_TAG, "Using bluetooth write with response");
-                        mLink = new BleLink(this, true);
-                    } else {
-                        Log.d(LOG_TAG, "Using bluetooth write without response");
-                        mLink = new BleLink(this, false);
-                    }
-                } else {
-                    throw e;
-                }
+                Log.d(LOG_TAG, e.getMessage());
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, e.getMessage());
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
+        } else {
+            //use BLE
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
+                    getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+                if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
+                    Log.d(LOG_TAG, "Using bluetooth write with response");
+                    mLink = new BleLink(this, true);
+                } else {
+                    Log.d(LOG_TAG, "Using bluetooth write without response");
+                    mLink = new BleLink(this, false);
+                }
+            } else {
+                // TODO: improve error message
+                Log.e(LOG_TAG, "No BLE support available.");
+            }
+        }
+
+        if (mLink != null) {
 
             // add listener for connection status
             ((AbstractLink) mLink).addConnectionListener(new ConnectionAdapter() {
@@ -490,23 +501,28 @@ public class MainActivity extends Activity {
             });
 
             // connect and start thread to periodically send commands containing the user input
-            mLink.connect(new ConnectionData(radioChannel, radioDatarate));
-//            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
-//
-//                @Override
-//                public void dataReceived(CrtpPacket packet) {
-//                    Log.d(LOG_TAG, "Received console packet: " + packet);
-//                }
-//
-//            });
-//            mLink.addDataListener(new DataListener(CrtpPort.PARAMETERS) {
-//
-//                @Override
-//                public void dataReceived(CrtpPacket packet) {
-//                    Log.d(LOG_TAG, "Received parameters packet: " + packet);
-//                }
-//
-//            });
+            try {
+                mLink.connect(new ConnectionData(radioChannel, radioDatarate));
+            } catch (IOException ioe2) {
+                Log.d(LOG_TAG, ioe2.getMessage());
+                Toast.makeText(this, ioe2.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+    //            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
+    //
+    //                @Override
+    //                public void dataReceived(CrtpPacket packet) {
+    //                    Log.d(LOG_TAG, "Received console packet: " + packet);
+    //                }
+    //
+    //            });
+    //            mLink.addDataListener(new DataListener(CrtpPort.PARAMETERS) {
+    //
+    //                @Override
+    //                public void dataReceived(CrtpPacket packet) {
+    //                    Log.d(LOG_TAG, "Received parameters packet: " + packet);
+    //                }
+    //
+    //            });
             mSendJoystickDataThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -522,12 +538,8 @@ public class MainActivity extends Activity {
                 }
             });
             mSendJoystickDataThread.start();
-        } catch (IllegalArgumentException e) {
-            Log.d(LOG_TAG, e.getMessage());
+        } else {
             Toast.makeText(this, "Cannot connect: Crazyradio not attached and Bluetooth LE not available", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, e.getMessage());
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -558,4 +570,12 @@ public class MainActivity extends Activity {
     	return mController;
     }
 
+    public boolean isCrazyradioAvailable() {
+        UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
+        if (usbManager == null) {
+            throw new IllegalArgumentException("UsbManager == null!");
+        }
+        List<UsbDevice> usbDeviceList = UsbLinkAndroid.findUsbDevices(usbManager, (short) Crazyradio.CRADIO_VID, (short) Crazyradio.CRADIO_PID);
+        return !usbDeviceList.isEmpty();
+    }
 }
