@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflielib.AbstractLink;
+import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
 
@@ -46,7 +46,7 @@ import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
  * Crazyradio link driver
  *
  */
-public class RadioDriver extends AbstractLink{
+public class RadioDriver extends CrtpDriver {
 
     final static Logger mLogger = LoggerFactory.getLogger("RadioDriver");
 

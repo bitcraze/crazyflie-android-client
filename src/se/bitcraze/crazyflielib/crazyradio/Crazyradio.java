@@ -31,14 +31,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflielib.AbstractLink;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
 
@@ -46,7 +42,7 @@ import se.bitcraze.crazyflielib.usb.CrazyUsbInterface;
  * Used for communication with the Crazyradio USB dongle
  *
  */
-public class Crazyradio extends AbstractLink {
+public class Crazyradio {
 
     final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
@@ -83,21 +79,6 @@ public class Crazyradio extends AbstractLink {
     private String mSerialNumber; // Crazyradio serial number
 
     public final static byte[] NULL_PACKET = new byte[] { (byte) 0xff };
-
-    /**
-     * Number of packets without acknowledgment before marking the connection as
-     * broken and disconnecting.
-     */
-    public static final int RETRYCOUNT_BEFORE_DISCONNECT = 10;
-
-    /**
-     * This number of packets should be processed between reports of the link quality.
-     */
-    public static final int PACKETS_BETWEEN_LINK_QUALITY_UPDATE = 5;
-
-    private Thread mRadioLinkThread;
-
-    private final BlockingDeque<CrtpPacket> mSendQueue;
 
     /**
      * Create object and scan for USB dongle if no device is supplied
@@ -151,50 +132,13 @@ public class Crazyradio extends AbstractLink {
             setArdBytes(32);
         }
 
-        this.mSendQueue = new LinkedBlockingDeque<CrtpPacket>();
-
-        this.mVersion = usbInterface.getFirmwareVersion();
-        this.mSerialNumber = usbInterface.getSerialNumber();
     }
 
-    /**
-     * Connect to the Crazyflie.
-     *
-     * @throws IllegalStateException if the Crazyradio is not attached
-     */
-    @Override
-    public void connect(ConnectionData connectionData) throws IllegalStateException {
-        setChannel(connectionData.getChannel());
-        setDatarate(connectionData.getDataRate());
-
-        mLogger.debug("connect()");
-        notifyConnectionRequested();
-
-        if (mUsbInterface != null && mUsbInterface.isUsbConnected()) {
-            if (mRadioLinkThread == null) {
-                mRadioLinkThread = new Thread(radioControlRunnable);
-                mRadioLinkThread.start();
-            }
-        } else {
-            mLogger.debug("mConnection is null");
-            notifyConnectionFailed("Crazyradio not attached");
-            throw new IllegalStateException("Crazyradio not attached");
-        }
-    }
-
-    @Override
     public void disconnect() {
-        mLogger.debug("CrazyradioLink disconnect()");
-        if (mRadioLinkThread != null) {
-            mRadioLinkThread.interrupt();
-            mRadioLinkThread = null;
-        }
-
+        mLogger.debug("Crazyradio disconnect()");
         if(mUsbInterface != null) {
             mUsbInterface.releaseInterface();
         }
-
-        notifyDisconnected();
     }
 
     /* ### Dongle configuration ### */
@@ -511,92 +455,5 @@ public class Crazyradio extends AbstractLink {
     public String getSerialNumber() {
         return this.mSerialNumber;
     }
-
-    @Override
-    public boolean isConnected() {
-        return mRadioLinkThread != null;
-    }
-
-    @Override
-    public void sendPacket(CrtpPacket p) {
-        this.mSendQueue.addLast(p);
-    }
-
-    @Override
-    public CrtpPacket receivePacket(int wait) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void startSendReceiveThread() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void stopSendReceiveThread() {
-        // TODO Auto-generated method stub
-
-    }
-
-    /**
-     * Handles communication with the dongle to send and receive packets
-     */
-    private final Runnable radioControlRunnable = new Runnable() {
-        @Override
-        public void run() {
-            int retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
-            int nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
-
-            notifyConnected();
-
-            while (mUsbInterface != null && mUsbInterface.isUsbConnected()) {
-                try {
-                    CrtpPacket p = mSendQueue.pollFirst(5, TimeUnit.MILLISECONDS);
-                    if (p == null) { // if no packet was available in the send queue
-                        p = CrtpPacket.NULL_PACKET;
-                    }
-
-                    byte[] receiveData = new byte[33];
-                    final byte[] sendData = p.toByteArray();
-
-                    final int receivedByteCount = mUsbInterface.sendBulkTransfer(sendData, receiveData);
-
-                    //TODO: extract link quality calculation
-                    if (receivedByteCount >= 1) {
-                        // update link quality status
-                        if (nextLinkQualityUpdate <= 0) {
-                            final int retransmission = receiveData[0] >> 4;
-                            notifyLinkQualityUpdated(Math.max(0, (10 - retransmission) * 10));
-                            nextLinkQualityUpdate = PACKETS_BETWEEN_LINK_QUALITY_UPDATE;
-                        } else {
-                            nextLinkQualityUpdate--;
-                        }
-
-                        if ((receiveData[0] & 1) != 0) { // check if ack received
-                            retryBeforeDisconnectRemaining = RETRYCOUNT_BEFORE_DISCONNECT;
-                            if (receivedByteCount > 1) {
-                                CrtpPacket inPacket = new CrtpPacket(Arrays.copyOfRange(receiveData, 1, 1 + (receivedByteCount - 1)));
-                                notifyDataListeners(inPacket);
-                            }
-                        } else {
-                            // count lost packets
-                            retryBeforeDisconnectRemaining--;
-                            if (retryBeforeDisconnectRemaining <= 0) {
-                                notifyConnectionLost("Too many packets lost");
-                                disconnect();
-                                break;
-                            }
-                        }
-                    } else {
-                        mLogger.debug("CrazyradioLink comm error - didn't receive answer");
-                    }
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-    };
 
 }

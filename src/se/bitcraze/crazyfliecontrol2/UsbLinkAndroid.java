@@ -82,7 +82,7 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
         }
 
         List<UsbDevice> usbDevices = findUsbDevices(mUsbManager, (short) vid, (short) pid);
-        if (usbDevices.isEmpty() || usbDevices.get(0) != null) {
+        if (usbDevices.isEmpty() || usbDevices.get(0) == null) {
             String message = "USB device not found. (VID: " + vid + ", PID: " + pid + ")";
             Log.w(LOG_TAG, message);;
             throw new IOException(message);

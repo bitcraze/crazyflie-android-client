@@ -185,6 +185,11 @@ public class Crazyflie {
         }
     }
 
+    //TODO: is this good enough?
+    public boolean isConnected() {
+        return mState == State.SETUP_FINISHED;
+    }
+
     // TODO: should this be public?
     public State getState() {
         return mState;

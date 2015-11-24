@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,7 +25,7 @@ import android.content.Intent;
 import android.util.Log;
 
 @SuppressLint("NewApi")
-public class BleLink extends AbstractLink {
+public class BleLink extends CrtpDriver {
 
 	private static final String TAG = "BleLink";
 
@@ -65,7 +66,7 @@ public class BleLink extends AbstractLink {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				mConnected = false;
 				state = State.IDLE;
-				notifyConnectionLost("BLE connection lost");
+//				notifyConnectionLost("BLE connection lost");
 			}
 		}
 
@@ -90,7 +91,7 @@ public class BleLink extends AbstractLink {
 				mWritten = false;
 
 				state = State.CONNECTED;
-				notifyConnected();
+//				notifyConnected();
 			}
 		}
 
@@ -173,12 +174,12 @@ public class BleLink extends AbstractLink {
 			public void run() {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				state = State.IDLE;
-				notifyConnectionFailed("BLE connection timeout");
+//				notifyConnectionFailed("BLE connection timeout");
 			}
 		}, 10000);
 
 		state = State.CONNECTING;
-		notifyConnectionRequested();
+//		notifyConnectionRequested();
 	}
 
 	@Override
@@ -196,7 +197,7 @@ public class BleLink extends AbstractLink {
 						mScannTimer = null;
 					}
 					state = State.IDLE;
-					notifyDisconnected();
+//					notifyDisconnected();
 				}
 			}
 		});

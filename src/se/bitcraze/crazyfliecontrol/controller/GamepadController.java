@@ -28,8 +28,8 @@
 package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
-import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.MainActivity;
+import se.bitcraze.crazyfliecontrol2.R;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.KeyEvent;
@@ -112,8 +112,8 @@ public class GamepadController extends AbstractController {
             if(event.getKeyCode() == mEmergencyBtn){
                 //quick solution
                 mControls.resetAxisValues();
-                if (mActivity.getCrazyflieLink() != null) {
-                    mActivity.linkDisconnect();
+                if (mActivity.getCrazyflie() != null) {
+                    mActivity.disconnect();
                 }
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             }else if (event.getKeyCode() == mRollTrimPlusBtn) {
