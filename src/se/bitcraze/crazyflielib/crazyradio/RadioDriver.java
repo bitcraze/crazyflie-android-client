@@ -74,11 +74,11 @@ public class RadioDriver extends CrtpDriver {
      */
     public void connect(ConnectionData connectionData) throws IOException {
         if(mCradio == null) {
-            try {
-                mUsbInterface.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
-            } catch (IOException e) {
-                throw new IOException("Make sure that the Crazyradio (PA) is connected.");
-            }
+//            try {
+//                mUsbInterface.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
+//            } catch (IOException e) {
+//                throw new IOException("Make sure that the Crazyradio (PA) is connected.");
+//            }
             this.mCradio = new Crazyradio(mUsbInterface);
         } else {
             mLogger.error("Crazyradio already open");

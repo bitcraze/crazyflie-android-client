@@ -239,8 +239,7 @@ public class BleLink extends CrtpDriver {
 
     @Override
     public CrtpPacket receivePacket(int wait) {
-        // TODO Auto-generated method stub
-        return null;
+        return CrtpPacket.NULL_PACKET;
     }
 
     @Override
