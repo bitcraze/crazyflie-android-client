@@ -47,7 +47,7 @@ import android.util.Log;
 
 public class UsbLinkAndroid implements CrazyUsbInterface{
 
-    private static final String LOG_TAG = "UsbLink";
+    private static final String LOG_TAG = "UsbLinkAndroid";
 
     private static int TRANSFER_TIMEOUT = 1000;
 
@@ -143,7 +143,7 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
      * @see se.bitcraze.crazyflie.lib.IUsbLink#releaseInterface()
      */
     public void releaseInterface() {
-        Log.d(LOG_TAG, "releaseInterface()");
+        Log.d(LOG_TAG, "UsbLinkAndroid releaseInterface()");
         if (mConnection != null && mIntf != null){
             mConnection.releaseInterface(mIntf);
             mConnection = null;

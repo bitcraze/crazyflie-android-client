@@ -106,8 +106,7 @@
     <string name="preferences_immersive_mode_title">Full screen mode</string>
     <string name="preferences_immersive_mode_summary">Requires Android 4.4</string>
 
-    <string name="preferences_bootload_summary">Bootloader summary</string>
-    <string name="preferences_bootload_title">Bootloader</string>
+    <string name="preferences_bootloader_title">Bootloader (Experimental)</string>
     
     <!-- FlightDataView -->
     <string name="pitch">Pitch: %3.0f</string>
@@ -118,10 +117,9 @@
 
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>
-    <string name="bootloader_title">Available firmware versions:</string>
+    <string name="bootloader_title">Select firmware version:</string>
     <string name="bootloader_checkUpdate">Check for updates</string>
     <string name="bootloader_flashFirmware">Flash firmware</string>
-    <string name="bootloader_firmwareSpinner_label">Available firmwares:</string>
     <string name="bootloader_statusLine">Status:</string>
 
 </resources>

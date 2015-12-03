@@ -255,7 +255,7 @@
 
     <Preference
         android:key="pref_bootload"
-        android:title="@string/preferences_bootload_title">
+        android:title="@string/preferences_bootloader_title">
 
         <intent 
             android:action="android.intent.action.VIEW"

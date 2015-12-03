@@ -90,9 +90,11 @@ public class Crazyradio {
         try {
             this.mUsbInterface.initDevice(CRADIO_VID, CRADIO_PID);
         } catch (SecurityException e) {
-            e.printStackTrace();
+            mLogger.error(e.getMessage());
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            mLogger.error(e.getMessage());
+            return;
         }
 
         /*

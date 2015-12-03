@@ -42,11 +42,11 @@ public class CustomSpinnerAdapter extends ArrayAdapter<Firmware> {
             return row;
         }
         TextView label = (TextView) row.findViewById(R.id.label);
-        TextView sub = (TextView) row.findViewById(R.id.date);
+        TextView date = (TextView) row.findViewById(R.id.date);
         TextView type = (TextView) row.findViewById(R.id.type);
         // Set values for each spinner row
         label.setText(firmware.getTagName());
-        sub.setText(firmware.getCreatedAt());
+        date.setText(firmware.getCreatedAt());
         type.setText(firmware.getType());
         return row;
     }
