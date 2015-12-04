@@ -34,7 +34,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -44,8 +44,7 @@ import android.widget.Toast;
 public class BootloaderActivity extends Activity {
 
     private static final String LOG_TAG = "BootloaderActivity";
-    private ImageButton mCheckUpdateButton;
-    private ImageButton mFlashFirmwareButton;
+    private Button mFlashFirmwareButton;
     private Spinner mFirmwareSpinner;
     private CustomSpinnerAdapter mSpinnerAdapter;
     private ScrollView mScrollView;
@@ -62,8 +61,7 @@ public class BootloaderActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bootloader);
-        mCheckUpdateButton = (ImageButton) findViewById(R.id.bootloader_checkUpdate);
-        mFlashFirmwareButton = (ImageButton) findViewById(R.id.bootloader_flashFirmware);
+        mFlashFirmwareButton = (Button) findViewById(R.id.bootloader_flashFirmware);
         mFirmwareSpinner = (Spinner) findViewById(R.id.bootloader_firmwareSpinner);
         mScrollView = (ScrollView) findViewById(R.id.bootloader_scrollView);
         mConsoleTextView = (TextView) findViewById(R.id.bootloader_statusLine);
@@ -131,7 +129,6 @@ public class BootloaderActivity extends Activity {
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             appendConsole("Checking for updates...");
-            mCheckUpdateButton.setEnabled(false);
             mFirmwareDownloader.checkForFirmwareUpdate();
         } else {
             appendConsole("No internet connection available.");
@@ -162,7 +159,6 @@ public class BootloaderActivity extends Activity {
     }
 
     public void updateFirmwareSpinner(List<Firmware> firmwares) {
-        mCheckUpdateButton.setEnabled(true);
         mSpinnerAdapter.clear();
         mSpinnerAdapter.addAll(firmwares);
     }
@@ -193,8 +189,7 @@ public class BootloaderActivity extends Activity {
     };
 
     public void startFlashProcess(final View view) {
-        // disable buttons and spinner
-        mCheckUpdateButton.setEnabled(false);
+        // disable button and spinner
         mFlashFirmwareButton.setEnabled(false);
         mFirmwareSpinner.setEnabled(false);
 
@@ -362,7 +357,6 @@ public class BootloaderActivity extends Activity {
         }
         mFirmwareDownloader.removeDownloadListener(mDownloadListener);
         //re-enable widgets
-        mCheckUpdateButton.setEnabled(true);
         mFlashFirmwareButton.setEnabled(true);
         mFirmwareSpinner.setEnabled(true);
 

@@ -118,7 +118,6 @@
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>
     <string name="bootloader_title">Select firmware version:</string>
-    <string name="bootloader_checkUpdate">Check for updates</string>
     <string name="bootloader_flashFirmware">Flash firmware</string>
     <string name="bootloader_statusLine">Status:</string>
 

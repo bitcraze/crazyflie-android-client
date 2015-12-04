@@ -34,23 +34,11 @@
             android:layout_gravity="bottom"
             android:gravity="bottom" />
 
-        <ImageButton
-            android:id="@+id/bootloader_checkUpdate"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="bottom"
-            android:src="@drawable/ic_action_refresh"
-            android:contentDescription="@string/bootloader_checkUpdate"
-            android:onClick="checkForFirmwareUpdate" />
-
-        <ImageButton
+        <Button
             android:id="@+id/bootloader_flashFirmware"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="bottom"
-            android:src="@drawable/ic_action_flash_on"
-            android:contentDescription="@string/bootloader_flashFirmware"
-            android:enabled="false"
+            android:text="@string/bootloader_flashFirmware"
             android:onClick="startFlashProcess" />
 
     </LinearLayout>
