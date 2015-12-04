@@ -361,7 +361,7 @@ public class RadioDriver extends CrtpDriver {
                     } else {
                         dataOut = Crazyradio.NULL_PACKET;
                     }
-                    Thread.sleep(10);
+//                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     mLogger.debug("RadioDriverThread was interrupted.");
                     break;
