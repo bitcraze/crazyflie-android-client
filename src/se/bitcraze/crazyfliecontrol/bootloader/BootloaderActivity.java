@@ -166,8 +166,12 @@ public class BootloaderActivity extends Activity {
     public void appendConsole(String status) {
         Log.d(LOG_TAG, status);
         this.mConsoleTextView.append("\n" + status);
-        //TODO: does not scroll to the LAST line
-        mScrollView.fullScroll(View.FOCUS_DOWN);
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 
     public void appendConsoleError(String status) {
@@ -177,7 +181,12 @@ public class BootloaderActivity extends Activity {
         int end = this.mConsoleTextView.getText().length();
         Spannable spannableText = (Spannable) this.mConsoleTextView.getText();
         spannableText.setSpan(new ForegroundColorSpan(Color.RED), start, end, 0);
-        mScrollView.fullScroll(View.FOCUS_DOWN);
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 
     private FirmwareDownloadListener mDownloadListener = new FirmwareDownloadListener () {
