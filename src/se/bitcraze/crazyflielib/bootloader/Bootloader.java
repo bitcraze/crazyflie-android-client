@@ -51,6 +51,8 @@ public class Bootloader {
 
     private List<BootloaderListener> mBootloaderListeners;
 
+    private boolean mCancelled = false;
+
     /**
      * Init the communication class by starting to communicate with the
      * link given. clink is the link address used after resetting to the
@@ -420,9 +422,17 @@ public class Bootloader {
                 end = (i + 1) * pageSize;
             }
             byte[] buffer = Arrays.copyOfRange(image, i * pageSize, end);
+
+            notifyUpdateProgress(i+1, noOfPages);
+
+            if (isCancelled()) {
+                break;
+            }
+
             this.mCload.uploadBuffer(t_data.getId(), bufferCounter, 0, buffer);
 
             bufferCounter++;
+
 
             // Flash when the complete buffers are full
             if (bufferCounter >= t_data.getBufferPages()) {
@@ -438,6 +448,10 @@ public class Bootloader {
                 bufferCounter = 0;
             }
         }
+        if (isCancelled()) {
+            mLogger.info("Flashing cancelled!");
+            return;
+        }
         if (bufferCounter > 0) {
             mLogger.info("BufferCounter: " + bufferCounter);
             notifyUpdateProgress(i, noOfPages);
@@ -449,6 +463,17 @@ public class Bootloader {
         }
         mLogger.info("Flashing done!");
         notifyUpdateStatus("Flashing done!");
+    }
+
+    private boolean isCancelled() {
+        return mCancelled;
+    }
+
+    public void cancel() {
+        this.mCancelled = true;
+        if (mCload != null) {
+            mCload.cancel();
+        }
     }
 
     private void handleFlashError() {

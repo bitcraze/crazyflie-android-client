@@ -72,10 +72,12 @@ public class BootloaderActivity extends Activity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 
         initializeFirmwareSpinner();
+
         mFirmwareDownloader = new FirmwareDownloader(this);
 
         this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
+
 
     @Override
     protected void onDestroy() {
@@ -87,12 +89,7 @@ public class BootloaderActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mFirmwareDownloader.isFileAlreadyDownloaded(FirmwareDownloader.RELEASES_JSON)) {
-            mFirmwareDownloader.checkForFirmwareUpdate();
-        } else {
-            mFlashFirmwareButton.setEnabled(false);
-            //TODO: force update of spinner adapter even though firmware list is empty
-        }
+        checkForFirmwareUpdate(getCurrentFocus());
     }
 
     @Override
@@ -101,7 +98,7 @@ public class BootloaderActivity extends Activity {
         //TODO: why does resetToFirmware not work?
         if (mFlashFirmwareTask != null && mFlashFirmwareTask.getStatus().equals(Status.RUNNING)) {
             Log.d(LOG_TAG, "OnPause: stop bootloader.");
-            stopFlashProcess(false);
+            mFlashFirmwareTask.cancel(true);
         }
         super.onPause();
     }
@@ -173,6 +170,7 @@ public class BootloaderActivity extends Activity {
     public void appendConsole(String status) {
         Log.d(LOG_TAG, status);
         this.mConsoleTextView.append("\n" + status);
+        //TODO: does not scroll to the LAST line
         mScrollView.fullScroll(View.FOCUS_DOWN);
     }
 
@@ -238,7 +236,7 @@ public class BootloaderActivity extends Activity {
 
             @Override
             protected void onPreExecute() {
-                mProgress = ProgressDialog.show(BootloaderActivity.this, "Start bootloader", "Searching for Crazyflie in bootloader mode...", true, false);
+                mProgress = ProgressDialog.show(BootloaderActivity.this, "Searching Crazyflie in bootloader mode...", "Restart the Crazyflie you want to bootload in the next 10 seconds ...", true, false);
             }
 
             @Override
@@ -260,7 +258,6 @@ public class BootloaderActivity extends Activity {
     }
 
     //TODO: simplify
-    //TODO: appendConsole("Restart the Crazyflie you want to bootload in the next 10 seconds ...");
     public void flashFirmware() {
         //TODO: externalize
         //Check if firmware is compatible with Crazyflie
@@ -306,6 +303,9 @@ public class BootloaderActivity extends Activity {
                 @Override
                 public void updateProgress(int progress, int max) {
                     publishProgress(new String[]{null, "" + progress, "" + max,  null});
+                    if (isCancelled()) {
+                        mBootloader.cancel();
+                    }
                 }
 
                 @Override
@@ -332,7 +332,6 @@ public class BootloaderActivity extends Activity {
                 mProgressBar.setProgress(Integer.parseInt(progress[1]));
                 // TODO: progress bar max is reset when activity is resumed
                 mProgressBar.setMax(Integer.parseInt(progress[2]));
-                Log.d(LOG_TAG, "setMax: " + Integer.parseInt(progress[2]));
             } else if (progress[3] != null) {
                 appendConsole(progress[3]);
             }
@@ -343,11 +342,19 @@ public class BootloaderActivity extends Activity {
             appendConsole(result);
             stopFlashProcess(true);
         }
+
+        @Override
+        protected void onCancelled(String result) {
+            stopFlashProcess(false);
+        }
+
     }
 
     private void stopFlashProcess(boolean reset) {
         if (reset) {
-            Toast.makeText(BootloaderActivity.this, "Resetting Crazyflie to firmware mode...", Toast.LENGTH_SHORT).show();
+            String resetMsg = "Resetting Crazyflie to firmware mode...";
+            appendConsole(resetMsg);
+            Toast.makeText(BootloaderActivity.this, resetMsg, Toast.LENGTH_SHORT).show();
             mBootloader.resetToFirmware();
         }
         if (mBootloader != null) {

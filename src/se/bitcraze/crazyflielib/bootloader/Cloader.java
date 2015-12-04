@@ -41,6 +41,8 @@ public class Cloader {
     private String mErrorMessage = "";
     private int mProtocolVersion = 0xFF;
 
+    private boolean mCancelled = false;
+
     // Bootloader commands
     public static int GET_INFO = 0x10;
     public static int SET_ADDRESS = 0x11; // Only implemented on Crazyflie version 0x00
@@ -452,6 +454,10 @@ public class Cloader {
 
             count++;
 
+            if (isCancelled()) {
+                break;
+            }
+
             if (count > 24) {
                 sendBootloaderPacket(bb.array());
                 count = 0;
@@ -543,7 +549,7 @@ public class Cloader {
         bb.putChar((char) pageCount);
         sendBootloaderPacket(bb.array());
 
-        while(!isBootloaderReplyPacket(replyPk, addr, WRITE_FLASH) && retryCounter >= 0) {
+        while(!isBootloaderReplyPacket(replyPk, addr, WRITE_FLASH) && retryCounter >= 0 && !isCancelled()) {
             replyPk = this.mDriver.receivePacket(1);
             //TODO: why does it not work, when the retryCounter is activated?
 //            retryCounter--;
@@ -580,6 +586,14 @@ public class Cloader {
     }
 
     //decode_cpu_id has not been implemented, because it's not used anywhere
+
+    private boolean isCancelled() {
+        return this.mCancelled;
+    }
+
+    public void cancel() {
+        this.mCancelled = true;
+    }
 
     public String getErrorMessage() {
         return this.mErrorMessage;
