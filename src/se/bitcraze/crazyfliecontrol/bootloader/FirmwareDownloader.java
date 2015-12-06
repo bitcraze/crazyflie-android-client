@@ -117,11 +117,16 @@ public class FirmwareDownloader {
 
     private void loadLocalFile(File releasesFile) {
         Log.d(LOG_TAG, "Loading releases JSON from local file...");
-        String input = new String(Bootloader.readFile(releasesFile));
         try {
+            String input = new String(Bootloader.readFile(releasesFile));
             mFirmwares = parseJson(input);
-        } catch (JSONException e) {
-            ((BootloaderActivity) mContext).appendConsole("Error during parsing JSON content.");
+        } catch (JSONException jsone) {
+            Log.d(LOG_TAG, jsone.getMessage());
+            ((BootloaderActivity) mContext).appendConsoleError("Error while parsing JSON content.");
+            return;
+        } catch (IOException ioe) {
+            Log.d(LOG_TAG, ioe.getMessage());
+            ((BootloaderActivity) mContext).appendConsoleError("Problems loading JSON file.");
             return;
         }
         ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwares);
@@ -194,8 +199,7 @@ public class FirmwareDownloader {
             String browserDownloadUrl = selectedFirmware.getBrowserDownloadUrl();
             downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
         } else {
-            Log.d(LOG_TAG, "Selected firmware does not have assets.");
-            ((BootloaderActivity) mContext).appendConsole("Selected firmware does not have assets.");
+            ((BootloaderActivity) mContext).appendConsoleError("Selected firmware does not have assets.");
             return;
         }
     }

@@ -364,7 +364,13 @@ public class BootloaderActivity extends Activity {
             File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
 
             long startTime = System.currentTimeMillis();
-            boolean flashSuccessful = mBootloader.flash(firmwareFile);
+            boolean flashSuccessful;
+            try {
+                flashSuccessful = mBootloader.flash(firmwareFile);
+            } catch (IOException ioe) {
+                Log.e(LOG_TAG, ioe.getMessage());
+                flashSuccessful = false;
+            }
             String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
             Log.d(LOG_TAG, flashTime);
             return flashSuccessful ? ("Flashing successful. " + flashTime) : "Flashing not successful.";

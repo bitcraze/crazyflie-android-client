@@ -67,7 +67,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  */
 //TODO: fix targetId and addr confusion
 //TODO: fix warmboot
-//TODO: throw FileNotFoundException all the way to the top?
 public class Bootloader {
 
     final Logger mLogger = LoggerFactory.getLogger("Bootloader");
@@ -177,17 +176,13 @@ public class Bootloader {
     }
 
     //TODO: improve
-    public static byte[] readFile(File file) {
+    public static byte[] readFile(File file) throws IOException {
         byte[] fileData = new byte[(int) file.length()];
         LoggerFactory.getLogger("Bootloader").debug("readFile: " + file.getName() +  ", size: " +  file.length());
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(file.getAbsoluteFile(), "r");
             raf.readFully(fileData);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             if (raf != null) {
                 try {
@@ -200,7 +195,7 @@ public class Bootloader {
         return fileData;
     }
 
-    public boolean flash(File file) {
+    public boolean flash(File file) throws IOException {
         // assume stm32 if no target name is specified and file extension is ".bin"
         if (file.getName().endsWith(".bin")) {
             mLogger.info("Assuming STM32 for file " + file.getName() + ".");
@@ -209,7 +204,7 @@ public class Bootloader {
         return flash(file, "");
     }
 
-    public boolean flash(File file, String... targetNames) {
+    public boolean flash(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
         if (filesToFlash.isEmpty()) {
             mLogger.error("Found no files to flash.");
@@ -224,7 +219,7 @@ public class Bootloader {
     }
 
     //TODO: deal with different platforms (CF1, CF2)!?
-    public List<FlashTarget> getFlashTargets(File file, String... targetNames) {
+    public List<FlashTarget> getFlashTargets(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = new ArrayList<FlashTarget>();
 
         if (!file.exists()) {
