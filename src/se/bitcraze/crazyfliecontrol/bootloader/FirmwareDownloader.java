@@ -270,6 +270,7 @@ public class FirmwareDownloader {
             String tagName = releaseObject.getString("tag_name");
             String name = releaseObject.getString("name");
             String createdAt = releaseObject.getString("created_at");
+            String body = releaseObject.getString("body");
             JSONArray assetsArray = releaseObject.getJSONArray("assets");
             if (assetsArray != null && assetsArray.length() > 0) {
                 for (int n = 0; n < assetsArray.length(); n++) {
@@ -282,6 +283,7 @@ public class FirmwareDownloader {
                         continue;
                     }
                     Firmware firmware = new Firmware(tagName, name, createdAt);
+                    firmware.setReleaseNotes(body);
                     firmware.setAsset(assetName, size, downloadURL);
                     firmwares.add(firmware);
                 }

@@ -41,9 +41,11 @@ import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -102,6 +104,7 @@ public class BootloaderActivity extends Activity {
         this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -145,6 +148,22 @@ public class BootloaderActivity extends Activity {
             }, 2000);
         } else {
             super.onBackPressed();
+        }
+    }
+
+    public void showReleaseNotes(View view) {
+        if (mSelectedFirmware != null && mSelectedFirmware.getReleaseNotes() != null) {
+            final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+            alertDialog.setTitle("Release notes:");
+            alertDialog.setMessage(mSelectedFirmware.getReleaseNotes());
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    alertDialog.dismiss();
+                }
+            });
+            alertDialog.show();
         }
     }
 

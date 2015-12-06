@@ -41,6 +41,7 @@ public class Firmware {
     private String mAssetName;
     private int mSize;
     private String mBrowserDownloadUrl;
+    private String mReleaseNotes;
 
     private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
     private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
@@ -88,6 +89,14 @@ public class Firmware {
 
     public String getBrowserDownloadUrl() {
         return mBrowserDownloadUrl;
+    }
+
+    public void setReleaseNotes(String releaseNotes) {
+        this.mReleaseNotes = releaseNotes;
+    }
+
+    public String getReleaseNotes() {
+        return mReleaseNotes;
     }
 
     public String getType() {
