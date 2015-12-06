@@ -230,12 +230,12 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
         return mUsbDevice != null && mConnection != null;
     }
 
-    public boolean isUsbDeviceConnected(int vid, int pid) {
-        return isUsbConnected() && mUsbDevice.getVendorId() == vid && mUsbDevice.getProductId() == pid;
-    }
-
     public static boolean isUsbDevice(UsbDevice usbDevice, int vid, int pid) {
         return usbDevice.getVendorId() == vid && usbDevice.getProductId() == pid;
+    }
+
+    public boolean isUsbDeviceConnected(int vid, int pid) {
+        return isUsbConnected() && isUsbDevice(mUsbDevice, vid, pid);
     }
 
 }

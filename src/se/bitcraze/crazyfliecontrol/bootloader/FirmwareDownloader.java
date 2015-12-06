@@ -54,6 +54,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -68,6 +70,7 @@ public class FirmwareDownloader {
     private Context mContext;
     public final static String DOWNLOAD_DIRECTORY = "CrazyflieControl";
     public final static String RELEASES_JSON = "cf_releases.json";
+    public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-firmware/releases";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
     private long mDownloadReference;
     private DownloadManager mManager;
@@ -80,8 +83,7 @@ public class FirmwareDownloader {
     }
 
     public void checkForFirmwareUpdate() {
-        String releaseURL = "https://api.github.com/repos/bitcraze/crazyflie-firmware/releases";
-        new DownloadWebpageTask().execute(releaseURL);
+        new DownloadWebpageTask().execute(RELEASE_URL);
     }
 
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
@@ -109,7 +111,7 @@ public class FirmwareDownloader {
             }
             //TODO: simplify
             if (!isFileAlreadyDownloaded(RELEASES_JSON)) {
-                // Write JSON to disk
+            // Write JSON to disk
                 try {
                     writeToReleaseJsonFile(input);
                     Log.d(LOG_TAG, "Wrote JSON file.");
