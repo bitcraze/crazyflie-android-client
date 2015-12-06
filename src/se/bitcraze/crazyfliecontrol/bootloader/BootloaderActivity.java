@@ -11,6 +11,7 @@ import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
 import android.app.DownloadManager;
@@ -123,7 +124,6 @@ public class BootloaderActivity extends Activity {
         }
     }
 
-
     public void checkForFirmwareUpdate(View view) {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -206,8 +206,6 @@ public class BootloaderActivity extends Activity {
         mConsoleTextView.setText("");
 
         // download firmware file
-
-        // TODO: not visible
         appendConsole("Downloading firmware...");
 
         mFirmwareDownloader.addDownloadListener(mDownloadListener);
@@ -220,6 +218,19 @@ public class BootloaderActivity extends Activity {
             appendConsoleError("Firmware file can not be found.");
             stopFlashProcess(false);
             return;
+        }
+
+        //fail quickly, when Crazyradio is not connected
+        //TODO: fix when BLE is used as well
+        //TODO: extract this to RadioDriver class?
+        try {
+            if (!new UsbLinkAndroid(BootloaderActivity.this).isUsbDeviceConnected(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
+                appendConsoleError("Please make sure that a Crazyradio (PA) is connected.");
+                stopFlashProcess(false);
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         try {
