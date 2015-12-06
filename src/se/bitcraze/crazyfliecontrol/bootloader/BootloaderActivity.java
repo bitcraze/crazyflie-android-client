@@ -47,8 +47,6 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Build;
@@ -104,7 +102,6 @@ public class BootloaderActivity extends Activity {
         this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -152,14 +149,7 @@ public class BootloaderActivity extends Activity {
     }
 
     public void checkForFirmwareUpdate(View view) {
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            appendConsole("Checking for updates...");
-            mFirmwareDownloader.checkForFirmwareUpdate();
-        } else {
-            appendConsole("No internet connection available.");
-        }
+        mFirmwareDownloader.checkForFirmwareUpdate();
     }
 
     private void initializeFirmwareSpinner() {
@@ -247,20 +237,15 @@ public class BootloaderActivity extends Activity {
             return;
         }
 
-        //fail quickly, when Crazyradio is not connected
-        //TODO: fix when BLE is used as well
-        //TODO: extract this to RadioDriver class?
         try {
+            //fail quickly, when Crazyradio is not connected
+            //TODO: fix when BLE is used as well
+            //TODO: extract this to RadioDriver class?
             if (!new UsbLinkAndroid(BootloaderActivity.this).isUsbDeviceConnected(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
                 appendConsoleError("Please make sure that a Crazyradio (PA) is connected.");
                 stopFlashProcess(false);
                 return;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
             mBootloader = new Bootloader(new RadioDriver(new UsbLinkAndroid(BootloaderActivity.this)));
         } catch (IOException ioe) {
             appendConsoleError(ioe.getMessage());

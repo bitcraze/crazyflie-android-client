@@ -60,7 +60,7 @@ import android.widget.Toast;
 
 public class PreferencesActivity extends PreferenceActivity {
 
-    private static final String LOG_TAG = "CrazyflieControl_Preferences";
+    private static final String LOG_TAG = "PreferencesActivity";
 
     public static final String KEY_PREF_RADIO_CHANNEL = "pref_radiochannel";
     public static final String KEY_PREF_RADIO_DATARATE = "pref_radiodatarate";
@@ -299,11 +299,9 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
-//                Toast.makeText(this, "Crazyradio not attached", Toast.LENGTH_SHORT).show();
                 pref.setSummary(defaultValue);
             } catch (IOException iae) {
                 Log.e(LOG_TAG, iae.getMessage());
-//                Toast.makeText(this, iae.getMessage(), Toast.LENGTH_SHORT).show();
                 pref.setSummary(defaultValue);
             } finally {
                 if (usbLinkAndroid != null) {

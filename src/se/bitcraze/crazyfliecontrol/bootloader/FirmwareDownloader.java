@@ -83,7 +83,56 @@ public class FirmwareDownloader {
     }
 
     public void checkForFirmwareUpdate() {
-        new DownloadWebpageTask().execute(RELEASE_URL);
+        File sdcard = Environment.getExternalStorageDirectory();
+        File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
+
+        if (isNetworkAvailable()) {
+            Log.d(LOG_TAG, "Network connection available.");
+            if (!isFileAlreadyDownloaded(RELEASES_JSON) || isFileTooOld(releasesFile, 21600000)) {
+                ((BootloaderActivity) mContext).appendConsole("Checking for updates...");
+                new DownloadWebpageTask().execute(RELEASE_URL);
+            } else {
+                loadLocalFile(releasesFile);
+            }
+        } else {
+            Log.d(LOG_TAG, "Network connection not available.");
+            if (isFileAlreadyDownloaded(RELEASES_JSON)) {
+                loadLocalFile(releasesFile);
+            } else {
+                ((BootloaderActivity) mContext).appendConsoleError("No local file found.\nNo network connection available.\nPlease check your connectivity.");
+            }
+        }
+    }
+
+    /**
+     * Check network connectivity
+     *
+     * @return true if network is available, false otherwise
+     */
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void loadLocalFile(File releasesFile) {
+        Log.d(LOG_TAG, "Loading releases JSON from local file...");
+        String input = new String(Bootloader.readFile(releasesFile));
+        try {
+            mFirmwares = parseJson(input);
+        } catch (JSONException e) {
+            ((BootloaderActivity) mContext).appendConsole("Error during parsing JSON content.");
+            return;
+        }
+        ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwares);
+        ((BootloaderActivity) mContext).appendConsole("Found " + mFirmwares.size() + " firmware files.");
+    }
+
+    private boolean isFileTooOld (File file, long time) {
+        if (file.exists() && file.length() > 0) {
+            return System.currentTimeMillis() - file.lastModified() > time;
+        }
+        return false;
     }
 
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
@@ -92,33 +141,24 @@ public class FirmwareDownloader {
         protected String doInBackground(String... urls) {
             String input = null;
             try {
-                if (!isFileAlreadyDownloaded(RELEASES_JSON)) {
-                    Log.d(LOG_TAG, "Releases JSON downloaded.");
-                    input = downloadUrl(urls[0]);
-                } else {
-                    Log.d(LOG_TAG, "Releases JSON loaded from file.");
-                    File sdcard = Environment.getExternalStorageDirectory();
-                    File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
-                    input = new String(Bootloader.readFile(releasesFile));
-                }
+                input = downloadUrl(urls[0]);
+                Log.d(LOG_TAG, "Releases JSON downloaded.");
                 mFirmwares = parseJson(input);
             } catch (IOException ioe) {
                 Log.d(LOG_TAG, ioe.getMessage());
-                return "Unable to retrieve web page. URL may be invalid.";
+                return "Unable to retrieve web page. Check your connectivity.";
             } catch (JSONException je) {
                 Log.d(LOG_TAG, je.getMessage());
                 return "Error during parsing JSON content.";
             }
-            //TODO: simplify
-            if (!isFileAlreadyDownloaded(RELEASES_JSON)) {
+
             // Write JSON to disk
-                try {
-                    writeToReleaseJsonFile(input);
-                    Log.d(LOG_TAG, "Wrote JSON file.");
-                } catch (IOException ioe) {
-                    Log.d(LOG_TAG, ioe.getMessage());
-                    return "Unable to save JSON file.";
-                }
+            try {
+                writeToReleaseJsonFile(input);
+                Log.d(LOG_TAG, "Wrote JSON file.");
+            } catch (IOException ioe) {
+                Log.d(LOG_TAG, ioe.getMessage());
+                return "Unable to save JSON file.";
             }
             return "Found " + mFirmwares.size() + " firmware files.";
         }
