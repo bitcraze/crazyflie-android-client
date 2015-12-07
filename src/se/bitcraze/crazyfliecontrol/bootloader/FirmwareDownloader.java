@@ -321,12 +321,7 @@ public class FirmwareDownloader {
                     if (status == DownloadManager.STATUS_SUCCESSFUL) {
                         String filePath = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
                         String filename = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length());
-
                         Toast.makeText(mContext, "Download successful: " + filename, Toast.LENGTH_SHORT).show();
-
-//                        if (filename.endsWith(".zip")) {
-//                            unzip(new File(filePath));
-//                        }
                         notifyDownloadFinished();
                     }
                 }

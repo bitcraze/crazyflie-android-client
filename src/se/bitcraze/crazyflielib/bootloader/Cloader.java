@@ -57,6 +57,8 @@ import se.bitcraze.crazyflielib.crtp.CrtpPort;
  */
 //TODO: fix resetToBootloader methods
 //TODO: fix callbacks
+//TODO: use retryCounter
+//TODO: new Address
 public class Cloader {
 
     final Logger mLogger = LoggerFactory.getLogger("Cloader");
@@ -182,10 +184,7 @@ public class Cloader {
          * Mainly aim to bypass a bug of the crazyflie firmware that prevents
          * reset before normal CRTP communication
          */
-        //pk = CRTPPacket()
-        //pk.port = CRTPPort.LINKCTRL
         Header header = new Header(0, CrtpPort.LINKCTRL);
-        //pk.data = (1, 2, 3) + cpu_id
         CrtpPacket pk = new CrtpPacket(header.getByte(), new byte[]{1, 2, 3, (byte) cpuId});
         this.mDriver.sendPacket(pk);
 
@@ -260,7 +259,6 @@ public class Cloader {
                 // Difference in CF1 and CF2 (CPU ID)
                 byte[] data = null;
                 if (targetId == TargetTypes.NRF51) { // CF2
-                    // pk.data = (target_id, 0xF0, 0x01)
                     data = new byte[] {(byte) targetId, (byte) 0xF0, (byte) 0x01};
                 } else { // CF1
                     // pk.data = (target_id, 0xF0) + fake_cpu_id
@@ -361,20 +359,20 @@ public class Cloader {
             //self.link.cradio.set_address((0xE7,) * 5)
             crazyRadio.setAddress(new byte[]{(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
 
-                System.arraycopy(newAddress, 0, pkData, 3, newAddress.length);
-                crazyRadio.sendPacket(pkData);
+            System.arraycopy(newAddress, 0, pkData, 3, newAddress.length);
+            crazyRadio.sendPacket(pkData);
 
             //self.link.cradio.set_address(tuple(new_address))
             crazyRadio.setAddress(newAddress);
 
             //if self.link.cradio.send_packet((0xff,)).ack:
-                RadioAck ack = crazyRadio.sendPacket(new byte[] {(byte) 0xFF});
-                if (ack != null) {
-                    mLogger.info("Bootloader set to radio address " + Utilities.getHexString(newAddress));;
+            RadioAck ack = crazyRadio.sendPacket(new byte[] {(byte) 0xFF});
+            if (ack != null) {
+                mLogger.info("Bootloader set to radio address " + Utilities.getHexString(newAddress));;
                 this.mDriver.startSendReceiveThread();
-                    return true;
-                }
+                return true;
             }
+        }
         //this.mDriver.restart();
         this.mDriver.startSendReceiveThread();
         return false;

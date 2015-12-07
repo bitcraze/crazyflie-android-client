@@ -315,6 +315,7 @@ public class BootloaderActivity extends Activity {
         appendConsole(cfversion);
         Log.d(LOG_TAG, cfversion);
 
+        // check if firmware and CF are compatible
         if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
             ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
             appendConsoleError("Incompatible firmware version.");

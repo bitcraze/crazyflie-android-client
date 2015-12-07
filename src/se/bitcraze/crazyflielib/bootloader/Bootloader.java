@@ -72,12 +72,10 @@ public class Bootloader {
     final Logger mLogger = LoggerFactory.getLogger("Bootloader");
 
     private static ObjectMapper mMapper = new ObjectMapper(); // can reuse, share globally
-
+    private static final String MANIFEST_FILENAME = "manifest.json";
     private Cloader mCload;
-
-    private List<BootloaderListener> mBootloaderListeners;
-
     private boolean mCancelled = false;
+    private List<BootloaderListener> mBootloaderListeners;
 
     /**
      * Init the communication class by starting to communicate with the
@@ -169,8 +167,6 @@ public class Bootloader {
     public void writeCF1Config(byte[] data) {
         Target target = this.mCload.getTargets().get(TargetTypes.STM32); //CF1
         int configPage = target.getFlashPages() - 1;
-
-        //to_flash = {"target": target, "data": data, "type": "CF1 config", "start_page": config_page}
         FlashTarget toFlash = new FlashTarget(target, data, "CF1 config", configPage);
         internalFlash(toFlash);
     }
@@ -219,7 +215,7 @@ public class Bootloader {
     }
 
     //TODO: deal with different platforms (CF1, CF2)!?
-    public List<FlashTarget> getFlashTargets(File file, String... targetNames) throws IOException {
+    private List<FlashTarget> getFlashTargets(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = new ArrayList<FlashTarget>();
 
         if (!file.exists()) {
@@ -234,9 +230,8 @@ public class Bootloader {
             unzip(file);
 
             // read manifest.json
-            String manifestFilename = "manifest.json";
             File basePath = new File(file.getAbsoluteFile().getParent() + "/" + getFileNameWithoutExtension(file));
-            File manifestFile = new File(basePath.getAbsolutePath() + "/" + manifestFilename);
+            File manifestFile = new File(basePath.getAbsolutePath(), MANIFEST_FILENAME);
             if (basePath.exists() && manifestFile.exists()) {
                 Manifest mf = null;
                 try {
@@ -257,7 +252,7 @@ public class Bootloader {
                     if (t != null) {
                         // use path to extracted file
                         //File flashFile = new File(file.getParent() + "/" + file.getName() + "/" + fileName);
-                        File flashFile = new File(basePath.getAbsolutePath() + "/" + fileName);
+                        File flashFile = new File(basePath.getAbsolutePath(), fileName);
                         FlashTarget ft = new FlashTarget(t, readFile(flashFile), firmwareDetails.getType(), t.getStartPage()); //TODO: does startPage HAVE to be an extra argument!? (it's already included in Target)
                         // add flash target
                         // if no target names are specified, flash everything
@@ -274,7 +269,7 @@ public class Bootloader {
                     }
                 }
             } else {
-                mLogger.error("Zip file " + file.getName() + " does not include a " + manifestFilename);
+                mLogger.error("Zip file " + file.getName() + " does not include a " + MANIFEST_FILENAME);
             }
         } else { // File is not a Zip file
             // add single flash target
@@ -360,7 +355,7 @@ public class Bootloader {
      * @return true if file is a Zip file, false otherwise
      */
     //TODO: how can this be improved?
-    public boolean isZipFile(File file) {
+    private boolean isZipFile(File file) {
         if (file != null && file.exists() && file.getName().endsWith(".zip")) {
             ZipFile zf = null;
             try {
@@ -454,7 +449,6 @@ public class Bootloader {
             this.mCload.uploadBuffer(t_data.getId(), bufferCounter, 0, buffer);
 
             bufferCounter++;
-
 
             // Flash when the complete buffers are full
             if (bufferCounter >= t_data.getBufferPages()) {
