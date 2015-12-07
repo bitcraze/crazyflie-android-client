@@ -121,9 +121,13 @@ public class Crazyflie {
         // try to connect
         try {
             mDriver.connect(mConnectionData);
-        } catch (IOException e1) {
-            mLogger.debug(e1.getMessage());
-            notifyConnectionFailed("Connection failed");
+        } catch (IOException ioe) {
+            mLogger.debug(ioe.getMessage());
+            notifyConnectionFailed("Connection failed: " + ioe.getMessage());
+            disconnect();
+        } catch (IllegalArgumentException iae) {
+            mLogger.debug(iae.getMessage());
+            notifyConnectionFailed("Connection failed: " + iae.getMessage());
             disconnect();
         }
 
