@@ -290,7 +290,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 usbLinkAndroid = new UsbLinkAndroid(getActivity());
                 if (usbLinkAndroid != null) {
                     usbLinkAndroid.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
-                    if(usbLinkAndroid.isUsbConnected() && usbLinkAndroid.isUsbDeviceConnected(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
+                    if(usbLinkAndroid.isUsbConnected()) {
                         pref.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
                                         "Serial number: " + usbLinkAndroid.getSerialNumber());
                     } else{

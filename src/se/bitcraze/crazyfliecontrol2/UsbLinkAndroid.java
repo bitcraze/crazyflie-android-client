@@ -232,6 +232,7 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
         return usbDevice.getVendorId() == vid && usbDevice.getProductId() == pid;
     }
 
+    //TODO: redundant?
     public boolean isUsbDeviceConnected(int vid, int pid) {
         return isUsbConnected() && isUsbDevice(mUsbDevice, vid, pid);
     }

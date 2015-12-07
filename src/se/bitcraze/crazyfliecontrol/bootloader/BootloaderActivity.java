@@ -33,12 +33,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
+import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
-import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -260,7 +260,7 @@ public class BootloaderActivity extends Activity {
             //fail quickly, when Crazyradio is not connected
             //TODO: fix when BLE is used as well
             //TODO: extract this to RadioDriver class?
-            if (!new UsbLinkAndroid(BootloaderActivity.this).isUsbDeviceConnected(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID)) {
+            if (!MainActivity.isCrazyradioAvailable(this)) {
                 appendConsoleError("Please make sure that a Crazyradio (PA) is connected.");
                 stopFlashProcess(false);
                 return;
@@ -313,7 +313,6 @@ public class BootloaderActivity extends Activity {
 
         String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
         appendConsole(cfversion);
-        Log.d(LOG_TAG, cfversion);
 
         // check if firmware and CF are compatible
         if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||

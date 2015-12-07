@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
 
         CrtpDriver driver = null;
 
-        if(isCrazyradioAvailable()) {
+        if(isCrazyradioAvailable(this)) {
             //TODO: use RadioDriver
             try {
 //                driver = new Crazyradio(new UsbLinkAndroid(this));
@@ -571,8 +571,8 @@ public class MainActivity extends Activity {
     	return mController;
     }
 
-    public boolean isCrazyradioAvailable() {
-        UsbManager usbManager = (UsbManager) this.getSystemService(Context.USB_SERVICE);
+    public static boolean isCrazyradioAvailable(Context context) {
+        UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         if (usbManager == null) {
             throw new IllegalArgumentException("UsbManager == null!");
         }
