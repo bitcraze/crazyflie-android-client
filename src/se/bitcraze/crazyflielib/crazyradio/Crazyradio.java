@@ -295,7 +295,7 @@ public class Crazyradio {
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        mLogger.error("InterruptedException: " + e.getMessage());
                     }
                 }
             }

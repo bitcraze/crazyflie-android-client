@@ -157,7 +157,7 @@ public class Cloader {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                mLogger.error("InterruptedException: " + e.getMessage());
             }
             this.mDriver.disconnect();
             //TODO: time.sleep(0.2)
@@ -272,7 +272,7 @@ public class Cloader {
         try {
             Thread.sleep(1500);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            mLogger.error("InterruptedException: " + e.getMessage());
         }
         return true;
     }
@@ -325,7 +325,7 @@ public class Cloader {
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                mLogger.error("InterruptedException: " + e.getMessage());
             }
         }
         return false;

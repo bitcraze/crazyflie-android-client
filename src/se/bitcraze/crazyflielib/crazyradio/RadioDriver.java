@@ -122,8 +122,7 @@ public class RadioDriver extends CrtpDriver {
         try {
             return mInQueue.poll((long) time, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            //TODO: does this needs to be dealt with?
-            //e.printStackTrace();
+            mLogger.error("InterruptedException: " + e.getMessage());
             return null;
         }
     }
@@ -160,7 +159,7 @@ public class RadioDriver extends CrtpDriver {
         try {
             this.mOutQueue.put(packet);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            mLogger.error("InterruptedException: " + e.getMessage());
         }
     }
 
@@ -229,7 +228,7 @@ public class RadioDriver extends CrtpDriver {
         try {
             connectionDataList = Arrays.asList(crazyRadio.scanChannels());
         } catch (IOException e) {
-            e.printStackTrace();
+            mLogger.error(e.getMessage());
         }
 
 //        crazyRadio.close();

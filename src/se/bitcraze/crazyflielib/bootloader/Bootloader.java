@@ -174,7 +174,8 @@ public class Bootloader {
     //TODO: improve
     public static byte[] readFile(File file) throws IOException {
         byte[] fileData = new byte[(int) file.length()];
-        LoggerFactory.getLogger("Bootloader").debug("readFile: " + file.getName() +  ", size: " +  file.length());
+        Logger logger = LoggerFactory.getLogger("Bootloader");
+        logger.debug("readFile: " + file.getName() +  ", size: " +  file.length());
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(file.getAbsoluteFile(), "r");
@@ -183,8 +184,8 @@ public class Bootloader {
             if (raf != null) {
                 try {
                     raf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ioe) {
+                    logger.error(ioe.getMessage());
                 }
             }
         }
@@ -330,14 +331,14 @@ public class Bootloader {
                 try {
                     zis.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    mLogger.error(e.getMessage());
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    mLogger.error(e.getMessage());
                 }
             }
 
@@ -362,15 +363,15 @@ public class Bootloader {
                 zf = new ZipFile(file);
                 return zf.size() > 0;
             } catch (ZipException e) {
-                e.printStackTrace();
+                mLogger.error(e.getMessage());
             } catch (IOException e) {
-                e.printStackTrace();
+                mLogger.error(e.getMessage());
             } finally {
                 if (zf != null) {
                     try {
                         zf.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        mLogger.error(e.getMessage());
                     }
                 }
             }
