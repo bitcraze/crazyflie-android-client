@@ -397,9 +397,7 @@ public class MainActivity extends Activity {
         CrtpDriver driver = null;
 
         if(isCrazyradioAvailable(this)) {
-            //TODO: use RadioDriver
             try {
-//                driver = new Crazyradio(new UsbLinkAndroid(this));
                 driver = new RadioDriver(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
@@ -427,10 +425,8 @@ public class MainActivity extends Activity {
 
         if (driver != null) {
 
-            mCrazyflie = new Crazyflie(driver);
-
             // add listener for connection status
-            mCrazyflie.addConnectionListener(new ConnectionAdapter() {
+            driver.addConnectionListener(new ConnectionAdapter() {
 
                 @Override
                 public void connectionRequested(String connectionInfo) {
@@ -448,17 +444,19 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
-                            if (mCrazyflie.getDriver() instanceof BleLink) {
+                            if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
                             } else {
                                 mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
                             }
                         }
                     });
+                    mCrazyflie.startConnectionSetup();
                 }
 
                 @Override
                 public void setupFinished(String connectionInfo) {
+                    startSendJoystickDataThread();
                 }
 
                 @Override
@@ -506,42 +504,44 @@ public class MainActivity extends Activity {
                 }
             });
 
-            // connect and start thread to periodically send commands containing the user input
-            mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
-    //            mLink.addDataListener(new DataListener(CrtpPort.CONSOLE) {
-    //
-    //                @Override
-    //                public void dataReceived(CrtpPacket packet) {
-    //                    Log.d(LOG_TAG, "Received console packet: " + packet);
-    //                }
-    //
-    //            });
-    //            mLink.addDataListener(new DataListener(CrtpPort.PARAMETERS) {
-    //
-    //                @Override
-    //                public void dataReceived(CrtpPacket packet) {
-    //                    Log.d(LOG_TAG, "Received parameters packet: " + packet);
-    //                }
-    //
-    //            });
-            mSendJoystickDataThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (mCrazyflie != null) {
-                        mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+            mCrazyflie = new Crazyflie(driver);
 
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                }
-            });
-            mSendJoystickDataThread.start();
+            // connect
+            mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
+
+//            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
+//
+//                @Override
+//                public void dataReceived(CrtpPacket packet) {
+//                    Log.d(LOG_TAG, "Received console packet: " + packet);
+//                }
+//
+//            });
         } else {
             Toast.makeText(this, "Cannot connect: Crazyradio not attached and Bluetooth LE not available", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Start thread to periodically send commands containing the user input
+     */
+    private void startSendJoystickDataThread() {
+        mSendJoystickDataThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mCrazyflie != null) {
+                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+
+                    try {
+                        Thread.sleep(20);
+                    } catch (InterruptedException e) {
+                        Log.d(LOG_TAG, "SendJoystickDataThread was interrupted.");
+                        break;
+                    }
+                }
+            }
+        });
+        mSendJoystickDataThread.start();
     }
 
     public Crazyflie getCrazyflie(){

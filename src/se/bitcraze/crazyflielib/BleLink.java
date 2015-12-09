@@ -93,7 +93,7 @@ public class BleLink extends CrtpDriver {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				mConnected = false;
 				state = State.IDLE;
-//				notifyConnectionLost("BLE connection lost");
+				notifyConnectionLost("BLE connection lost");
 			}
 		}
 
@@ -118,7 +118,7 @@ public class BleLink extends CrtpDriver {
 				mWritten = false;
 
 				state = State.CONNECTED;
-//				notifyConnected();
+				notifyConnected();
 			}
 		}
 
@@ -176,6 +176,7 @@ public class BleLink extends CrtpDriver {
 
 	@Override
 	public void connect(ConnectionData connectionData) {
+	    this.mConnectionData = connectionData;
 	    // TODO: connectionData is unused until BLE can address specific quadcopter
 		if (state != State.IDLE) {
 			throw new IllegalArgumentException("Connection already started");
@@ -201,12 +202,12 @@ public class BleLink extends CrtpDriver {
 			public void run() {
 				mBluetoothAdapter.stopLeScan(mLeScanCallback);
 				state = State.IDLE;
-//				notifyConnectionFailed("BLE connection timeout");
+				notifyConnectionFailed("BLE connection timeout");
 			}
 		}, 10000);
 
 		state = State.CONNECTING;
-//		notifyConnectionRequested();
+		notifyConnectionRequested();
 	}
 
 	@Override
@@ -224,7 +225,7 @@ public class BleLink extends CrtpDriver {
 						mScannTimer = null;
 					}
 					state = State.IDLE;
-//					notifyDisconnected();
+					notifyDisconnected();
 				}
 			}
 		});
@@ -232,7 +233,7 @@ public class BleLink extends CrtpDriver {
 
 	@Override
 	public boolean isConnected() {
-		return state != State.IDLE;
+		return state == State.CONNECTED;
 	}
 
 	int ctr = 0;
@@ -266,7 +267,7 @@ public class BleLink extends CrtpDriver {
 
     @Override
     public CrtpPacket receivePacket(int wait) {
-        return CrtpPacket.NULL_PACKET;
+        return isConnected() ? CrtpPacket.NULL_PACKET : null;
     }
 
     @Override

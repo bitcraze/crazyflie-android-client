@@ -72,8 +72,10 @@ public class RadioDriver extends CrtpDriver {
     /* (non-Javadoc)
      * @see se.bitcraze.crazyflie.lib.crtp.CrtpDriver#connect(se.bitcraze.crazyflie.lib.crazyradio.ConnectionData)
      */
-    public void connect(ConnectionData connectionData) throws IOException {
+    public void connect(ConnectionData connectionData) {
+        this.mConnectionData = connectionData;
         if(mCradio == null) {
+            notifyConnectionRequested();
 //            try {
 //                mUsbInterface.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
 //            } catch (IOException e) {
@@ -177,17 +179,14 @@ public class RadioDriver extends CrtpDriver {
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            mLogger.error("Interrupted during disconnect: " + e.getMessage());
         }
         if(this.mCradio != null) {
             this.mCradio.disconnect();
             this.mCradio = null;
         }
-        //redundant
-//        if(this.mUsbInterface != null) {
-//            this.mUsbInterface.releaseInterface();
-////            this.mUsbInterface = null;
-//        }
+
+        notifyDisconnected();
     }
 
     public List<ConnectionData> scanInterface() {
@@ -313,7 +312,7 @@ public class RadioDriver extends CrtpDriver {
 
                     // Analyze the data packet
                     if (ackStatus == null) {
-                        notifyLinkError("Dongle communication error (ackStatus == null)");
+                        notifyConnectionLost("Dongle communication error (ackStatus == null)");
                         mLogger.warn("Dongle communication error (ackStatus == null)");
                         continue;
                     }
@@ -325,7 +324,7 @@ public class RadioDriver extends CrtpDriver {
                     if (!ackStatus.isAck()) {
                         this.mRetryBeforeDisconnect--;
                         if (this.mRetryBeforeDisconnect == 0) {
-                            notifyLinkError("Too many packets lost");
+                            notifyConnectionLost("Too many packets lost");
                             mLogger.warn("Too many packets lost");
                         }
                         continue;
