@@ -67,6 +67,14 @@ public class BleLink extends CrtpDriver {
 	private BluetoothGattCharacteristic mCrtpChar;
 	private Timer mScannTimer;
 
+	private static final String CF_DEVICE_NAME = "Crazyflie";
+	private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
+
+	private static UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
+    private static UUID CRTP = UUID.fromString("00000202-1C7F-4F9E-947B-43B7C00A9A08");
+    private static UUID CRTPUP = UUID.fromString("00000203-1C7F-4F9E-947B-43B7C00A9A08");
+    private static UUID CRTPDOWN = UUID.fromString("00000204-1C7F-4F9E-947B-43B7C00A9A08");
+
 	private final static int REQUEST_ENABLE_BT = 1;
 	protected boolean mWritten = true;
 	private Activity mContext;
@@ -103,8 +111,8 @@ public class BleLink extends CrtpDriver {
 			if (status != BluetoothGatt.GATT_SUCCESS) {
 				gatt.disconnect();
 			} else {
-				BluetoothGattService cfService = gatt.getService(UUID.fromString("00000201-1c7f-4f9e-947b-43b7c00a9a08"));
-				mCrtpChar = cfService.getCharacteristic(UUID.fromString("00000202-1c7f-4f9e-947b-43b7c00a9a08"));
+				BluetoothGattService cfService = gatt.getService(CF_SERVICE);
+				mCrtpChar = cfService.getCharacteristic(CRTP);
 
 				gatt.setCharacteristicNotification(mCrtpChar, true);
 
@@ -155,7 +163,7 @@ public class BleLink extends CrtpDriver {
 			if (device != null && device.getName() != null) {
 				Log.d(TAG, "Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
-				if (device.getName().equals("Crazyflie") && rssi>rssiThreshold) {
+				if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
 					mBluetoothAdapter.stopLeScan(this);
 					if (mScannTimer != null) {
 						mScannTimer.cancel();
@@ -247,7 +255,11 @@ public class BleLink extends CrtpDriver {
 
 		class SendBlePacket implements Runnable {
 			CrtpPacket pk;
-			SendBlePacket(CrtpPacket pk) { this.pk = pk; }
+
+            public SendBlePacket(CrtpPacket pk) {
+                this.pk = pk;
+            }
+
 			public void run() {
 				if(mConnected && mWritten) {
 					if (mWriteWithAnswer) {
