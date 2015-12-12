@@ -70,7 +70,7 @@ public class FirmwareDownloader {
     private Context mContext;
     public final static String DOWNLOAD_DIRECTORY = "CrazyflieControl";
     public final static String RELEASES_JSON = "cf_releases.json";
-    public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-firmware/releases";
+    public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
     private long mDownloadReference;
     private DownloadManager mManager;

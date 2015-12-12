@@ -106,6 +106,8 @@ public class Firmware {
             return "CF1";
         } else if (lcAssetName.startsWith("cf2") || lcAssetName.startsWith("crazyflie2") || lcAssetName.startsWith("cflie2")) {
             return "CF2";
+        } else if (lcAssetName.startsWith("crazyflie-")) {
+            return "CF1 & CF2";
         } else {
             return "Unknown";
         }

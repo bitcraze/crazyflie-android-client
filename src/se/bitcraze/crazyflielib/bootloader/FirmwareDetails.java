@@ -35,14 +35,18 @@ public class FirmwareDetails {
     private String mPlatform;
     private String mTarget;
     private String mType;
+    private String mRelease;
+    private String mRepository;
 
     public FirmwareDetails() {
     }
 
-    public FirmwareDetails(String platform, String target, String type) {
+    public FirmwareDetails(String platform, String target, String type, String release, String repository) {
         this.mPlatform = platform;
         this.mTarget = target;
         this.mType = type;
+        this.mRelease = release;
+        this.mRepository = repository;
     }
 
     public String getPlatform() {
@@ -69,8 +73,25 @@ public class FirmwareDetails {
         this.mType = type;
     }
 
+    public String getRelease() {
+        return mRelease;
+    }
+
+    public void setRelease(String mRelease) {
+        this.mRelease = mRelease;
+    }
+
+    public String getRepository() {
+        return mRepository;
+    }
+
+    public void setRepository(String mRepository) {
+        this.mRepository = mRepository;
+    }
+
     @Override
     public String toString() {
-        return "FirmwareDetails [Platform=" + mPlatform + ", Target=" + mTarget + ", Type=" + mType + "]";
+        return "FirmwareDetails [Platform=" + mPlatform + ", Target=" + mTarget + ", Type=" + mType + ", Release=" + mRelease + ", Repository=" + mRepository + "]";
     }
+
 }
