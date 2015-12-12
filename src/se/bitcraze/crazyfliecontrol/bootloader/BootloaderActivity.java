@@ -63,6 +63,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
@@ -73,6 +74,7 @@ public class BootloaderActivity extends Activity {
 
     private static final String LOG_TAG = "BootloaderActivity";
     private Button mFlashFirmwareButton;
+    private ImageButton mReleaseNotesButton;
     private Spinner mFirmwareSpinner;
     private CustomSpinnerAdapter mSpinnerAdapter;
     private ScrollView mScrollView;
@@ -90,6 +92,7 @@ public class BootloaderActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bootloader);
         mFlashFirmwareButton = (Button) findViewById(R.id.bootloader_flashFirmware);
+        mReleaseNotesButton = (ImageButton) findViewById(R.id.bootloader_releaseNotes);
         mFirmwareSpinner = (Spinner) findViewById(R.id.bootloader_firmwareSpinner);
         mScrollView = (ScrollView) findViewById(R.id.bootloader_scrollView);
         mConsoleTextView = (TextView) findViewById(R.id.bootloader_statusLine);
@@ -183,12 +186,14 @@ public class BootloaderActivity extends Activity {
                 if (firmware != null) {
                     mSelectedFirmware = firmware;
                     mFlashFirmwareButton.setEnabled(true);
+                    mReleaseNotesButton.setEnabled(true);
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 mFlashFirmwareButton.setEnabled(false);
+                mReleaseNotesButton.setEnabled(false);
             }
 
         });
@@ -236,6 +241,7 @@ public class BootloaderActivity extends Activity {
     public void startFlashProcess(final View view) {
         // disable button and spinner
         mFlashFirmwareButton.setEnabled(false);
+        mReleaseNotesButton.setEnabled(false);
         mFirmwareSpinner.setEnabled(false);
 
         //clear console
@@ -331,6 +337,8 @@ public class BootloaderActivity extends Activity {
 
     private class FlashFirmwareTask extends AsyncTask<String, String, String> {
 
+        boolean flashSuccessful;
+
         @Override
         protected void onPreExecute() {
             Toast.makeText(BootloaderActivity.this, "Flashing firmware ...", Toast.LENGTH_SHORT).show();
@@ -364,7 +372,6 @@ public class BootloaderActivity extends Activity {
             File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
 
             long startTime = System.currentTimeMillis();
-            boolean flashSuccessful;
             try {
                 flashSuccessful = mBootloader.flash(firmwareFile);
             } catch (IOException ioe) {
@@ -391,7 +398,11 @@ public class BootloaderActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            appendConsole(result);
+            if (flashSuccessful) {
+                appendConsole(result);
+            } else {
+                appendConsoleError(result);
+            }
             stopFlashProcess(true);
         }
 
@@ -415,6 +426,7 @@ public class BootloaderActivity extends Activity {
         mFirmwareDownloader.removeDownloadListener(mDownloadListener);
         //re-enable widgets
         mFlashFirmwareButton.setEnabled(true);
+        mReleaseNotesButton.setEnabled(true);
         mFirmwareSpinner.setEnabled(true);
 
         mProgressBar.setProgress(0);
