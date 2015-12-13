@@ -212,7 +212,7 @@ public class BleLink extends CrtpDriver {
 				state = State.IDLE;
 				notifyConnectionFailed("BLE connection timeout");
 			}
-		}, 10000);
+		}, 5000);
 
 		state = State.CONNECTING;
 		notifyConnectionRequested();
