@@ -57,6 +57,7 @@ import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -87,6 +88,7 @@ public class Bootloader {
     public Bootloader(CrtpDriver driver) {
         this.mCload = new Cloader(driver);
         this.mBootloaderListeners = Collections.synchronizedList(new LinkedList<BootloaderListener>());
+        mMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public Cloader getCloader() {
