@@ -45,7 +45,7 @@ public class Crazyflie {
 
     final Logger mLogger = LoggerFactory.getLogger("Crazyflie");
 
-    private se.bitcraze.crazyflielib.crtp.CrtpDriver mDriver;
+    private CrtpDriver mDriver;
     private Thread mIncomingPacketHandlerThread;
 
     private LinkedBlockingDeque<CrtpPacket> mResendQueue = new LinkedBlockingDeque<CrtpPacket>();
@@ -239,7 +239,7 @@ public class Crazyflie {
         if (this.mState == State.INITIALIZED) {
             this.mState = State.CONNECTED;
             //self.link_established.call(self.link_uri)
-          //TODO: fix hacky-di-hack
+            //TODO: fix hacky-di-hack
             if (this.mDriver instanceof RadioDriver) {
                 this.mDriver.notifyConnected();
             }
