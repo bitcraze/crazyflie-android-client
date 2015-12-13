@@ -373,17 +373,8 @@ public class Crazyflie {
         final Logger mLogger = LoggerFactory.getLogger("IncomingPacketHandler");
 
         public void run() {
-            while(true) {
-                try {
-                    //TODO: does that even make sense!?
-                    //problems during disconnect, loop continues indefinitely
-                    if (getDriver() == null) {
-                        // time.sleep(1)
-                        Thread.sleep(100);
-//                        continue;
-                        break;
-                    }
-
+            while(getDriver() != null && !Thread.currentThread().isInterrupted()) {
+                if (getDriver() != null) {
                     CrtpPacket packet = getDriver().receivePacket(1);
                     if(packet == null) {
                         continue;
@@ -394,11 +385,9 @@ public class Crazyflie {
                     notifyPacketReceived(packet);
 
                     notifyDataReceived(packet);
-                } catch(InterruptedException e) {
-                    mLogger.debug("IncomingPacketHandlerThread was interrupted.");
-                    break;
                 }
             }
+            mLogger.debug("IncomingPacketHandlerThread was interrupted.");
         }
 
     }
