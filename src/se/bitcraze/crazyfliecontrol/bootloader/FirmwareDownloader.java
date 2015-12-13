@@ -197,7 +197,12 @@ public class FirmwareDownloader {
             }
 
             String browserDownloadUrl = selectedFirmware.getBrowserDownloadUrl();
-            downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
+            if (isNetworkAvailable()) {
+                downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
+            } else {
+                Log.d(LOG_TAG, "Network connection not available.");
+                ((BootloaderActivity) mContext).appendConsoleError("No network connection available.\nPlease check your connectivity.");
+            }
         } else {
             ((BootloaderActivity) mContext).appendConsoleError("Selected firmware does not have assets.");
             return;
@@ -328,6 +333,7 @@ public class FirmwareDownloader {
                 c.close();
             }
         }
+
       };
 
 
