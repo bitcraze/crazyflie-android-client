@@ -32,7 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class Firmware {
+public class Firmware implements Comparable<Firmware> {
 
     private String mTagName;
     private String mName;
@@ -116,6 +116,11 @@ public class Firmware {
     @Override
     public String toString() {
         return "Firmware [mTagName=" + mTagName + ", mName=" + mName + ", mCreatedAt=" + mCreatedAt + "]";
+    }
+
+    @Override
+    public int compareTo(Firmware another) {
+        return this.mTagName.compareTo(another.getTagName());
     }
 
 }

@@ -30,6 +30,7 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
@@ -201,6 +202,8 @@ public class BootloaderActivity extends Activity {
 
     public void updateFirmwareSpinner(List<Firmware> firmwares) {
         mSpinnerAdapter.clear();
+        Collections.sort(firmwares);
+        Collections.reverse(firmwares);
         mSpinnerAdapter.addAll(firmwares);
     }
 
