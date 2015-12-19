@@ -32,6 +32,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
@@ -49,12 +52,11 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 @SuppressLint("NewApi")
 public class BleLink extends CrtpDriver {
 
-	private static final String TAG = "BleLink";
+    final Logger mLogger = LoggerFactory.getLogger("BLELink");
 
 	// Set to -40 to connect only to close-by Crazyflie
 	private static final int rssiThreshold = -100;
@@ -120,7 +122,7 @@ public class BleLink extends CrtpDriver {
 				descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 				gatt.writeDescriptor(descriptor);
 
-				Log.d(TAG, "Connected!");
+				mLogger.debug( "Connected!");
 
 				mConnected = true;
 				mWritten = false;
@@ -133,27 +135,27 @@ public class BleLink extends CrtpDriver {
 		@Override
 		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 			super.onCharacteristicWrite(gatt, characteristic, status);
-			//Log.d(TAG, "On write called for char: " + characteristic.getUuid().toString());
+			//mLogger.debug("On write called for char: " + characteristic.getUuid().toString());
 			mWritten  = true;
 		}
 
 		@Override
 		public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
 			super.onDescriptorWrite(gatt, descriptor, status);
-			Log.d(TAG, "On write called for descriptor: " + descriptor.getUuid().toString());
+			mLogger.debug("On write called for descriptor: " + descriptor.getUuid().toString());
 			mWritten = true;
 		}
 
 		@Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 			super.onCharacteristicRead(gatt, characteristic, status);
-			Log.d(TAG, "On read call for characteristic: " + characteristic.getUuid().toString());
+			mLogger.debug("On read call for characteristic: " + characteristic.getUuid().toString());
         }
 
 		@Override
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			//super.onCharacteristicChanged(gatt, characteristic);
-			Log.d(TAG, "On changed call for characteristic: " + characteristic.getUuid().toString());
+		    mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
 		}
 	};
 
@@ -161,7 +163,7 @@ public class BleLink extends CrtpDriver {
 		@Override
 		public void onLeScan(BluetoothDevice device, int rssi, byte[] anounce) {
 			if (device != null && device.getName() != null) {
-				Log.d(TAG, "Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+			    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
 				if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
 					mBluetoothAdapter.stopLeScan(this);
