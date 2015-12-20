@@ -40,6 +40,9 @@ import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
+import se.bitcraze.crazyflielib.param.Param;
+import se.bitcraze.crazyflielib.toc.TocCache;
+import se.bitcraze.crazyflielib.toc.TocFetcher.TocFetchFinishedListener;
 
 public class Crazyflie {
 
@@ -58,9 +61,9 @@ public class Crazyflie {
 
     private ConnectionData mConnectionData;
 
-//    private Param mParam;
+    private Param mParam;
 //    private Logg mLogg;
-//    private TocCache mTocCache;
+    private TocCache mTocCache;
 
     /**
      * State of the connection procedure
@@ -75,7 +78,8 @@ public class Crazyflie {
     public Crazyflie(CrtpDriver driver) {
         this.mDriver = driver;
 
-//        this.mTocCache = new TocCache("ro_cache", "rw_cache");
+        //TODO: allow saving files in Android file system
+        this.mTocCache = new TocCache("ro_cache", "rw_cache");
     }
 
     private PacketListener mPacketListener = new PacketListener() {
@@ -261,30 +265,33 @@ public class Crazyflie {
     public void startConnectionSetup() {
         mLogger.info("We are connected [" + mConnectionData.toString() + "], requesting connection setup...");
 
-        mState = State.SETUP_FINISHED;
-        //TODO: fix hacky-di-hack
-        mDriver.notifySetupFinished();
+        mParam = new Param(this);
+        //must be defined first to be usable in Log TocFetchFinishedListener
+        final TocFetchFinishedListener paramTocFetchFinishedListener = new TocFetchFinishedListener() {
+            public void tocFetchFinished() {
+                //_param_toc_updated_cb(self):
+                mLogger.info("Param TOC finished updating.");
+                //mParam.requestUpdateOfAllParams();
+                //TODO: should be set only after log, param, mems are all updated
+                mState = State.SETUP_FINISHED;
+                //TODO: fix hacky-di-hack
+                mDriver.notifySetupFinished();
+            }
+        };
 
-//        mParam = new Param(this);
-//        //must be defined first to be usable in Log TocFetchFinishedListener
-//        final TocFetchFinishedListener paramTocFetchFinishedListener = new TocFetchFinishedListener() {
-//            public void tocFetchFinished() {
-//                //_param_toc_updated_cb(self):
-//                mLogger.info("Param TOC finished updating.");
-//                //mParam.requestUpdateOfAllParams();
-//                //TODO: should be set only after log, param, mems are all updated
-//                mState = State.SETUP_FINISHED;
-//                notifySetupFinished();
-//            }
-//        };
-//
 //        mLogg = new Logg(this);
 //        TocFetchFinishedListener loggTocFetchFinishedListener = new TocFetchFinishedListener() {
 //            public void tocFetchFinished() {
 //                mLogger.info("Logg TOC finished updating.");
 //
 //                //after log toc has been fetched, fetch param toc
-//                mParam.refreshToc(paramTocFetchFinishedListener, mTocCache);
+
+                if (mDriver instanceof RadioDriver) {
+                    mParam.refreshToc(paramTocFetchFinishedListener, mTocCache);
+                } else {
+                    //TODO: shortcut for BLELink
+                    mDriver.notifySetupFinished();
+                }
 //            }
 //        };
 //        //mLog.refreshToc(self._log_toc_updated_cb, self._toc_cache);
@@ -293,18 +300,18 @@ public class Crazyflie {
         //TODO: self.mem.refresh(self._mems_updated_cb)
     }
 
-//    public Param getParam() {
-//        return mParam;
-//    }
-//
+    public Param getParam() {
+        return mParam;
+    }
+
 //    public Logg getLogg() {
 //        return mLogg;
 //    }
-//
-//    //TODO: do this properly
-//    public void clearTocCache() {
-//        mTocCache = new TocCache(null, null);
-//    }
+
+    //TODO: do this properly
+    public void clearTocCache() {
+        mTocCache = new TocCache(null, null);
+    }
 
     /** DATA LISTENER **/
 

@@ -45,6 +45,7 @@ import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
+import se.bitcraze.crazyflielib.toc.Toc;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -463,11 +464,24 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
+                    //TODO: hack, temporary fix for missing Android file system access
+                    mCrazyflie.clearTocCache();
                     mCrazyflie.startConnectionSetup();
+
                 }
 
                 @Override
                 public void setupFinished(String connectionInfo) {
+                    final Toc paramToc = mCrazyflie.getParam().getToc();
+                    if (paramToc != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
                     startSendJoystickDataThread();
                 }
 
