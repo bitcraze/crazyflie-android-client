@@ -525,12 +525,15 @@ public class PreferencesActivity extends PreferenceActivity {
                     try {
                         usbLinkAndroid = new UsbLinkAndroid(getActivity());
                         crlink = new Crazyradio(usbLinkAndroid);
+                        if(!usbLinkAndroid.isUsbConnected()) {
+                            throw new IllegalArgumentException("Scanning is only supported with Crazyradio.");
+                        }
                         //For testing purposes only
 //                        return new ConnectionData[0];
                         boolean useSlowScan = false;
                         //Use slow scan, when Crazyradio firmware version is 0.52 or 0.53
-                        if(0.52f == usbLinkAndroid.getFirmwareVersion() ||
-                           0.53f == usbLinkAndroid.getFirmwareVersion()){
+                        float firmwareVersion = usbLinkAndroid.getFirmwareVersion();
+                        if(0.52f == firmwareVersion || 0.53f == firmwareVersion){
                             useSlowScan = true;
                         }
                         return crlink.scanChannels(useSlowScan);

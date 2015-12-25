@@ -210,6 +210,9 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
      * @see se.bitcraze.crazyflie.lib.IUsbLink#getFirmwareVersion()
      */
     public float getFirmwareVersion() {
+        if (mConnection == null) {
+            return 0.0f;
+        }
         byte[] rawDescs = mConnection.getRawDescriptors();
         return Float.parseFloat(Integer.toHexString(rawDescs[13]) + "." + Integer.toHexString(rawDescs[12]));
     }
