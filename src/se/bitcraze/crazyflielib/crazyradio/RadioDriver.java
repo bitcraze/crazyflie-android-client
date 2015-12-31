@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -64,8 +64,8 @@ public class RadioDriver extends CrtpDriver {
     public RadioDriver(CrazyUsbInterface usbInterface) {
         this.mUsbInterface = usbInterface;
         this.mCradio = null;
-        this.mInQueue = new LinkedBlockingDeque<CrtpPacket>();
-        this.mOutQueue = new LinkedBlockingDeque<CrtpPacket>(); //TODO: Limit size of out queue to avoid "ReadBack" effect?
+        this.mInQueue = new LinkedBlockingQueue<CrtpPacket>();
+        this.mOutQueue = new LinkedBlockingQueue<CrtpPacket>(); //TODO: Limit size of out queue to avoid "ReadBack" effect?
         this.mRadioDriverThread = null;
     }
 

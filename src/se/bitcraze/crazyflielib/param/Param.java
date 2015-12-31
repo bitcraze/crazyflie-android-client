@@ -30,8 +30,9 @@ package se.bitcraze.crazyflielib.param;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ import se.bitcraze.crazyflielib.toc.TocFetcher.TocFetchFinishedListener;
  */
 public class Param {
 
-    final Logger mLogger = LoggerFactory.getLogger("Param");
+    final static Logger mLogger = LoggerFactory.getLogger("Param");
 
     private Toc mToc;
     private Crazyflie mCrazyflie;
@@ -175,7 +176,7 @@ public class Param {
                 mHaveUpdated = true;
                 // self.all_updated.call()
             }
-            mLogger.debug("Updated parameter " + completeName);
+//            mLogger.debug("Updated parameter " + completeName);
 
             if (mUpdateListeners.containsKey(completeName)) {
                 mUpdateListeners.get(completeName).updated(completeName, number);
@@ -296,10 +297,11 @@ public class Param {
      * This thread will update params through a queue to make sure that we get back values
      *
      */
-    //TODO: when is this thread ever interrupted?
     public class ParamUpdaterThread implements Runnable {
 
-        private final BlockingDeque<CrtpPacket> mRequestQueue = new LinkedBlockingDeque<CrtpPacket>();
+        final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
+
+        private final BlockingQueue<CrtpPacket> mRequestQueue = new LinkedBlockingQueue<CrtpPacket>();
         private int mReqParam = -1;
 
         /**
@@ -364,9 +366,9 @@ public class Param {
                 //if (pk.channel != TOC_CHANNEL and self._req_param == var_id and pk is not None):
 
                 // TODO: is this even a problem!?
-                if (channel != TOC_CHANNEL && mReqParam != varId) {
-                    mLogger.warn("mReqParam != varId: " + mReqParam + " : " + varId);
-                }
+//                if (channel != TOC_CHANNEL && mReqParam != varId) {
+//                    mLogger.warn("mReqParam != varId: " + mReqParam + " : " + varId);
+//                }
 
                 /* if mReqParam == varId is actually checked, resend or late packets are dismissed,
                  * which makes the param update fragile
@@ -387,20 +389,16 @@ public class Param {
         }
 
         public void run() {
-            while (true) {
-                CrtpPacket packet = null;
+            CrtpPacket packet = null;
+            while (mCrazyflie.getDriver() != null && !Thread.currentThread().isInterrupted()) {
                 try {
+                    packet = null;
                     //pk = self.request_queue.get()  # Wait for request update
-                    //TODO: is "take()" the right method?
-                    packet = mRequestQueue.take();
-                } catch (InterruptedException e) {
-                    mLogger.debug("ParamUpdaterThread was interrupted.1");
-                    break;
-                }
-                //self.wait_lock.acquire()
-                //if self.cf.link:
-                if (mCrazyflie.getDriver() != null && packet != null) {
-                    if (packet.getPayload().length > 0) {
+                    packet = mRequestQueue.poll((long) 100, TimeUnit.MILLISECONDS);
+
+                    //self.wait_lock.acquire()
+                    //if self.cf.link:
+                    if (packet != null && packet.getPayload().length > 0) {
                         mReqParam = packet.getPayload()[0];
                         //self.cf.send_packet(pk, expected_reply=(pk.datat[0:2]))
                         packet.setExpectedReply(new byte[]{packet.getPayload()[0]});
@@ -410,21 +408,15 @@ public class Param {
                             mLogger.debug("Setting param with ID " + mReqParam);
                         }
                         mCrazyflie.sendPacket(packet);
+                    } else {
+                        //self.wait_lock.release()
                     }
-                } else {
-                    //self.wait_lock.release()
-                }
-                //TODO: is this sleep necessary?
-                try {
-                    Thread.sleep(100);
                 } catch (InterruptedException e) {
-                    mLogger.debug("ParamUpdaterThread was interrupted.2");
+                    mLogger.debug("ParamUpdaterThread was interrupted.");
                     break;
                 }
             }
         }
-
     }
-
 
 }
