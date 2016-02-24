@@ -62,6 +62,9 @@
     <string name="preferences_use_gyro_bool_summary_on">Use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_summary_off">Do not use gyroscope sensors for roll and pitch</string>
     <string name="preferences_use_gyro_bool_title">Use gyroscope sensors</string>
+    <string name="preferences_gyro_amp_title">Gyroscope amplification</string>
+    <string name="preferences_gyro_amp_summary">Choose gyroscope amplification</string>
+    <string name="preferences_gyro_amp_defaultValue">2</string>
     <string name="preferences_touch_thrust_full_travel">Use full travel for thrust</string>
     <string name="preferences_touch_thrust_full_travel_summary_on">On the touch controller, use the full travel from bottom to top to control thrust</string>
     <string name="preferences_touch_thrust_full_travel_summary_off">On the touch controller, use the travel from center to top to control thrust</string>

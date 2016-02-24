@@ -48,6 +48,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -84,6 +85,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
     public static final String KEY_PREF_CONTROLLER = "pref_controller";
     public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
+    public static final String KEY_PREF_GYRO_AMP = "pref_gyro_amp";
     public static final String KEY_PREF_BTN_SCREEN = "pref_btn_screen";
     public static final String KEY_PREF_TOUCH_THRUST_FULL_TRAVEL = "pref_touch_thrust_full_travel";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
@@ -128,6 +130,9 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
+
+        private String mGyroAmpDefaultValue;
+
         private String mJoystickSizeDefaultValue;
 
         private String mRightAnalogXAxisDefaultValue;
@@ -200,6 +205,7 @@ public class PreferencesActivity extends PreferenceActivity {
             // Controller settings
             setSummaryArray(KEY_PREF_CONTROLLER, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
             setControllerSpecificPreferences();
+            mGyroAmpDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_GYRO_AMP, R.string.preferences_gyro_amp_defaultValue);
             mJoystickSizeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_JOYSTICK_SIZE, R.string.preferences_joystick_size_defaultValue);
 
             // Gamepad and button mapping
@@ -265,10 +271,10 @@ public class PreferencesActivity extends PreferenceActivity {
 
         private void checkGyroSensors() {
             //Test the available sensors
-            SensorManager mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+            SensorManager sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(KEY_PREF_USE_GYRO_BOOL);
 
-            if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
+            if (sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
                 pref.setEnabled(false);
                 pref.setChecked(false);
                 resetPreference(KEY_PREF_USE_GYRO_BOOL, false);
@@ -350,7 +356,15 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
                 screenRotationLock.setChecked(useGyro);
                 screenRotationLock.setEnabled(!useGyro);
+
+                SliderPreference gyroAmp = (SliderPreference) findPreference(KEY_PREF_GYRO_AMP);
+                gyroAmp.setEnabled(useGyro);
             }
+
+            if (key.equals(KEY_PREF_GYRO_AMP)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mGyroAmpDefaultValue));
+            }
+
             if(key.equals(KEY_PREF_JOYSTICK_SIZE)){
                 findPreference(key).setSummary(sharedPreferences.getString(key,mJoystickSizeDefaultValue));
             }
@@ -440,12 +454,13 @@ public class PreferencesActivity extends PreferenceActivity {
             }
         }
 
-
         private void setControllerSpecificPreferences() {
             String controllerDefaultValue = getResources().getString(R.string.preferences_controller_defaultValue);
             int controllerIndex = Integer.parseInt(mSharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
+            boolean useGyro = mSharedPreferences.getBoolean(KEY_PREF_USE_GYRO_BOOL, false);
             if (!mNoGyroSensor) {
                 findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
+                findPreference(KEY_PREF_GYRO_AMP).setEnabled(controllerIndex == 0 && useGyro);
             }
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
             findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);

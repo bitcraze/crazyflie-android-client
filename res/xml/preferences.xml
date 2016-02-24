@@ -221,6 +221,14 @@
             android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
             android:title="@string/preferences_use_gyro_bool_title" />
 
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            custom:lowerLimit="1"
+            custom:upperLimit="10"
+            custom:wholeNumber="true"
+            android:defaultValue="@string/preferences_gyro_amp_defaultValue"
+            android:key="pref_gyro_amp"
+            android:title="@string/preferences_gyro_amp_title"/>
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_touch_thrust_full_travel"
