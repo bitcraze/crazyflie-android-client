@@ -72,7 +72,7 @@ public class FirmwareDownloader {
     public final static String RELEASES_JSON = "cf_releases.json";
     public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
-    private long mDownloadReference;
+    private long mDownloadReference = -42;
     private DownloadManager mManager;
 
     private List<FirmwareDownloadListener> mDownloadListeners;
@@ -234,7 +234,12 @@ public class FirmwareDownloader {
 
         // get download service and enqueue file
         mManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        mDownloadReference = mManager.enqueue(request);
+        if (mManager != null) {
+            mDownloadReference = mManager.enqueue(request);
+        } else {
+            Log.d(LOG_TAG, "DownloadManager could not be acquired.");
+            ((BootloaderActivity) mContext).appendConsoleError("DownloadManager could not be acquired.\nPlease check the application's permissions.");
+        }
     }
 
     private String downloadUrl(String myUrl) throws IOException {
@@ -309,54 +314,137 @@ public class FirmwareDownloader {
         @Override
         public void onReceive(Context context, Intent intent) {
             //check if the broadcast message is for our Enqueued download
-//            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-//            if(mDownloadReference == referenceId){
-//            }
-//            long id = intent.getStringExtra(DownloadManager.COLUMN_LOCAL_FILENAME);
+            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            if(mDownloadReference == referenceId){
+                String action = intent.getAction();
+                if (action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE) ){
+                    Bundle extras = intent.getExtras();
+                    DownloadManager.Query q = new DownloadManager.Query();
+                    q.setFilterById(extras.getLong(DownloadManager.EXTRA_DOWNLOAD_ID));
+                    if (mManager != null) {
+                        Cursor c = mManager.query(q);
 
-            String action = intent.getAction();
-            if (action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE) ){
-                Bundle extras = intent.getExtras();
-                DownloadManager.Query q = new DownloadManager.Query();
-                q.setFilterById(extras.getLong(DownloadManager.EXTRA_DOWNLOAD_ID));
-                Cursor c = mManager.query(q);
-
-                if (c.moveToFirst()) {
-                    int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                        String filePath = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
-                        String filename = filePath.substring(filePath.lastIndexOf('/')+1, filePath.length());
-                        Toast.makeText(mContext, "Download successful: " + filename, Toast.LENGTH_SHORT).show();
-                        notifyDownloadFinished();
+                        if (c.moveToFirst()) {
+                            int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                            if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                                String filePath = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                                String filename = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
+                                Toast.makeText(mContext, "Download successful: " + filename, Toast.LENGTH_SHORT).show();
+                                notifyDownloadFinished();
+                            } else if (status == DownloadManager.STATUS_FAILED) {
+                                int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
+                                Toast.makeText(mContext, "Download failed: " + getReasonString(reason), Toast.LENGTH_SHORT).show();
+                                notifyDownloadProblem(getReasonString(reason));
+                            } else {
+                                Log.w(LOG_TAG, "Status is neither SUCCESSFUL nor FAILED.");
+                            }
+                        }
+                        c.close();
+                    } else {
+                        Log.w(LOG_TAG, "DownloadManager is NULL.");
+                        notifyDownloadProblem("DownloadManager is NULL.");
                     }
                 }
-                c.close();
+            } else {
+                Log.d(LOG_TAG, "Ignoring unrelated download " + referenceId);
             }
         }
 
       };
 
+    public String getReasonString(int reason) {
+        String reasonText = "";
+        switch(reason){
+            case DownloadManager.ERROR_CANNOT_RESUME:
+                reasonText = "ERROR_CANNOT_RESUME";
+                break;
+            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
+                reasonText = "ERROR_DEVICE_NOT_FOUND";
+                break;
+            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
+                reasonText = "ERROR_FILE_ALREADY_EXISTS";
+                break;
+            case DownloadManager.ERROR_FILE_ERROR:
+                reasonText = "ERROR_FILE_ERROR";
+                break;
+            case DownloadManager.ERROR_HTTP_DATA_ERROR:
+                reasonText = "ERROR_HTTP_DATA_ERROR";
+                break;
+            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
+                reasonText = "ERROR_INSUFFICIENT_SPACE";
+                break;
+            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
+                reasonText = "ERROR_TOO_MANY_REDIRECTS";
+                break;
+            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
+                reasonText = "ERROR_UNHANDLED_HTTP_CODE";
+                break;
+            case DownloadManager.ERROR_UNKNOWN:
+                reasonText = "ERROR_UNKNOWN";
+                break;
+            case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
+                reasonText = "PAUSED_QUEUED_FOR_WIFI";
+                break;
+            case DownloadManager.PAUSED_UNKNOWN:
+                reasonText = "PAUSED_UNKNOWN";
+                break;
+            case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
+                reasonText = "PAUSED_WAITING_FOR_NETWORK";
+                break;
+            case DownloadManager.PAUSED_WAITING_TO_RETRY:
+                reasonText = "PAUSED_WAITING_TO_RETRY";
+                break;
+            case 404:
+                reasonText = "404 - NOT FOUND";
+                break;
+            case 403:
+                reasonText = "403 - FORBIDDEN";
+                break;
+            case 401:
+                reasonText = "401 - UNAUTHORIZED";
+                break;
+            case 500:
+                reasonText = "500 - INTERNAL SERVER ERROR";
+                break;
+            case 503:
+                reasonText = "503 - SERVICE UNAVAILABLE";
+                break;
+            default:
+                reasonText = "" + reason;
+                break;
+        }
+        return reasonText;
+    }
 
-      /* Download listener */
 
-      public void addDownloadListener(FirmwareDownloadListener dl) {
-          this.mDownloadListeners.add(dl);
+    /* Download listener */
+
+    public void addDownloadListener(FirmwareDownloadListener dl) {
+      this.mDownloadListeners.add(dl);
+    }
+
+    public void removeDownloadListener(FirmwareDownloadListener dl) {
+      this.mDownloadListeners.remove(dl);
+    }
+
+    public void notifyDownloadFinished() {
+      for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
+          downloadListener.downloadFinished();
       }
+    }
 
-      public void removeDownloadListener(FirmwareDownloadListener dl) {
-          this.mDownloadListeners.remove(dl);
+    public void notifyDownloadProblem(String msg) {
+      for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
+          downloadListener.downloadProblem(msg);
       }
+    }
 
-      public void notifyDownloadFinished() {
-          for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
-              downloadListener.downloadFinished();
-          }
-      }
+    public interface FirmwareDownloadListener {
 
-      public interface FirmwareDownloadListener {
+      public void downloadFinished();
 
-          public void downloadFinished();
+      public void downloadProblem(String msg);
 
-      }
+    }
 
 }
