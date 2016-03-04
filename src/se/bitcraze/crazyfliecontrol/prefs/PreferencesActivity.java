@@ -288,7 +288,7 @@ public class PreferencesActivity extends PreferenceActivity {
         }
 
         private void setRadioStats() {
-            Preference pref = findPreference(KEY_PREF_RADIO_STATS);
+            Preference prefRadioStats = findPreference(KEY_PREF_RADIO_STATS);
             String defaultValue = getResources().getString(R.string.preferences_radio_stats_summary);
 
             UsbLinkAndroid usbLinkAndroid = null;
@@ -298,23 +298,37 @@ public class PreferencesActivity extends PreferenceActivity {
                 if (usbLinkAndroid != null) {
                     usbLinkAndroid.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
                     if(usbLinkAndroid.isUsbConnected()) {
-                        pref.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
-                                        "Serial number: " + usbLinkAndroid.getSerialNumber());
+                        prefRadioStats.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
+                               					  "Serial number: " + usbLinkAndroid.getSerialNumber());
+                        enableDisableRadioSettings(true);
                     } else{
-                        pref.setSummary(defaultValue);
+                        prefRadioStats.setSummary(defaultValue);
+                        enableDisableRadioSettings(false);
                     }
+                } else {
+                    prefRadioStats.setSummary(defaultValue);
+                    enableDisableRadioSettings(false);
                 }
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
-                pref.setSummary(defaultValue);
+                prefRadioStats.setSummary(defaultValue);
+                enableDisableRadioSettings(false);
             } catch (IOException iae) {
                 Log.e(LOG_TAG, iae.getMessage());
-                pref.setSummary(defaultValue);
+                prefRadioStats.setSummary(defaultValue);
+                enableDisableRadioSettings(false);
             } finally {
                 if (usbLinkAndroid != null) {
                     usbLinkAndroid.releaseInterface();
                 }
             }
+        }
+
+        private void enableDisableRadioSettings(boolean enable) {
+            findPreference(KEY_PREF_RADIO_CHANNEL).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_DATARATE).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_SCAN).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_STATS).setEnabled(enable);
         }
 
         // Set summary to be the user-description for the selected value
@@ -332,7 +346,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
             }
             if (key.equals(KEY_PREF_DEADZONE)) {
-                findPreference(key).setSummary(sharedPreferences.getString(key,mDeadzoneDefaultValue));
+                findPreference(key).setSummary(sharedPreferences.getString(key, mDeadzoneDefaultValue));
             }
 
             // Controller settings

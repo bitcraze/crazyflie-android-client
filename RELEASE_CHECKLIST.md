@@ -38,8 +38,7 @@ Preferences
 * Preferences - Crazyradio scan
   * Open the preferences menu while **no** Crazyradio is attached
   * Open the connection settings
-  * Start radio scan
-  * => expected error: "Scanning is only supported with Crazyradio"
+  * => all Crazyradio settings should be greyed out
 
 Bootloader
 -----------
