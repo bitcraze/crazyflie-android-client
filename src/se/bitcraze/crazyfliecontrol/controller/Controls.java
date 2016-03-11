@@ -27,13 +27,14 @@
 
 package se.bitcraze.crazyfliecontrol.controller;
 
-import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
-import se.bitcraze.crazyfliecontrol2.R;
-import se.bitcraze.crazyfliecontrol2.FlightDataView;
-import se.bitcraze.crazyfliecontrol2.MainActivity;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.widget.Toast;
+
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyfliecontrol2.FlightDataView;
+import se.bitcraze.crazyfliecontrol2.MainActivity;
+import se.bitcraze.crazyfliecontrol2.R;
 
 /**
  * This class encapsulates the common preferences for all types of controllers.
@@ -52,10 +53,10 @@ public class Controls {
     private float mLeft_analog_y;
 
     // Trim values
+    private static final float TRIM_MAX = 0.5f;
+    private static final float TRIM_INCREMENTS = 0.02f;
     private float mRollTrim;
     private float mPitchTrim;
-    private float mMaxTrim = 0.5f;
-    private float mTrimIncrements = 0.1f;
     private String mTrimDefaultValue;
 
     private int mMode; // Controller axis mapping (Mode 1-4)
@@ -157,10 +158,10 @@ public class Controls {
             axis = mPitchTrim;
         }
 
-        if (increase && axis < mMaxTrim) {
-            axis += mTrimIncrements;
-        } else if (!increase && axis > (mMaxTrim * -1)) {
-            axis -= mTrimIncrements;
+        if (increase && axis < TRIM_MAX) {
+            axis += TRIM_INCREMENTS;
+        } else if (!increase && axis > (TRIM_MAX * -1)) {
+            axis -= TRIM_INCREMENTS;
         }
 
         setPreference(prefKey, String.valueOf(axis));

@@ -27,24 +27,6 @@
 
 package se.bitcraze.crazyfliecontrol2;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-import se.bitcraze.crazyfliecontrol.controller.Controls;
-import se.bitcraze.crazyfliecontrol.controller.GamepadController;
-import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
-import se.bitcraze.crazyfliecontrol.controller.IController;
-import se.bitcraze.crazyfliecontrol.controller.TouchController;
-import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
-import se.bitcraze.crazyflielib.BleLink;
-import se.bitcraze.crazyflielib.crazyflie.ConnectionAdapter;
-import se.bitcraze.crazyflielib.crazyflie.Crazyflie;
-import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
-import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
-import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
-import se.bitcraze.crazyflielib.crtp.CommanderPacket;
-import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -72,6 +54,25 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+import se.bitcraze.crazyfliecontrol.controller.Controls;
+import se.bitcraze.crazyfliecontrol.controller.GamepadController;
+import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
+import se.bitcraze.crazyfliecontrol.controller.IController;
+import se.bitcraze.crazyfliecontrol.controller.TouchController;
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+import se.bitcraze.crazyflielib.BleLink;
+import se.bitcraze.crazyflielib.crazyflie.ConnectionAdapter;
+import se.bitcraze.crazyflielib.crazyflie.Crazyflie;
+import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
+import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
+import se.bitcraze.crazyflielib.crtp.CommanderPacket;
+import se.bitcraze.crazyflielib.crtp.CrtpDriver;
 
 public class MainActivity extends Activity {
 
@@ -304,9 +305,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-        if (event.getSource() == 1281 && mController instanceof GamepadController) {
+        if (KeyEvent.isGamepadButton(event.getKeyCode()) && mController instanceof GamepadController) {
             mGamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
