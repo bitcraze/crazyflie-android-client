@@ -52,10 +52,10 @@ public class Controls {
     private float mLeft_analog_y;
 
     // Trim values
+    private static final float TRIM_MAX = 0.5f;
+    private static final float TRIM_INCREMENTS = 0.02f;
     private float mRollTrim;
     private float mPitchTrim;
-    private float mMaxTrim = 0.5f;
-    private float mTrimIncrements = 0.1f;
     private String mTrimDefaultValue;
 
     private int mMode; // Controller axis mapping (Mode 1-4)
@@ -157,10 +157,10 @@ public class Controls {
             axis = mPitchTrim;
         }
 
-        if (increase && axis < mMaxTrim) {
-            axis += mTrimIncrements;
-        } else if (!increase && axis > (mMaxTrim * -1)) {
-            axis -= mTrimIncrements;
+        if (increase && axis < TRIM_MAX) {
+            axis += TRIM_INCREMENTS;
+        } else if (!increase && axis > (TRIM_MAX * -1)) {
+            axis -= TRIM_INCREMENTS;
         }
 
         setPreference(prefKey, String.valueOf(axis));

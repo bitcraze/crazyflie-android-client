@@ -304,9 +304,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // TODO: works for PS3 controller, but does it also work for other controllers?
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-        if (event.getSource() == 1281 && mController instanceof GamepadController) {
+        if (KeyEvent.isGamepadButton(event.getKeyCode()) && mController instanceof GamepadController) {
             mGamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
