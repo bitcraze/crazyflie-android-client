@@ -75,7 +75,7 @@
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             custom:upperLimit=".5"
             custom:lowerLimit="-.5"
-            custom:steps="20"
+            custom:steps="50"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_rolltrim"
             android:key="pref_rolltrim"
@@ -84,7 +84,7 @@
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             custom:upperLimit=".5"
             custom:lowerLimit="-.5"
-            custom:steps="20"
+            custom:steps="50"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_pitchtrim"
             android:key="pref_pitchtrim"

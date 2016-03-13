@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // do not call super if key event comes from a gamepad, otherwise the buttons can quit the app
-        if (KeyEvent.isGamepadButton(event.getKeyCode()) && mController instanceof GamepadController) {
+        if (isJoystickButton(event.getKeyCode()) && mController instanceof GamepadController) {
             mGamepadController.dealWithKeyEvent(event);
             // exception for OUYA controllers
             if (!Build.MODEL.toUpperCase(Locale.getDefault()).contains("OUYA")) {
@@ -313,6 +313,19 @@ public class MainActivity extends Activity {
             }
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    // this workaround is necessary because DPad buttons are not considered to be "Gamepad buttons"
+    private static boolean isJoystickButton(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                return true;
+            default:
+                return KeyEvent.isGamepadButton(keyCode);
+        }
     }
 
     private void resetInputMethod() {
