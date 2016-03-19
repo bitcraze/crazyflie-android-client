@@ -313,6 +313,12 @@ public class Crazyflie {
         mTocCache = new TocCache(null, null);
     }
 
+    public void setParamValue(String completeName, Number value) {
+        if (mParam != null) {
+            mParam.setValue(completeName, value);
+        }
+    }
+
     /** DATA LISTENER **/
 
     /**

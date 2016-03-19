@@ -393,6 +393,8 @@ public class MainActivity extends Activity {
         }
     };
 
+    protected Toc mParamToc;
+
     private void playSound(int sound){
         if (mLoaded) {
             float volume = 1.0f;
@@ -474,6 +476,7 @@ public class MainActivity extends Activity {
                 public void setupFinished(String connectionInfo) {
                     final Toc paramToc = mCrazyflie.getParam().getToc();
                     if (paramToc != null) {
+                        mParamToc = paramToc;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -568,6 +571,31 @@ public class MainActivity extends Activity {
             }
         });
         mSendJoystickDataThread.start();
+    }
+
+    boolean mHeadlightToggle = false;
+
+    public void runAlt1Action() {
+        Log.i(LOG_TAG, "runAlt1Action.");
+        Log.i(LOG_TAG, "Headlight toggle: " + mHeadlightToggle);
+        if (mCrazyflie != null) {
+            mCrazyflie.setParamValue("ring.headlightEnable", mHeadlightToggle ? 1 : 0);
+            mHeadlightToggle = !mHeadlightToggle;
+        }
+    }
+
+    int mRingEffect = 0;
+
+    public void runAlt2Action() {
+        Log.i(LOG_TAG, "runAlt2Action.");
+        Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
+        if (mCrazyflie != null) {
+            mCrazyflie.setParamValue("ring.effect", mRingEffect);
+            mRingEffect++;
+            if (mRingEffect > 6) {
+               mRingEffect = 0;
+            }
+        }
     }
 
     public Crazyflie getCrazyflie(){

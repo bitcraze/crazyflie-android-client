@@ -98,6 +98,12 @@
     <string name="preferences_pitchtrim_plus_btn_defaultValue">KEYCODE_DPAD_UP</string>
     <string name="preferences_pitchtrim_minus_btn_title">Pitch trim -</string>
     <string name="preferences_pitchtrim_minus_btn_defaultValue">KEYCODE_DPAD_DOWN</string>
+    <string name="preferences_alt1_btn_title">Alt 1</string>
+    <string name="preferences_alt1_btn_defaultValue">KEYCODE_BUTTON_L1</string>
+    <string name="preferences_alt1_btn_defaultAssignedAction">ring.headlightEnable</string>
+    <string name="preferences_alt2_btn_title">Alt 2</string>
+    <string name="preferences_alt2_btn_defaultValue">KEYCODE_BUTTON_L2</string>
+    <string name="preferences_alt2_btn_defaultAssignedAction">ring.effect</string>
     <string name="preferences_reset_btn_title">Reset values</string>
     <string name="preferences_reset_btn_summary">Reset to default values</string>
     <string name="preferences_button_mapping_dialog_text">Please press a button&#8230;</string>

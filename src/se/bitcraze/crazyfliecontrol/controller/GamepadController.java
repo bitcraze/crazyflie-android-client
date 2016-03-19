@@ -58,6 +58,8 @@ public class GamepadController extends AbstractController {
     private int mRollTrimMinusBtn;
     private int mPitchTrimPlusBtn;
     private int mPitchTrimMinusBtn;
+    private int mAlt1Btn;
+    private int mAlt2Btn;
 
     private int mRightAnalogYAxisInvertFactor = -1;
     private int mLeftAnalogYAxisInvertFactor = -1;
@@ -79,6 +81,8 @@ public class GamepadController extends AbstractController {
     private String mRollTrimMinusBtnDefaultValue;
     private String mPitchTrimPlusBtnDefaultValue;
     private String mPitchTrimMinusBtnDefaultValue;
+    private String mAlt1BtnDefaultValue;
+    private String mAlt2BtnDefaultValue;
 
     public GamepadController(Controls controls, MainActivity activity, SharedPreferences preferences) {
         super(controls, activity);
@@ -119,12 +123,20 @@ public class GamepadController extends AbstractController {
             }else if (event.getKeyCode() == mRollTrimPlusBtn) {
                 mControls.increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
             }else if (event.getKeyCode() == mRollTrimMinusBtn) {
-            	mControls.decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
+                mControls.decreaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
             }else if (event.getKeyCode() == mPitchTrimPlusBtn) {
-            	mControls.increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                mControls.increaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
             }else if (event.getKeyCode() == mPitchTrimMinusBtn) {
-            	mControls.decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
+                mControls.decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
             }
+
+            if(event.getKeyCode() == mAlt1Btn) {
+                mActivity.runAlt1Action();
+            } 
+            if(event.getKeyCode() == mAlt2Btn) {
+                mActivity.runAlt2Action();
+            } 
+
             break;
         default:
             break;
@@ -145,6 +157,8 @@ public class GamepadController extends AbstractController {
         mRollTrimMinusBtnDefaultValue = res.getString(R.string.preferences_rolltrim_minus_btn_defaultValue);
         mPitchTrimPlusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_plus_btn_defaultValue);
         mPitchTrimMinusBtnDefaultValue = res.getString(R.string.preferences_pitchtrim_minus_btn_defaultValue);
+        mAlt1BtnDefaultValue = res.getString(R.string.preferences_alt1_btn_defaultValue);
+        mAlt2BtnDefaultValue = res.getString(R.string.preferences_alt2_btn_defaultValue);
     }
 
     public void setControlConfig() {
@@ -160,6 +174,8 @@ public class GamepadController extends AbstractController {
         this.mRollTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ROLLTRIM_MINUS_BTN, mRollTrimMinusBtnDefaultValue));
         this.mPitchTrimPlusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_PLUS_BTN, mPitchTrimPlusBtnDefaultValue));
         this.mPitchTrimMinusBtn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue));
+        this.mAlt1Btn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ALT1_BTN, mAlt1BtnDefaultValue));
+        this.mAlt2Btn = KeyEvent.keyCodeFromString(mPreferences.getString(PreferencesActivity.KEY_PREF_ALT2_BTN, mAlt2BtnDefaultValue));
     }
 
     private boolean useSplitAxisYaw(){
