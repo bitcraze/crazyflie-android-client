@@ -51,4 +51,22 @@
         android:layout_below="@+id/linearLayout1">
     </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
 
+    <Button
+        android:id="@+id/button_alt1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alt1"
+        android:onClick="runAlt1Action"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/linearLayout1"/>
+
+    <Button
+        android:id="@+id/button_alt2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alt2"
+        android:onClick="runAlt2Action"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/button_alt1"/>
+
 </RelativeLayout>

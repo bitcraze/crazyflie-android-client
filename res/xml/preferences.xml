@@ -209,9 +209,25 @@
                 <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_alt1_btn"
                     android:title="@string/preferences_alt1_btn_title"/>
+                <ListPreference
+                    android:defaultValue="@string/preferences_alt1_action_defaultValue"
+                    android:dialogTitle="@string/preferences_alt1_action_title"
+                    android:entries="@array/actionEntries"
+                    android:entryValues="@array/actionValues"
+                    android:key="pref_alt1_action"
+                    android:summary="@string/preferences_alt1_action_summary"
+                    android:title="@string/preferences_alt1_action" />
                 <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference 
                     android:key="pref_alt2_btn"
                     android:title="@string/preferences_alt2_btn_title"/>
+                <ListPreference
+                    android:defaultValue="@string/preferences_alt2_action_defaultValue"
+                    android:dialogTitle="@string/preferences_alt2_action_title"
+                    android:entries="@array/actionEntries"
+                    android:entryValues="@array/actionValues"
+                    android:key="pref_alt2_action"
+                    android:summary="@string/preferences_alt2_action_summary"
+                    android:title="@string/preferences_alt2_action" />
             </PreferenceCategory>
             <Preference
                 android:key="pref_reset_btn"

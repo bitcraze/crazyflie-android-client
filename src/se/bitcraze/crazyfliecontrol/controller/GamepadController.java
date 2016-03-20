@@ -131,10 +131,10 @@ public class GamepadController extends AbstractController {
             }
 
             if(event.getKeyCode() == mAlt1Btn) {
-                mActivity.runAlt1Action();
+                mActivity.runAltAction(mControls.getAlt1Action());
             } 
             if(event.getKeyCode() == mAlt2Btn) {
-                mActivity.runAlt2Action();
+                mActivity.runAltAction(mControls.getAlt2Action());
             } 
 
             break;

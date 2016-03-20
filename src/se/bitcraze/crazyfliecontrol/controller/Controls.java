@@ -63,6 +63,12 @@ public class Controls {
 
     private int mControllerType;
     private String mControllerTypeDefaultValue;
+
+    private String mAlt1ActionDefaultValue;
+    private String mAlt2ActionDefaultValue;
+    private String mAlt1Action;
+    private String mAlt2Action;
+
     //Gyro sensor values
     private boolean mUseGyro;
     private int mGyroAmplification;
@@ -101,6 +107,9 @@ public class Controls {
 
         mControllerTypeDefaultValue = res.getString(R.string.preferences_controller_defaultValue);
 
+        mAlt1ActionDefaultValue = res.getString(R.string.preferences_alt1_action_defaultValue);
+        mAlt2ActionDefaultValue = res.getString(R.string.preferences_alt2_action_defaultValue);
+
         //Advanced flight control
         mMaxRollPitchAngleDefaultValue = res.getString(R.string.preferences_maxRollPitchAngle_defaultValue);
         mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
@@ -121,6 +130,9 @@ public class Controls {
         this.mGyroAmplification = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_GYRO_AMP, mGyroAmplificationDefaultValue));
 
         this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
+
+        this.mAlt1Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT1_ACTION, mAlt1ActionDefaultValue);
+        this.mAlt2Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT2_ACTION, mAlt2ActionDefaultValue);
 
         //Advanced flight control
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AFC_BOOL, false)) {
@@ -211,6 +223,14 @@ public class Controls {
 
     public int getControllerType() {
         return mControllerType;
+    }
+
+    public String getAlt1Action() {
+        return mAlt1Action;
+    }
+
+    public String getAlt2Action() {
+        return mAlt2Action;
     }
 
     public boolean isUseGyro() {

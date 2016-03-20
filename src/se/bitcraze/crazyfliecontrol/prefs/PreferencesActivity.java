@@ -102,7 +102,9 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_PITCHTRIM_MINUS_BTN = "pref_pitchtrim_minus_btn";
     public static final String KEY_PREF_RESET_BTN = "pref_reset_btn";
     public static final String KEY_PREF_ALT1_BTN = "pref_alt1_btn";
+    public static final String KEY_PREF_ALT1_ACTION = "pref_alt1_action";
     public static final String KEY_PREF_ALT2_BTN = "pref_alt2_btn";
+    public static final String KEY_PREF_ALT2_ACTION = "pref_alt2_action";
 
     public static final String KEY_PREF_JOYSTICK_SIZE = "pref_touch_slider_size";
 
@@ -229,7 +231,9 @@ public class PreferencesActivity extends PreferenceActivity {
             mPitchTrimPlusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_PLUS_BTN, R.string.preferences_pitchtrim_plus_btn_defaultValue);
             mPitchTrimMinusBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_PITCHTRIM_MINUS_BTN, R.string.preferences_pitchtrim_minus_btn_defaultValue);
             mAlt1BtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ALT1_BTN, R.string.preferences_alt1_btn_defaultValue);
+            setSummaryArrayString(KEY_PREF_ALT1_ACTION, R.string.preferences_alt1_action_defaultValue, R.array.actionEntries, R.array.actionValues);
             mAlt2BtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ALT2_BTN, R.string.preferences_alt2_btn_defaultValue);
+            setSummaryArrayString(KEY_PREF_ALT2_ACTION, R.string.preferences_alt2_action_defaultValue, R.array.actionEntries, R.array.actionValues);
 
             findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
@@ -436,8 +440,14 @@ public class PreferencesActivity extends PreferenceActivity {
             if (key.equals(KEY_PREF_ALT1_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mAlt1BtnDefaultValue));
             }
+            if (key.equals(KEY_PREF_ALT1_ACTION)) {
+                setSummaryArrayString(key, R.string.preferences_alt1_action_defaultValue, R.array.actionEntries, R.array.actionValues);
+            }
             if (key.equals(KEY_PREF_ALT2_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mAlt2BtnDefaultValue));
+            }
+            if (key.equals(KEY_PREF_ALT2_ACTION)) {
+                setSummaryArrayString(key, R.string.preferences_alt2_action_defaultValue, R.array.actionEntries, R.array.actionValues);
             }
 
             // Advanced flight control settings
@@ -521,6 +531,19 @@ public class PreferencesActivity extends PreferenceActivity {
             String[] stringArray = getResources().getStringArray(pRArray);
             String keyString = mSharedPreferences.getString(key, preDefaultValue);
             pref.setSummary(stringArray[Integer.parseInt(keyString) + arrayOffset]);
+        }
+
+        private void setSummaryArrayString(String key, int pRDefaultValue, int pRArrayEntries, int pRArrayValues){
+            Preference pref = findPreference(key);
+            String preDefaultValue = getResources().getString(pRDefaultValue);
+            String[] stringArrayEntries = getResources().getStringArray(pRArrayEntries);
+            String[] stringArrayValues = getResources().getStringArray(pRArrayValues);
+            String keyString = mSharedPreferences.getString(key, preDefaultValue);
+            for(int i = 0; i < stringArrayValues.length; i++) {
+                if (keyString.equals(stringArrayValues[i])) {
+                    pref.setSummary(stringArrayEntries[i]);
+                }
+            }
         }
 
         private void resetPreference(String pKey, String pDefaultValue, String pErrorMessage) {

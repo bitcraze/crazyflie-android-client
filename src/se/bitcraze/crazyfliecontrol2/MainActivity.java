@@ -573,28 +573,34 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread.start();
     }
 
+    //TODO: make runAltAction more universal
     boolean mHeadlightToggle = false;
-
-    public void runAlt1Action() {
-        Log.i(LOG_TAG, "runAlt1Action.");
-        Log.i(LOG_TAG, "Headlight toggle: " + mHeadlightToggle);
-        if (mCrazyflie != null) {
-            mCrazyflie.setParamValue("ring.headlightEnable", mHeadlightToggle ? 1 : 0);
-            mHeadlightToggle = !mHeadlightToggle;
-        }
-    }
-
     int mRingEffect = 0;
 
-    public void runAlt2Action() {
-        Log.i(LOG_TAG, "runAlt2Action.");
-        Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
+    public void runAlt1Action(View view) {
+        runAltAction(mControls.getAlt1Action());
+    }
+
+    public void runAlt2Action(View view) {
+        runAltAction(mControls.getAlt2Action());
+    }
+
+    public void runAltAction(String action) {
+        Log.i(LOG_TAG, "runAltAction: " + action);
         if (mCrazyflie != null) {
-            mCrazyflie.setParamValue("ring.effect", mRingEffect);
-            mRingEffect++;
-            if (mRingEffect > 6) {
-               mRingEffect = 0;
+            if ("ring.headlightEnable".equalsIgnoreCase(action)) {
+                mCrazyflie.setParamValue(action, mHeadlightToggle ? 1 : 0);
+                mHeadlightToggle = !mHeadlightToggle;
+            } else if ("ring.effect".equalsIgnoreCase(action)) {
+                Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
+                mCrazyflie.setParamValue(action, mRingEffect);
+                mRingEffect++;
+                if (mRingEffect > 6) {
+                    mRingEffect = 0;
+                }
             }
+        } else {
+            Log.d(LOG_TAG, "runAltAction - crazyflie is null");
         }
     }
 
