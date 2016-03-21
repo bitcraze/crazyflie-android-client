@@ -575,6 +575,7 @@ public class MainActivity extends Activity {
 
     //TODO: make runAltAction more universal
     boolean mHeadlightToggle = false;
+    boolean mSoundToggle = false;
     int mRingEffect = 0;
 
     public void runAlt1Action(View view) {
@@ -589,15 +590,21 @@ public class MainActivity extends Activity {
         Log.i(LOG_TAG, "runAltAction: " + action);
         if (mCrazyflie != null) {
             if ("ring.headlightEnable".equalsIgnoreCase(action)) {
+                // Toggle LED ring headlight
                 mCrazyflie.setParamValue(action, mHeadlightToggle ? 1 : 0);
                 mHeadlightToggle = !mHeadlightToggle;
             } else if ("ring.effect".equalsIgnoreCase(action)) {
+                // Cycle through LED ring effects
                 Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
                 mCrazyflie.setParamValue(action, mRingEffect);
                 mRingEffect++;
-                if (mRingEffect > 6) {
-                    mRingEffect = 0;
-                }
+                mRingEffect = (mRingEffect > 6) ? 0 : mRingEffect;
+            } else if (action.startsWith("sound.effect")) {
+                // Toggle buzzer deck sound effect
+                String[] split = action.split(":");
+                Log.i(LOG_TAG, "Sound effect: " + split[1]);
+                mCrazyflie.setParamValue(split[0], mSoundToggle ? Integer.parseInt(split[1]) : 0);
+                mSoundToggle = !mSoundToggle;
             }
         } else {
             Log.d(LOG_TAG, "runAltAction - crazyflie is null");

@@ -39,10 +39,12 @@
     <string-array name="actionEntries">
         <item>LED ring: Enable headlight</item>
         <item>LED ring: Cycle effect</item>
+        <item>Buzzer: Star Wars</item>
     </string-array>
 
     <string-array name="actionValues">
         <item>ring.headlightEnable</item>
         <item>ring.effect</item>
+        <item>sound.effect:10</item>
     </string-array>
 </resources>
