@@ -27,7 +27,6 @@
 
 package se.bitcraze.crazyflielib.crtp;
 
-
 /**
  * Lists the available ports for the CRTP.
  *

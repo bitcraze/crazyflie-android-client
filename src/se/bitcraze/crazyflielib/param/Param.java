@@ -155,37 +155,41 @@ public class Param {
      */
     public void paramUpdated(CrtpPacket packet) {
         int varId = packet.getPayload()[0];
-        TocElement tocElement = mToc.getElementById(varId);
-        if (tocElement != null) {
-            //s = struct.unpack(element.pytype, pk.data[1:])[0]
-            //s = s.__str__()
-            // TODO: probably does not work as intended, use System.arrayCopy instead
-            ByteBuffer payload = ByteBuffer.wrap(packet.getPayload(), 1, packet.getPayload().length-1);
-            Number number = tocElement.getCtype().parse(payload);
+        if (mToc != null) {
+            TocElement tocElement = mToc.getElementById(varId);
+            if (tocElement != null) {
+                //s = struct.unpack(element.pytype, pk.data[1:])[0]
+                //s = s.__str__()
+                // TODO: probably does not work as intended, use System.arrayCopy instead
+                ByteBuffer payload = ByteBuffer.wrap(packet.getPayload(), 1, packet.getPayload().length-1);
+                Number number = tocElement.getCtype().parse(payload);
 
-            String completeName = tocElement.getCompleteName();
+                String completeName = tocElement.getCompleteName();
 
-            // Save the value for synchronous access
-            if (!mValues.containsKey(tocElement.getGroup())) {
-                mValues.put(tocElement.getGroup(), new HashMap<String, Number>());
-            }
-            mValues.get(tocElement.getGroup()).put(tocElement.getName(), number);
+                // Save the value for synchronous access
+                if (!mValues.containsKey(tocElement.getGroup())) {
+                    mValues.put(tocElement.getGroup(), new HashMap<String, Number>());
+                }
+                mValues.get(tocElement.getGroup()).put(tocElement.getName(), number);
 
-            // This will only be called once
-            if (checkIfAllUpdated() && !mHaveUpdated) {
-                mHaveUpdated = true;
-                // self.all_updated.call()
-            }
-//            mLogger.debug("Updated parameter " + completeName);
+                // This will only be called once
+                if (checkIfAllUpdated() && !mHaveUpdated) {
+                    mHaveUpdated = true;
+                    // self.all_updated.call()
+                }
+//                mLogger.debug("Updated parameter " + completeName);
 
-            if (mUpdateListeners.containsKey(completeName)) {
-                mUpdateListeners.get(completeName).updated(completeName, number);
-            }
-            if (mGroupUpdateListeners.containsKey(tocElement.getGroup())) {
-                mGroupUpdateListeners.get(tocElement.getGroup()).updated(completeName, number);
+                if (mUpdateListeners.containsKey(completeName)) {
+                    mUpdateListeners.get(completeName).updated(completeName, number);
+                }
+                if (mGroupUpdateListeners.containsKey(tocElement.getGroup())) {
+                    mGroupUpdateListeners.get(tocElement.getGroup()).updated(completeName, number);
+                }
+            } else {
+                mLogger.debug("Variable id " + varId + " not found in TOC");
             }
         } else {
-            mLogger.debug("Variable id " + varId + " not found in TOC");
+            mLogger.debug("TOC is NULL!");
         }
     }
 
@@ -393,23 +397,23 @@ public class Param {
             while (mCrazyflie.getDriver() != null && !Thread.currentThread().isInterrupted()) {
                 try {
                     packet = null;
-                    //pk = self.request_queue.get()  # Wait for request update
+                    // pk = self.request_queue.get() # Wait for request update
                     packet = mRequestQueue.poll((long) 100, TimeUnit.MILLISECONDS);
 
-                    //self.wait_lock.acquire()
-                    //if self.cf.link:
+                    // self.wait_lock.acquire()
+                    // if self.cf.link:
                     if (packet != null && packet.getPayload().length > 0) {
                         mReqParam = packet.getPayload()[0];
-                        //self.cf.send_packet(pk, expected_reply=(pk.datat[0:2]))
-                        packet.setExpectedReply(new byte[]{packet.getPayload()[0]});
-                        if(packet.getHeader().getChannel() == READ_CHANNEL) {
+                        // self.cf.send_packet(pk, expected_reply=(pk.datat[0:2]))
+                        packet.setExpectedReply(new byte[] {packet.getPayload()[0]});
+                        if (packet.getHeader().getChannel() == READ_CHANNEL) {
                             mLogger.debug("Requesting updated for param with ID " + mReqParam);
                         } else {
                             mLogger.debug("Setting param with ID " + mReqParam);
                         }
                         mCrazyflie.sendPacket(packet);
                     } else {
-                        //self.wait_lock.release()
+                        // self.wait_lock.release()
                     }
                 } catch (InterruptedException e) {
                     mLogger.debug("ParamUpdaterThread was interrupted.");

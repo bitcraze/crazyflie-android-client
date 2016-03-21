@@ -25,7 +25,6 @@
  *
  */
 
-
 package se.bitcraze.crazyflielib.usb;
 
 import java.io.IOException;
@@ -97,7 +96,6 @@ public interface CrazyUsbInterface {
      */
     public float getFirmwareVersion();
 
-
     /**
      * Returns the serial number of the USB device
      *
@@ -108,4 +106,5 @@ public interface CrazyUsbInterface {
     public void bulkWrite(byte[] data);
 
     public byte[] bulkRead();
+
 }

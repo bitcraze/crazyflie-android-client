@@ -27,7 +27,6 @@
 
 package se.bitcraze.crazyflielib.crazyflie;
 
-
 /**
  * An abstract adapter class for receiving connection events. The methods in
  * this class are empty. This class exists as convenience for creating listener objects.

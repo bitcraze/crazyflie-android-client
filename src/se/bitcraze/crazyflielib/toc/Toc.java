@@ -42,7 +42,7 @@ public class Toc {
 
     final Logger mLogger = LoggerFactory.getLogger("Toc");
 
-	private int mCrc;
+    private int mCrc;
 
     private Map<String, TocElement> mTocElementMap = new HashMap<String, TocElement>();
 

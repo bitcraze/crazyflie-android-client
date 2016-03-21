@@ -347,12 +347,12 @@ public class Cloader {
         this.mDriver.stopSendReceiveThread();
 
         Crazyradio crazyRadio = ((RadioDriver) this.mDriver).getRadio();
-                //TODO: is there a more elegant way to do this?
-                //pkdata = (0xFF, 0xFF, 0x11) + tuple(new_address)
-                byte[] pkData = new byte[newAddress.length + 3];
-                pkData[0] = (byte) 0xFF;
-                pkData[1] = (byte) 0xFF;
-                pkData[2] = (byte) SET_ADDRESS;
+        //TODO: is there a more elegant way to do this?
+        //pkdata = (0xFF, 0xFF, 0x11) + tuple(new_address)
+        byte[] pkData = new byte[newAddress.length + 3];
+        pkData[0] = (byte) 0xFF;
+        pkData[1] = (byte) 0xFF;
+        pkData[2] = (byte) SET_ADDRESS;
 
         for (int i = 0; i < 10; i++) {
             mLogger.debug("Trying to set new radio address");

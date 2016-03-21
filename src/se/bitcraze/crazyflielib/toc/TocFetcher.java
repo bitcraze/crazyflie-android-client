@@ -139,7 +139,7 @@ public class TocFetcher {
                 mLogger.debug("[" + this.mPort + "]: Got TOC CRC, " + this.mNoOfItems + " items and CRC=" + String.format("0x%08X", this.mCrc));
 
                 //Try to find toc in cache
-                Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc) : null;
+                Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;
                 if (cacheData != null) {
                     // self.toc.toc = cache_data
                     // assigning a toc to another toc directly does not work

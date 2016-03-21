@@ -80,5 +80,4 @@ public class Manifest {
         this.mFiles = files;
     }
 
-
 }

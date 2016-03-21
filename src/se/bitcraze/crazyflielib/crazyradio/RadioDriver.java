@@ -184,7 +184,6 @@ public class RadioDriver extends CrtpDriver {
             this.mCradio.disconnect();
             this.mCradio = null;
         }
-
         notifyDisconnected();
     }
 

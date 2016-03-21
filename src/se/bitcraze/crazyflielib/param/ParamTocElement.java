@@ -27,9 +27,6 @@
 
 package se.bitcraze.crazyflielib.param;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import se.bitcraze.crazyflielib.toc.TocElement;
 import se.bitcraze.crazyflielib.toc.VariableType;
 
@@ -54,46 +51,31 @@ public class ParamTocElement extends TocElement {
              0x07: ("double",   '<d')}
     */
 
-    public static final Map<Integer, VariableType> VARIABLE_TYPE_MAP;
-
-    static {
-        VARIABLE_TYPE_MAP = new HashMap<Integer, VariableType>(10);
-        VARIABLE_TYPE_MAP.put(0x08, VariableType.UINT8_T);
-        VARIABLE_TYPE_MAP.put(0x09, VariableType.UINT16_T);
-        VARIABLE_TYPE_MAP.put(0x0A, VariableType.UINT32_T);
-        VARIABLE_TYPE_MAP.put(0x0B, VariableType.UINT64_T);
-        VARIABLE_TYPE_MAP.put(0x00, VariableType.INT8_T);
-        VARIABLE_TYPE_MAP.put(0x01, VariableType.INT16_T);
-        VARIABLE_TYPE_MAP.put(0x02, VariableType.INT32_T);
-        VARIABLE_TYPE_MAP.put(0x03, VariableType.INT64_T);
-        /*TODO: 0x05 FP16*/
-        VARIABLE_TYPE_MAP.put(0x06, VariableType.FLOAT);
-        VARIABLE_TYPE_MAP.put(0x07, VariableType.DOUBLE);
-    }
-
     // empty constructor is needed for (de)serialization
     public ParamTocElement() {
+        super();
     }
 
     /**
-     * TocElement creator. Data is the binary payload of the element.
+     * ParamTocElement creator
+     *
+     * @param data the binary payload of the element
      */
     public ParamTocElement(byte[] data) {
-        if (data != null) {
-            setGroupAndName(data);
-
-            setIdent(data[0]);
-
-            setCtype(VARIABLE_TYPE_MAP.get(data[1] & 0x0F));
-
-            // setting pytype not needed in Java cf lib
-
-            if ((data[1] & 0x40) != 0) {
-                setAccess(RO_ACCESS);
-            } else {
-                setAccess(RW_ACCESS);
-            }
-        }
+        super(data);
     }
 
+    protected void fillVariableTypeMap() {
+        mVariableTypeMap.put(0x00, VariableType.INT8_T);
+        mVariableTypeMap.put(0x01, VariableType.INT16_T);
+        mVariableTypeMap.put(0x02, VariableType.INT32_T);
+        mVariableTypeMap.put(0x03, VariableType.INT64_T);
+        /*TODO: 0x05 FP16*/
+        mVariableTypeMap.put(0x06, VariableType.FLOAT);
+        mVariableTypeMap.put(0x07, VariableType.DOUBLE);
+        mVariableTypeMap.put(0x08, VariableType.UINT8_T);
+        mVariableTypeMap.put(0x09, VariableType.UINT16_T);
+        mVariableTypeMap.put(0x0A, VariableType.UINT32_T);
+        mVariableTypeMap.put(0x0B, VariableType.UINT64_T);
+    }
 }
