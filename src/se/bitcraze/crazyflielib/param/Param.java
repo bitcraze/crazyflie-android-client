@@ -91,6 +91,8 @@ public class Param {
     public Param(Crazyflie crazyflie) {
         this.mCrazyflie = crazyflie;
 
+        this.mToc = new Toc(); // Avoid NPE
+
         // self.param_updater = None
         // self.param_updater = _ParamUpdater(self.cf, self._param_updated)
         // self.param_updater.start()
@@ -155,41 +157,37 @@ public class Param {
      */
     public void paramUpdated(CrtpPacket packet) {
         int varId = packet.getPayload()[0];
-        if (mToc != null) {
-            TocElement tocElement = mToc.getElementById(varId);
-            if (tocElement != null) {
-                //s = struct.unpack(element.pytype, pk.data[1:])[0]
-                //s = s.__str__()
-                // TODO: probably does not work as intended, use System.arrayCopy instead
-                ByteBuffer payload = ByteBuffer.wrap(packet.getPayload(), 1, packet.getPayload().length-1);
-                Number number = tocElement.getCtype().parse(payload);
+        TocElement tocElement = mToc.getElementById(varId);
+        if (tocElement != null) {
+            //s = struct.unpack(element.pytype, pk.data[1:])[0]
+            //s = s.__str__()
+            // TODO: probably does not work as intended, use System.arrayCopy instead
+            ByteBuffer payload = ByteBuffer.wrap(packet.getPayload(), 1, packet.getPayload().length-1);
+            Number number = tocElement.getCtype().parse(payload);
 
-                String completeName = tocElement.getCompleteName();
+            String completeName = tocElement.getCompleteName();
 
-                // Save the value for synchronous access
-                if (!mValues.containsKey(tocElement.getGroup())) {
-                    mValues.put(tocElement.getGroup(), new HashMap<String, Number>());
-                }
-                mValues.get(tocElement.getGroup()).put(tocElement.getName(), number);
+            // Save the value for synchronous access
+            if (!mValues.containsKey(tocElement.getGroup())) {
+                mValues.put(tocElement.getGroup(), new HashMap<String, Number>());
+            }
+            mValues.get(tocElement.getGroup()).put(tocElement.getName(), number);
 
-                // This will only be called once
-                if (checkIfAllUpdated() && !mHaveUpdated) {
-                    mHaveUpdated = true;
-                    // self.all_updated.call()
-                }
+            // This will only be called once
+            if (checkIfAllUpdated() && !mHaveUpdated) {
+                mHaveUpdated = true;
+                // self.all_updated.call()
+            }
 //                mLogger.debug("Updated parameter " + completeName);
 
-                if (mUpdateListeners.containsKey(completeName)) {
-                    mUpdateListeners.get(completeName).updated(completeName, number);
-                }
-                if (mGroupUpdateListeners.containsKey(tocElement.getGroup())) {
-                    mGroupUpdateListeners.get(tocElement.getGroup()).updated(completeName, number);
-                }
-            } else {
-                mLogger.debug("Variable id " + varId + " not found in TOC");
+            if (mUpdateListeners.containsKey(completeName)) {
+                mUpdateListeners.get(completeName).updated(completeName, number);
+            }
+            if (mGroupUpdateListeners.containsKey(tocElement.getGroup())) {
+                mGroupUpdateListeners.get(tocElement.getGroup()).updated(completeName, number);
             }
         } else {
-            mLogger.debug("TOC is NULL!");
+            mLogger.debug("Variable id " + varId + " not found in TOC");
         }
     }
 
