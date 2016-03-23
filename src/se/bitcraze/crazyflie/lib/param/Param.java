@@ -291,7 +291,9 @@ public class Param {
             bb.put(parse);
             CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
             //self.param_updater.request_param_setvalue(pk)
-            mPut.addParamRequest(packet);
+            if (!"flightmode.althold".equals(completeName)) {
+                mPut.addParamRequest(packet);
+            }
         }
     }
 

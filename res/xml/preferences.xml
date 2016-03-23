@@ -212,6 +212,9 @@
                  <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference
                     android:key="pref_alt2_btn"
                     android:title="@string/preferences_alt2_btn_title"/>
+                 <se.bitcraze.crazyfliecontrol.prefs.ButtonMappingDialogPreference
+                    android:key="pref_hover_btn"
+                    android:title="@string/preferences_hover_btn_title"/>
             </PreferenceCategory>
             <PreferenceCategory android:title="@string/preferences_category_actions" >
                 <ListPreference

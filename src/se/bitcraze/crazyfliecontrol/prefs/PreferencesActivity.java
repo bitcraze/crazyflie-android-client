@@ -104,6 +104,7 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_ALT1_ACTION = "pref_alt1_action";
     public static final String KEY_PREF_ALT2_BTN = "pref_alt2_btn";
     public static final String KEY_PREF_ALT2_ACTION = "pref_alt2_action";
+    public static final String KEY_PREF_HOVER_BTN = "pref_hover_btn";
 
     public static final String KEY_PREF_JOYSTICK_SIZE = "pref_touch_slider_size";
 
@@ -151,6 +152,7 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mPitchTrimMinusBtnDefaultValue;
         private String mAlt1BtnDefaultValue;
         private String mAlt2BtnDefaultValue;
+        private String mHoverBtnDefaultValue;
 
         private String[] mDatarateStrings;
 
@@ -233,6 +235,7 @@ public class PreferencesActivity extends PreferenceActivity {
             setSummaryArrayString(KEY_PREF_ALT1_ACTION, R.string.preferences_alt1_action_defaultValue, R.array.actionEntries, R.array.actionValues);
             mAlt2BtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_ALT2_BTN, R.string.preferences_alt2_btn_defaultValue);
             setSummaryArrayString(KEY_PREF_ALT2_ACTION, R.string.preferences_alt2_action_defaultValue, R.array.actionEntries, R.array.actionValues);
+            mHoverBtnDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_HOVER_BTN, R.string.preferences_hover_btn_defaultValue);
 
             findPreference(KEY_PREF_RESET_BTN).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
@@ -253,6 +256,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     resetPreference(KEY_PREF_PITCHTRIM_MINUS_BTN, mPitchTrimMinusBtnDefaultValue, null);
                     resetPreference(KEY_PREF_ALT1_BTN, mAlt1BtnDefaultValue, null);
                     resetPreference(KEY_PREF_ALT2_BTN, mAlt2BtnDefaultValue, null);
+                    resetPreference(KEY_PREF_HOVER_BTN, mHoverBtnDefaultValue, null);
                     Toast.makeText(getActivity(), "Resetting to default values...", Toast.LENGTH_SHORT).show();
                     return true;
                 }
@@ -439,11 +443,15 @@ public class PreferencesActivity extends PreferenceActivity {
             if (key.equals(KEY_PREF_ALT1_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mAlt1BtnDefaultValue));
             }
-            if (key.equals(KEY_PREF_ALT1_ACTION)) {
-                setSummaryArrayString(key, R.string.preferences_alt1_action_defaultValue, R.array.actionEntries, R.array.actionValues);
-            }
             if (key.equals(KEY_PREF_ALT2_BTN)) {
                 findPreference(key).setSummary(sharedPreferences.getString(key, mAlt2BtnDefaultValue));
+            }
+            if (key.equals(KEY_PREF_HOVER_BTN)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mHoverBtnDefaultValue));
+            }
+
+            if (key.equals(KEY_PREF_ALT1_ACTION)) {
+                setSummaryArrayString(key, R.string.preferences_alt1_action_defaultValue, R.array.actionEntries, R.array.actionValues);
             }
             if (key.equals(KEY_PREF_ALT2_ACTION)) {
                 setSummaryArrayString(key, R.string.preferences_alt2_action_defaultValue, R.array.actionEntries, R.array.actionValues);
@@ -551,13 +559,13 @@ public class PreferencesActivity extends PreferenceActivity {
             }
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putString(pKey, pDefaultValue);
-            editor.commit();
+            editor.apply();
         }
 
         private void resetPreference(String pKey, boolean pDefaultValue) {
             SharedPreferences.Editor editor = mSharedPreferences.edit();
             editor.putBoolean(pKey, pDefaultValue);
-            editor.commit();
+            editor.apply();
         }
 
         @Override
@@ -586,7 +594,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
                 @Override
                 protected ConnectionData[] doInBackground(Void... arg0) {
-                    UsbLinkAndroid usbLinkAndroid = null;
+                    UsbLinkAndroid usbLinkAndroid;
                     Crazyradio crlink = null;
                     try {
                         usbLinkAndroid = new UsbLinkAndroid(getActivity());
@@ -670,7 +678,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, String.valueOf(channel));
                 editor.putString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, String.valueOf(datarate));
-                editor.commit();
+                editor.apply();
 
                 Toast.makeText(getActivity(),"Channel: " + channel + " Data rate: " + mDatarateStrings[datarate] + "\nSetting preferences...", Toast.LENGTH_SHORT).show();
             }
@@ -693,7 +701,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(PreferencesActivity.KEY_PREF_JOYSTICK_SIZE, String.valueOf(defaultValue));
-            editor.commit();
+            editor.apply();
         } else {
             Log.d(LOG_TAG, "Prefs already contain joystick size.");
         }

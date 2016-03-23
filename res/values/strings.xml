@@ -114,6 +114,8 @@
     <string name="preferences_alt1_btn_defaultValue">KEYCODE_BUTTON_L1</string>
     <string name="preferences_alt2_btn_title">Alt 2</string>
     <string name="preferences_alt2_btn_defaultValue">KEYCODE_BUTTON_L2</string>
+    <string name="preferences_hover_btn_title">Hover</string>
+    <string name="preferences_hover_btn_defaultValue">KEYCODE_BUTTON_R1</string>
     <string name="preferences_reset_btn_title">Reset values</string>
     <string name="preferences_reset_btn_summary">Reset to default values</string>
     <string name="preferences_button_mapping_dialog_text">Please press a button&#8230;</string>

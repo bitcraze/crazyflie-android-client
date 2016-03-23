@@ -43,4 +43,6 @@ public interface IController {
 
     public void disable();
 
+    public boolean isHover();
+
 }

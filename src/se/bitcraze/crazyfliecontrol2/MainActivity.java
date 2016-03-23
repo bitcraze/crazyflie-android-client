@@ -730,6 +730,14 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void enableAltHoldMode(boolean hover) {
+        // For safety reasons, altHold mode is only supported when the Crazyradio and a game pad are used
+        if (mCrazyflie != null && mCrazyflie.getDriver() instanceof RadioDriver && mController instanceof GamepadController) {
+            // Log.i(LOG_TAG, "flightmode.althold: getThrust(): " + mController.getThrustAbsolute());
+            mCrazyflie.setParamValue("flightmode.althold", hover ? 1 : 0);
+        }
+    }
+
     public Crazyflie getCrazyflie(){
         return mCrazyflie;
     }
