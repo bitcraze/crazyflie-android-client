@@ -35,6 +35,10 @@ Preferences
   * Open the connection settings
   * Start radio scan (how long does it take?)
   * => at least one CF should be found
+* Preferences - Crazyradio scan
+  * Open the preferences menu while **no** Crazyradio is attached
+  * Open the connection settings
+  * => all Crazyradio settings should be greyed out
 
 Bootloader
 -----------

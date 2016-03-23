@@ -75,7 +75,7 @@
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             custom:upperLimit=".5"
             custom:lowerLimit="-.5"
-            custom:steps="20"
+            custom:steps="50"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_rolltrim"
             android:key="pref_rolltrim"
@@ -84,7 +84,7 @@
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             custom:upperLimit=".5"
             custom:lowerLimit="-.5"
-            custom:steps="20"
+            custom:steps="50"
             android:defaultValue="@string/preferences_trim_defaultValue"
             android:dialogTitle="@string/preferences_pitchtrim"
             android:key="pref_pitchtrim"
@@ -220,6 +220,14 @@
             android:summaryOff="@string/preferences_use_gyro_bool_summary_off"
             android:summaryOn="@string/preferences_use_gyro_bool_summary_on"
             android:title="@string/preferences_use_gyro_bool_title" />
+
+        <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+            custom:lowerLimit="1"
+            custom:upperLimit="10"
+            custom:wholeNumber="true"
+            android:defaultValue="@string/preferences_gyro_amp_defaultValue"
+            android:key="pref_gyro_amp"
+            android:title="@string/preferences_gyro_amp_title"/>
 
         <CheckBoxPreference
             android:defaultValue="true"

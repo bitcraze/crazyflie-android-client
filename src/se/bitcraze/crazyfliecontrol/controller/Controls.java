@@ -52,10 +52,10 @@ public class Controls {
     private float mLeft_analog_y;
 
     // Trim values
+    private static final float TRIM_MAX = 0.5f;
+    private static final float TRIM_INCREMENTS = 0.02f;
     private float mRollTrim;
     private float mPitchTrim;
-    private float mMaxTrim = 0.5f;
-    private float mTrimIncrements = 0.1f;
     private String mTrimDefaultValue;
 
     private int mMode; // Controller axis mapping (Mode 1-4)
@@ -63,7 +63,10 @@ public class Controls {
 
     private int mControllerType;
     private String mControllerTypeDefaultValue;
+    //Gyro sensor values
     private boolean mUseGyro;
+    private int mGyroAmplification;
+    private String mGyroAmplificationDefaultValue;
     private boolean mTouchThrustFullTravel;
 
     private String mModeDefaultValue;
@@ -94,6 +97,8 @@ public class Controls {
 
         mTrimDefaultValue = res.getString(R.string.preferences_trim_defaultValue);
 
+        mGyroAmplificationDefaultValue = Integer.toString(R.string.preferences_gyro_amp_defaultValue);
+
         mControllerTypeDefaultValue = res.getString(R.string.preferences_controller_defaultValue);
 
         //Advanced flight control
@@ -111,7 +116,10 @@ public class Controls {
         this.mPitchTrim = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_PITCHTRIM, mTrimDefaultValue));
 
         this.mControllerType = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_CONTROLLER, mControllerTypeDefaultValue));
+
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
+        this.mGyroAmplification = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_GYRO_AMP, mGyroAmplificationDefaultValue));
+
         this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
 
         //Advanced flight control
@@ -157,10 +165,10 @@ public class Controls {
             axis = mPitchTrim;
         }
 
-        if (increase && axis < mMaxTrim) {
-            axis += mTrimIncrements;
-        } else if (!increase && axis > (mMaxTrim * -1)) {
-            axis -= mTrimIncrements;
+        if (increase && axis < TRIM_MAX) {
+            axis += TRIM_INCREMENTS;
+        } else if (!increase && axis > (TRIM_MAX * -1)) {
+            axis -= TRIM_INCREMENTS;
         }
 
         setPreference(prefKey, String.valueOf(axis));
@@ -207,6 +215,10 @@ public class Controls {
 
     public boolean isUseGyro() {
         return mUseGyro;
+    }
+
+    public int getGyroAmplification() {
+        return mGyroAmplification;
     }
 
     public boolean isTouchThrustFullTravel() {

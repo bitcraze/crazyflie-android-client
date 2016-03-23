@@ -239,6 +239,12 @@ public class BootloaderActivity extends Activity {
             appendConsole("Firmware downloaded.");
             startBootloader();
         }
+
+        public void downloadProblem(String msg) {
+            //flash firmware once firmware is downloaded
+            appendConsole("Firmware download failed: " + msg);
+            stopFlashProcess(false);
+        }
     };
 
     public void startFlashProcess(final View view) {

@@ -35,6 +35,7 @@ import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -47,6 +48,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -83,6 +85,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
     public static final String KEY_PREF_CONTROLLER = "pref_controller";
     public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
+    public static final String KEY_PREF_GYRO_AMP = "pref_gyro_amp";
     public static final String KEY_PREF_BTN_SCREEN = "pref_btn_screen";
     public static final String KEY_PREF_TOUCH_THRUST_FULL_TRAVEL = "pref_touch_thrust_full_travel";
     public static final String KEY_PREF_RIGHT_ANALOG_X_AXIS = "pref_right_analog_x_axis";
@@ -127,6 +130,9 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
+
+        private String mGyroAmpDefaultValue;
+
         private String mJoystickSizeDefaultValue;
 
         private String mRightAnalogXAxisDefaultValue;
@@ -199,6 +205,7 @@ public class PreferencesActivity extends PreferenceActivity {
             // Controller settings
             setSummaryArray(KEY_PREF_CONTROLLER, R.string.preferences_controller_defaultValue, R.array.controllerEntries, 0);
             setControllerSpecificPreferences();
+            mGyroAmpDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_GYRO_AMP, R.string.preferences_gyro_amp_defaultValue);
             mJoystickSizeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_JOYSTICK_SIZE, R.string.preferences_joystick_size_defaultValue);
 
             // Gamepad and button mapping
@@ -264,10 +271,10 @@ public class PreferencesActivity extends PreferenceActivity {
 
         private void checkGyroSensors() {
             //Test the available sensors
-            SensorManager mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+            SensorManager sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
             CheckBoxPreference pref = (CheckBoxPreference) findPreference(KEY_PREF_USE_GYRO_BOOL);
 
-            if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
+            if (sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) == null && sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) == null) {
                 pref.setEnabled(false);
                 pref.setChecked(false);
                 resetPreference(KEY_PREF_USE_GYRO_BOOL, false);
@@ -281,7 +288,7 @@ public class PreferencesActivity extends PreferenceActivity {
         }
 
         private void setRadioStats() {
-            Preference pref = findPreference(KEY_PREF_RADIO_STATS);
+            Preference prefRadioStats = findPreference(KEY_PREF_RADIO_STATS);
             String defaultValue = getResources().getString(R.string.preferences_radio_stats_summary);
 
             UsbLinkAndroid usbLinkAndroid = null;
@@ -291,23 +298,37 @@ public class PreferencesActivity extends PreferenceActivity {
                 if (usbLinkAndroid != null) {
                     usbLinkAndroid.initDevice(Crazyradio.CRADIO_VID, Crazyradio.CRADIO_PID);
                     if(usbLinkAndroid.isUsbConnected()) {
-                        pref.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
-                                        "Serial number: " + usbLinkAndroid.getSerialNumber());
+                        prefRadioStats.setSummary("Firmware version: " + usbLinkAndroid.getFirmwareVersion() + "\n" +
+                               					  "Serial number: " + usbLinkAndroid.getSerialNumber());
+                        enableDisableRadioSettings(true);
                     } else{
-                        pref.setSummary(defaultValue);
+                        prefRadioStats.setSummary(defaultValue);
+                        enableDisableRadioSettings(false);
                     }
+                } else {
+                    prefRadioStats.setSummary(defaultValue);
+                    enableDisableRadioSettings(false);
                 }
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
-                pref.setSummary(defaultValue);
+                prefRadioStats.setSummary(defaultValue);
+                enableDisableRadioSettings(false);
             } catch (IOException iae) {
                 Log.e(LOG_TAG, iae.getMessage());
-                pref.setSummary(defaultValue);
+                prefRadioStats.setSummary(defaultValue);
+                enableDisableRadioSettings(false);
             } finally {
                 if (usbLinkAndroid != null) {
                     usbLinkAndroid.releaseInterface();
                 }
             }
+        }
+
+        private void enableDisableRadioSettings(boolean enable) {
+            findPreference(KEY_PREF_RADIO_CHANNEL).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_DATARATE).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_SCAN).setEnabled(enable);
+            findPreference(KEY_PREF_RADIO_STATS).setEnabled(enable);
         }
 
         // Set summary to be the user-description for the selected value
@@ -325,7 +346,7 @@ public class PreferencesActivity extends PreferenceActivity {
                 setSummaryArray(key, R.string.preferences_mode_defaultValue, R.array.modeEntries, -1);
             }
             if (key.equals(KEY_PREF_DEADZONE)) {
-                findPreference(key).setSummary(sharedPreferences.getString(key,mDeadzoneDefaultValue));
+                findPreference(key).setSummary(sharedPreferences.getString(key, mDeadzoneDefaultValue));
             }
 
             // Controller settings
@@ -349,7 +370,15 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
                 screenRotationLock.setChecked(useGyro);
                 screenRotationLock.setEnabled(!useGyro);
+
+                SliderPreference gyroAmp = (SliderPreference) findPreference(KEY_PREF_GYRO_AMP);
+                gyroAmp.setEnabled(useGyro);
             }
+
+            if (key.equals(KEY_PREF_GYRO_AMP)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mGyroAmpDefaultValue));
+            }
+
             if(key.equals(KEY_PREF_JOYSTICK_SIZE)){
                 findPreference(key).setSummary(sharedPreferences.getString(key,mJoystickSizeDefaultValue));
             }
@@ -439,12 +468,13 @@ public class PreferencesActivity extends PreferenceActivity {
             }
         }
 
-
         private void setControllerSpecificPreferences() {
             String controllerDefaultValue = getResources().getString(R.string.preferences_controller_defaultValue);
             int controllerIndex = Integer.parseInt(mSharedPreferences.getString(KEY_PREF_CONTROLLER, controllerDefaultValue));
+            boolean useGyro = mSharedPreferences.getBoolean(KEY_PREF_USE_GYRO_BOOL, false);
             if (!mNoGyroSensor) {
                 findPreference(KEY_PREF_USE_GYRO_BOOL).setEnabled(controllerIndex == 0);
+                findPreference(KEY_PREF_GYRO_AMP).setEnabled(controllerIndex == 0 && useGyro);
             }
             findPreference(KEY_PREF_BTN_SCREEN).setEnabled(controllerIndex == 1);
             findPreference(KEY_PREF_TOUCH_THRUST_FULL_TRAVEL).setEnabled(controllerIndex == 0);
@@ -639,7 +669,10 @@ public class PreferencesActivity extends PreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void setupActionBar() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            getActionBar().setDisplayHomeAsUpEnabled(true);
+            final ActionBar actionBar = getActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
         }
     }
 
