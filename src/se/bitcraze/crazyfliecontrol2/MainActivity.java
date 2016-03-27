@@ -45,6 +45,7 @@ import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpDriver;
+import se.bitcraze.crazyflielib.param.ParamListener;
 import se.bitcraze.crazyflielib.toc.Toc;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -103,6 +104,11 @@ public class MainActivity extends Activity {
     private int mSoundDisconnect;
 
     private ImageButton mToggleConnectButton;
+
+    boolean mHeadlightToggle = false;
+    boolean mSoundToggle = false;
+    int mRingEffect = 0;
+    int mNoRingEffect = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -483,6 +489,15 @@ public class MainActivity extends Activity {
                                 Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
                             }
                         });
+                        //set number of LED ring effects
+                        mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
+                            @Override
+                            public void updated(String name, Number value) {
+                                mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
+                                Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
+                            }
+                        });
+                        mCrazyflie.getParam().requestParamUpdate("ring.neffect");
                     }
 
                     startSendJoystickDataThread();
@@ -574,9 +589,6 @@ public class MainActivity extends Activity {
     }
 
     //TODO: make runAltAction more universal
-    boolean mHeadlightToggle = false;
-    boolean mSoundToggle = false;
-    int mRingEffect = 0;
 
     public void runAlt1Action(View view) {
         runAltAction(mControls.getAlt1Action());
@@ -598,7 +610,7 @@ public class MainActivity extends Activity {
                 Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
                 mCrazyflie.setParamValue(action, mRingEffect);
                 mRingEffect++;
-                mRingEffect = (mRingEffect > 6) ? 0 : mRingEffect;
+                mRingEffect = (mRingEffect > mNoRingEffect) ? 0 : mRingEffect;
             } else if (action.startsWith("sound.effect")) {
                 // Toggle buzzer deck sound effect
                 String[] split = action.split(":");
