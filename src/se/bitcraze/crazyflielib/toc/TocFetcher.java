@@ -40,6 +40,7 @@ import se.bitcraze.crazyflielib.crazyflie.DataListener;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket;
 import se.bitcraze.crazyflielib.crtp.CrtpPacket.Header;
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
+import se.bitcraze.crazyflielib.log.LogTocElement;
 import se.bitcraze.crazyflielib.param.ParamTocElement;
 
 /**
@@ -108,7 +109,7 @@ public class TocFetcher {
         mLogger.debug("Fetching TOC (Port: " + this.mPort + ") done in " + tocFetchDuration + "ms.");
         this.mState = TocState.TOC_FETCH_FINISHED;
         // finishedCallback();
-        notifyTocFetchFinished();
+        notifyTocFetchFinished(this.mPort);
     }
 
     public TocState getState() {
@@ -173,11 +174,15 @@ public class TocFetcher {
                     return;
                 }
 
-                if (mPort == CrtpPort.PARAMETERS) {
-                    TocElement tocElement = new ParamTocElement(payloadBuffer.array());
-                    mToc.addElement(tocElement);
-                    mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");
+                TocElement tocElement;
+                if (mPort == CrtpPort.LOGGING) {
+                    tocElement = new LogTocElement(payloadBuffer.array());
+                } else {
+                    tocElement = new ParamTocElement(payloadBuffer.array());
                 }
+                mToc.addElement(tocElement);
+
+                mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");
 
                 if(mRequestedIndex < (mNoOfItems - 1)) {
                     mLogger.debug("[" + this.mPort + "]: More variables, requesting index " + (this.mRequestedIndex + 1));
@@ -218,19 +223,17 @@ public class TocFetcher {
         this.mTocFetchFinishedListeners.add(listener);
     }
 
+    // TODO: never used?
     public void removeTocFetchFinishedListener(TocFetchFinishedListener listener) {
         this.mTocFetchFinishedListeners.remove(listener);
     }
 
-    private void notifyTocFetchFinished() {
+    private void notifyTocFetchFinished(CrtpPort port) {
         for (TocFetchFinishedListener tffl : this.mTocFetchFinishedListeners) {
-            tffl.tocFetchFinished();
+            if (tffl.getPort() == port) {
+                tffl.tocFetchFinished();
+            }
         }
     }
 
-    public interface TocFetchFinishedListener {
-
-        public void tocFetchFinished();
-
-    }
 }

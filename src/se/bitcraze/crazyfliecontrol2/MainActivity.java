@@ -87,6 +87,8 @@ public class MainActivity extends Activity {
 
     private Crazyflie mCrazyflie;
     private CrtpDriver mDriver;
+    private Toc mParamToc;
+    private Toc mLogToc;
 
     private SharedPreferences mPreferences;
 
@@ -436,8 +438,6 @@ public class MainActivity extends Activity {
         }
     };
 
-    protected Toc mParamToc;
-
     private void playSound(int sound){
         if (mLoaded) {
             float volume = 1.0f;
@@ -475,10 +475,11 @@ public class MainActivity extends Activity {
 
         @Override
         public void setupFinished(String connectionInfo) {
-            final Toc paramToc = mCrazyflie.getParam().getToc();
-            if (paramToc != null && paramToc.getTocSize() > 0) {
-                mParamToc = paramToc;
-                runOnUiThread(new Runnable() {
+           final Toc paramToc = mCrazyflie.getParam().getToc();
+           final Toc logToc = mCrazyflie.getLogg().getToc();
+           if (paramToc != null) {
+               mParamToc = paramToc;
+               runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
@@ -521,6 +522,15 @@ public class MainActivity extends Activity {
                     }
                 });
                 mCrazyflie.getParam().requestParamUpdate("ring.neffect");
+            }
+            if (logToc != null) {
+                mLogToc = logToc;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Log TOC fetch finished: " + logToc.getTocSize(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             startSendJoystickDataThread();

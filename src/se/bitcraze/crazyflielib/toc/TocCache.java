@@ -46,6 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import se.bitcraze.crazyflielib.crtp.CrtpPort;
+import se.bitcraze.crazyflielib.log.LogTocElement;
 import se.bitcraze.crazyflielib.param.ParamTocElement;
 
 /**
@@ -110,11 +111,11 @@ public class TocCache {
             try {
                 fetchedToc = new Toc();
                 Map<String, TocElement> readValue;
-//                if (port == CrtpPort.PARAMETERS) {
+                if (port == CrtpPort.PARAMETERS) {
                     readValue = mMapper.readValue(hit, new TypeReference<Map<String, ParamTocElement>>() { });
-//                } else {
-//                    readValue = mMapper.readValue(hit, new TypeReference<Map<String, LogTocElement>>() { });
-//                }
+                } else {
+                    readValue = mMapper.readValue(hit, new TypeReference<Map<String, LogTocElement>>() { });
+                }
                 fetchedToc.setTocElementMap(readValue);
                 mLogger.debug("Number of cached elements: " + fetchedToc.getElements().size());
                 //TODO: file leak?

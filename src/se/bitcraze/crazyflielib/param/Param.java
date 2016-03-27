@@ -47,7 +47,7 @@ import se.bitcraze.crazyflielib.toc.Toc;
 import se.bitcraze.crazyflielib.toc.TocCache;
 import se.bitcraze.crazyflielib.toc.TocElement;
 import se.bitcraze.crazyflielib.toc.TocFetcher;
-import se.bitcraze.crazyflielib.toc.TocFetcher.TocFetchFinishedListener;
+import se.bitcraze.crazyflielib.toc.TocFetchFinishedListener;
 
 /**
  * Enables reading/writing of parameter values to/from the Crazyflie.
@@ -232,11 +232,12 @@ public class Param {
      */
     // def refresh_toc(self, refresh_done_callback, toc_cache):
     public void refreshToc(TocFetchFinishedListener listener, TocCache tocCache) {
-       this.mToc = new Toc();
-       // toc_fetcher = TocFetcher(self.cf, ParamTocElement, CRTPPort.PARAM, self.toc, refresh_done_callback, toc_cache)
-       TocFetcher tocFetcher = new TocFetcher(mCrazyflie, CrtpPort.PARAMETERS, mToc, tocCache);
-       tocFetcher.addTocFetchFinishedListener(listener);
-       tocFetcher.start();
+        mLogger.debug("Param: refreshToc");
+        this.mToc = new Toc();
+        // toc_fetcher = TocFetcher(self.cf, ParamTocElement, CRTPPort.PARAM, self.toc, refresh_done_callback, toc_cache)
+        TocFetcher tocFetcher = new TocFetcher(mCrazyflie, CrtpPort.PARAMETERS, mToc, tocCache);
+        tocFetcher.addTocFetchFinishedListener(listener);
+        tocFetcher.start();
     }
 
     //TODO: only for debugging

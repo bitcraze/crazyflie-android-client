@@ -171,7 +171,7 @@ public class CrtpPacket {
     /**
      * Create a new packet.
      *
-     * @param packet
+     * @param packetData
      */
     public CrtpPacket(byte[] packetData) {
         this.mPacketHeader = new Header(packetData[0]);
