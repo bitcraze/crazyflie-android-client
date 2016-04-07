@@ -52,6 +52,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 
 @SuppressLint("NewApi")
 public class BleLink extends CrtpDriver {
@@ -96,7 +97,7 @@ public class BleLink extends CrtpDriver {
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 			super.onConnectionStateChange(gatt, status, newState);
-			if (newState ==BluetoothProfile.STATE_CONNECTED) {
+			if (newState == BluetoothProfile.STATE_CONNECTED) {
 				gatt.discoverServices();
 				mGatt = gatt;
 			} else {
@@ -226,7 +227,13 @@ public class BleLink extends CrtpDriver {
 			public void run() {
 				if(mConnected) {
 					mGatt.disconnect();
-					mGatt.close();
+                    //delay close command to fix potential NPE
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mGatt.close();
+                        }
+                    }, 200);
 					mGatt = null;
 					mConnected = false;
 					mBluetoothAdapter.stopLeScan(mLeScanCallback);
