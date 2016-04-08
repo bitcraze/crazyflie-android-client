@@ -27,7 +27,8 @@
             android:layout_marginRight="6dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:src="@drawable/ic_action_import_export" />
+            android:src="@drawable/ic_action_import_export"
+            android:elevation="2dp" />
 
         <ImageButton
             android:id="@+id/imageButton_settings"
@@ -38,7 +39,8 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/custom_button"
-            android:src="@drawable/ic_action_settings_light" />
+            android:src="@drawable/ic_action_settings_light"
+            android:elevation="2dp" />
     </LinearLayout>
 
     <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
@@ -51,22 +53,43 @@
         android:layout_below="@+id/linearLayout1">
     </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
 
-    <Button
-        android:id="@+id/button_alt1"
+    <ImageButton
+        android:id="@+id/button_ledRing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Alt1"
-        android:onClick="runAlt1Action"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/linearLayout1"/>
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_alignBottom="@+id/button_headLight"
+        android:layout_toLeftOf="@id/button_headLight"
+        android:background="@drawable/custom_button_action"
+        android:src="@drawable/ic_led_ring"
+        android:elevation="2dp"
+        android:onClick="switchLedRingEffect"/>
 
-    <Button
-        android:id="@+id/button_alt2"
+    <ImageButton
+        android:id="@+id/button_headLight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Alt2"
-        android:onClick="runAlt2Action"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_below="@+id/linearLayout1"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/button_alt1"/>
+        android:background="@drawable/custom_button_action"
+        android:src="@drawable/ic_headlight"
+        android:elevation="2dp"
+        android:onClick="toggleHeadlight" />
+
+    <ImageButton
+        android:id="@+id/button_buzzerSound"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_alignBottom="@+id/button_headLight"
+        android:layout_toRightOf="@id/button_headLight"
+        android:background="@drawable/custom_button_action"
+        android:src="@drawable/ic_volume_up_black"
+        android:elevation="2dp"
+        android:onClick="playBuzzerSound"/>
 
 </RelativeLayout>

@@ -10,6 +10,9 @@
     <string name="menu_preferences">Preferences</string>
     <string name="preferences_title">Crazyflie Client settings</string>
 
+    <string name="button_alt1_text">Alt1</string>
+    <string name="button_alt2_text">Alt2</string>
+
     <!-- Connection settings -->
     <string name="preferences_radio_title">Connection settings</string>
     <string name="preferences_category_radio">Crazyradio settings</string>

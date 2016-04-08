@@ -38,8 +38,8 @@
 
     <string-array name="actionEntries">
         <item>LED ring: Enable headlight</item>
-        <item>LED ring: Cycle effect</item>
-        <item>Buzzer: Star Wars</item>
+        <item>LED ring: Cycle ring effect</item>
+        <item>Buzzer: Play Imperial March</item>
     </string-array>
 
     <string-array name="actionValues">

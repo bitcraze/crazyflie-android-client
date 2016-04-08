@@ -56,6 +56,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
@@ -105,10 +106,14 @@ public class MainActivity extends Activity {
 
     private ImageButton mToggleConnectButton;
 
-    boolean mHeadlightToggle = false;
-    boolean mSoundToggle = false;
-    int mRingEffect = 0;
-    int mNoRingEffect = 0;
+    private boolean mHeadlightToggle = false;
+    private boolean mSoundToggle = false;
+    private int mRingEffect = 0;
+    private int mNoRingEffect = 0;
+    private int mCpuFlash = 0;
+    private ImageButton mRingEffectButton;
+    private ImageButton mHeadlightButton;
+    private ImageButton mBuzzerSoundButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -133,6 +138,11 @@ public class MainActivity extends Activity {
         initializeMenuButtons();
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
+
+        //action buttons
+        mRingEffectButton = (ImageButton) findViewById(R.id.button_ledRing);
+        mHeadlightButton = (ImageButton) findViewById(R.id.button_headLight);
+        mBuzzerSoundButton = (ImageButton) findViewById(R.id.button_buzzerSound);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
@@ -214,6 +224,10 @@ public class MainActivity extends Activity {
         mGamepadController.setControlConfig();
         resetInputMethod();
         checkScreenLock();
+        //disable action buttons
+        mRingEffectButton.setEnabled(false);
+        mHeadlightButton.setEnabled(false);
+        mBuzzerSoundButton.setEnabled(false);
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_IMMERSIVE_MODE_BOOL, false)) {
             setHideyBar();
         }
@@ -489,11 +503,39 @@ public class MainActivity extends Activity {
                                 Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
                             }
                         });
+                        //activate buzzer sound button when a CF2 is recognized (a buzzer can not yet be detected separately)
+                        mCrazyflie.getParam().addParamListener(new ParamListener("cpu", "flash") {
+                            @Override
+                            public void updated(String name, Number value) {
+                                mCpuFlash = mCrazyflie.getParam().getValue("cpu.flash").intValue();
+                                //enable buzzer action button when a CF2 is found (cpu.flash == 1024)
+                                if (mCpuFlash == 1024) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mBuzzerSoundButton.setEnabled(true);
+                                        }
+                                    });
+                                }
+                                Log.d(LOG_TAG, "CPU flash: " + mCpuFlash);
+                            }
+                        });
+                        mCrazyflie.getParam().requestParamUpdate("cpu.flash");
                         //set number of LED ring effects
                         mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
                             @Override
                             public void updated(String name, Number value) {
                                 mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
+                                //enable LED ring action buttons only when ring.neffect parameter is set correctly (=> hence it's a CF2 with a LED ring)
+                                if (mNoRingEffect > 0) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mRingEffectButton.setEnabled(true);
+                                            mHeadlightButton.setEnabled(true);
+                                        }
+                                    });
+                                }
                                 Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
                             }
                         });
@@ -533,6 +575,10 @@ public class MainActivity extends Activity {
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
                             mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
+                            //disable action buttons after disconnect
+                            mRingEffectButton.setEnabled(false);
+                            mHeadlightButton.setEnabled(false);
+                            mBuzzerSoundButton.setEnabled(false);
                         }
                     });
                 }
@@ -588,23 +634,30 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread.start();
     }
 
+    // extra method for onClick attribute in XML
+    public void switchLedRingEffect(View view) {
+        runAltAction("ring.effect");
+    }
+
+    // extra method for onClick attribute in XML
+    public void toggleHeadlight(View view) {
+        runAltAction("ring.headlightEnable");
+    }
+
+    // extra method for onClick attribute in XML
+    public void playBuzzerSound(View view) {
+        runAltAction("sound.effect:10");
+    }
+
     //TODO: make runAltAction more universal
-
-    public void runAlt1Action(View view) {
-        runAltAction(mControls.getAlt1Action());
-    }
-
-    public void runAlt2Action(View view) {
-        runAltAction(mControls.getAlt2Action());
-    }
-
     public void runAltAction(String action) {
         Log.i(LOG_TAG, "runAltAction: " + action);
         if (mCrazyflie != null) {
             if ("ring.headlightEnable".equalsIgnoreCase(action)) {
                 // Toggle LED ring headlight
-                mCrazyflie.setParamValue(action, mHeadlightToggle ? 1 : 0);
                 mHeadlightToggle = !mHeadlightToggle;
+                mCrazyflie.setParamValue(action, mHeadlightToggle ? 1 : 0);
+                mHeadlightButton.setColorFilter(mHeadlightToggle ? Color.parseColor("#00FF00") : Color.BLACK);
             } else if ("ring.effect".equalsIgnoreCase(action)) {
                 // Cycle through LED ring effects
                 Log.i(LOG_TAG, "Ring effect: " + mRingEffect);
