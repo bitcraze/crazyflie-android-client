@@ -213,6 +213,25 @@
                     android:key="pref_alt2_btn"
                     android:title="@string/preferences_alt2_btn_title"/>
             </PreferenceCategory>
+            <PreferenceCategory android:title="@string/preferences_category_actions" >
+                <ListPreference
+                    android:defaultValue="@string/preferences_alt1_action_defaultValue"
+                    android:dialogTitle="@string/preferences_alt1_action_title"
+                    android:entries="@array/actionEntries"
+                    android:entryValues="@array/actionValues"
+                    android:key="pref_alt1_action"
+                    android:summary="@string/preferences_alt1_action_summary"
+                    android:title="@string/preferences_alt1_action" />
+
+                <ListPreference
+                    android:defaultValue="@string/preferences_alt2_action_defaultValue"
+                    android:dialogTitle="@string/preferences_alt2_action_title"
+                    android:entries="@array/actionEntries"
+                    android:entryValues="@array/actionValues"
+                    android:key="pref_alt2_action"
+                    android:summary="@string/preferences_alt2_action_summary"
+                    android:title="@string/preferences_alt2_action" />
+            </PreferenceCategory>
             <Preference
                 android:key="pref_reset_btn"
                 android:summary="@string/preferences_reset_btn_summary"
@@ -245,26 +264,6 @@
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             android:key="pref_touch_slider_size"
             android:title="@string/preferences_joystick_size_title"/>
-
-        <PreferenceCategory android:title="@string/preferences_category_actions" >
-            <ListPreference
-                android:defaultValue="@string/preferences_alt1_action_defaultValue"
-                android:dialogTitle="@string/preferences_alt1_action_title"
-                android:entries="@array/actionEntries"
-                android:entryValues="@array/actionValues"
-                android:key="pref_alt1_action"
-                android:summary="@string/preferences_alt1_action_summary"
-                android:title="@string/preferences_alt1_action" />
-
-            <ListPreference
-                android:defaultValue="@string/preferences_alt2_action_defaultValue"
-                android:dialogTitle="@string/preferences_alt2_action_title"
-                android:entries="@array/actionEntries"
-                android:entryValues="@array/actionValues"
-                android:key="pref_alt2_action"
-                android:summary="@string/preferences_alt2_action_summary"
-                android:title="@string/preferences_alt2_action" />
-        </PreferenceCategory>
 
     </PreferenceScreen>
 
