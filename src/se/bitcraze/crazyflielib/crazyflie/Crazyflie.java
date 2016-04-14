@@ -290,6 +290,7 @@ public class Crazyflie {
                     mParam.refreshToc(paramTocFetchFinishedListener, mTocCache);
                 } else {
                     //TODO: shortcut for BLELink
+                    mState = State.SETUP_FINISHED; //important, otherwise BLE keeps trying to reconnect
                     mDriver.notifySetupFinished();
                 }
 //            }

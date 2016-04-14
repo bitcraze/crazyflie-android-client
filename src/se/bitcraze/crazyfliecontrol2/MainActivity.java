@@ -495,7 +495,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void setupFinished(String connectionInfo) {
                     final Toc paramToc = mCrazyflie.getParam().getToc();
-                    if (paramToc != null) {
+                    if (paramToc != null && paramToc.getTocSize() > 0) {
                         mParamToc = paramToc;
                         runOnUiThread(new Runnable() {
                             @Override

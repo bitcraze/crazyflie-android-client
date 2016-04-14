@@ -221,32 +221,32 @@ public class BleLink extends CrtpDriver {
 		notifyConnectionRequested();
 	}
 
-	@Override
-	public void disconnect() {
-		mContext.runOnUiThread(new Runnable() {
-			public void run() {
-				if(mConnected) {
-					mGatt.disconnect();
+    @Override
+    public void disconnect() {
+        mContext.runOnUiThread(new Runnable() {
+            public void run() {
+                if(mConnected) {
+                    mGatt.disconnect();
                     //delay close command to fix potential NPE
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             mGatt.close();
+                            mGatt = null;
                         }
-                    }, 200);
-					mGatt = null;
-					mConnected = false;
-					mBluetoothAdapter.stopLeScan(mLeScanCallback);
-					if (mScannTimer != null) {
-						mScannTimer.cancel();
-						mScannTimer = null;
-					}
-					state = State.IDLE;
-					notifyDisconnected();
-				}
-			}
-		});
-	}
+                    }, 100);
+                    mConnected = false;
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    if (mScannTimer != null) {
+                        mScannTimer.cancel();
+                        mScannTimer = null;
+                    }
+                    state = State.IDLE;
+                    notifyDisconnected();
+                }
+            }
+        });
+    }
 
 	@Override
 	public boolean isConnected() {
