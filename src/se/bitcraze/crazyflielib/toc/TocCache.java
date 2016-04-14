@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -71,10 +72,9 @@ public class TocCache {
         if (cachePath != null) {
             File cacheDir = new File(cachePath);
             if(cacheDir.exists()) {
-                for(File jsonFile : cacheDir.listFiles(jsonFilter)) {
-                    this.mCacheFiles.add(jsonFile);
-                }
+                this.mCacheFiles.addAll(Arrays.asList(cacheDir.listFiles(jsonFilter)));
             } else {
+                //TODO: if dir does not exist, TOCs are not added?
                 cacheDir.mkdirs();
             }
         }
@@ -82,14 +82,15 @@ public class TocCache {
 
     FilenameFilter jsonFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            return name.endsWith(".json") ? true : false;
+            return name.endsWith(".json");
         }
     };
 
     /**
      * Try to get a hit in the cache, return None otherwise
      *
-     * @param crc
+     * @param crc CRC code of the TOC
+     * @param port CrtpPort of the TOC
      */
     public Toc fetch(int crc, CrtpPort port) {
         Toc fetchedToc = null;

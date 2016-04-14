@@ -48,6 +48,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -68,7 +69,7 @@ public class FirmwareDownloader {
 
     private static final String LOG_TAG = "FirmwareDownloader";
     private Context mContext;
-    public final static String DOWNLOAD_DIRECTORY = "CrazyflieControl";
+    public final static String DOWNLOAD_DIRECTORY = MainActivity.CF_DIR;
     public final static String RELEASES_JSON = "cf_releases.json";
     public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();

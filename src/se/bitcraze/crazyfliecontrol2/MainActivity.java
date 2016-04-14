@@ -80,6 +80,8 @@ public class MainActivity extends Activity {
 
     private static final String LOG_TAG = "CrazyflieControl";
 
+    public static final String CF_DIR = "CrazyflieControl";
+
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
@@ -489,7 +491,6 @@ public class MainActivity extends Activity {
                     //TODO: hack, temporary fix for missing Android file system access
                     mCrazyflie.clearTocCache();
                     mCrazyflie.startConnectionSetup();
-
                 }
 
                 @Override

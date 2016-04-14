@@ -237,7 +237,7 @@ public class Crazyflie {
      * Called when first packet arrives from Crazyflie.
      * This is used to determine if we are connected to something that is answering.
      *
-     * @param data
+     * @param packet
      */
     public void checkForInitialPacketCallback(CrtpPacket packet) {
         //TODO: should be made more reliable
@@ -345,7 +345,7 @@ public class Crazyflie {
     //public void removeDataListener(CrtpPort); ?
 
     /**
-     * @param inPacket
+     * @param packet
      */
     private void notifyDataReceived(CrtpPacket packet) {
         boolean found = false;
