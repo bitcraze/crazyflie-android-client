@@ -147,7 +147,7 @@ public class Crazyflie {
 
     public void disconnect() {
         if (mState != State.DISCONNECTED) {
-            mLogger.debug("Disconnect");
+            mLogger.debug("disconnect()");
 
             if (mDriver.isConnected()) {
                 //Send commander packet with all values set to 0 before closing the connection

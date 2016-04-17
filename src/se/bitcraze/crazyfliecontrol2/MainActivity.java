@@ -270,9 +270,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mControls.resetAxisValues();
         mController.disable();
-        if (mCrazyflie != null) {
-            disconnect();
-        }
+        disconnect();
     }
 
     @Override
@@ -704,6 +702,7 @@ public class MainActivity extends Activity {
     }
 
     public void disconnect() {
+        Log.d(LOG_TAG, "disconnect()");
         if (mCrazyflie != null) {
             mCrazyflie.disconnect();
             mCrazyflie = null;
