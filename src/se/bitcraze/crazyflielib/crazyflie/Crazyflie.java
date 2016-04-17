@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyflielib.crazyflie;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -75,11 +76,24 @@ public class Crazyflie {
         SETUP_FINISHED;
     }
 
+    /**
+     * Crazyflie constructor
+     *
+     * @param driver driver to use (e.g. RadioDriver or BleLink)
+     */
     public Crazyflie(CrtpDriver driver) {
-        this.mDriver = driver;
+        this(driver, null);
+    }
 
-        //TODO: allow saving files in Android file system
-        this.mTocCache = new TocCache("ro_cache", "rw_cache");
+    /**
+     * Crazyflie constructor
+     *
+     * @param driver driver to use (e.g. RadioDriver or BleLink)
+     * @param tocCacheDir TOC cache files dir
+     */
+    public Crazyflie(CrtpDriver driver, File tocCacheDir) {
+        this.mDriver = driver;
+        this.mTocCache = new TocCache(tocCacheDir);
     }
 
     private PacketListener mPacketListener = new PacketListener() {
@@ -309,9 +323,8 @@ public class Crazyflie {
 //        return mLogg;
 //    }
 
-    //TODO: do this properly
     public void clearTocCache() {
-        mTocCache = new TocCache(null, null);
+        mTocCache.clear();
     }
 
     public void setParamValue(String completeName, Number value) {

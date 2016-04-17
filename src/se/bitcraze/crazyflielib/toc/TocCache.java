@@ -59,23 +59,24 @@ public class TocCache {
 
     final Logger mLogger = LoggerFactory.getLogger("TocCache");
     private List<File> mCacheFiles = new ArrayList<File>();
-    private String mRwCachePath;
+    private File mCacheDir = null;
+    private static final String PARAM_CACHE_DIR = "paramCache";
+    private static final String LOG_CACHE_DIR = "logCache";
     private ObjectMapper mMapper = new ObjectMapper(); // can reuse, share globally
 
-    public TocCache(String roCachePath, String rwCachePath) {
-        addCacheFiles(roCachePath);
-        addCacheFiles(rwCachePath);
-        this.mRwCachePath = rwCachePath;
+    public TocCache(File cacheDir) {
+        this.mCacheDir = cacheDir;
+        //TODO: should it be possible to change the name of the dirs?
+        addExistingCacheFiles(LOG_CACHE_DIR);
+        addExistingCacheFiles(PARAM_CACHE_DIR);
     }
 
-    private void addCacheFiles(String cachePath) {
+    private void addExistingCacheFiles(String cachePath) {
         if (cachePath != null) {
-            File cacheDir = new File(cachePath);
-            if(cacheDir.exists()) {
-                this.mCacheFiles.addAll(Arrays.asList(cacheDir.listFiles(jsonFilter)));
-            } else {
-                //TODO: if dir does not exist, TOCs are not added?
-                cacheDir.mkdirs();
+            //use cache dir if it's not null
+            File cachePathFile = (mCacheDir != null) ? new File(mCacheDir, cachePath) : new File(cachePath);
+            if(cachePathFile.exists()) {
+                this.mCacheFiles.addAll(Arrays.asList(cachePathFile.listFiles(jsonFilter)));
             }
         }
     }
@@ -97,7 +98,7 @@ public class TocCache {
         String pattern = String.format("%08X.json", crc);
         File hit = null;
 
-        mLogger.debug("Trying to find TOC cache file: " + pattern);
+        mLogger.debug("Trying to find existing TOC cache file: " + pattern);
 
         for (File file : mCacheFiles) {
             if(file.getName().endsWith(pattern)) {
@@ -135,25 +136,33 @@ public class TocCache {
      * Save a new cache to file
      */
     public void insert (int crc, Toc toc) {
-        if (mRwCachePath != null) {
-            String fileName = String.format("%s/%08X.json", mRwCachePath, crc);
-            try {
-                this.mMapper.enable(SerializationFeature.INDENT_OUTPUT);
-                this.mMapper.writeValue(new File(fileName), toc.getTocElementMap());
-                //TODO: add "__class__" : "LogTocElement",
-                this.mLogger.info("Saved cache to " + fileName);
-                this.mCacheFiles.add(new File(fileName));
-                //TODO: file leak?
-            } catch (JsonGenerationException jge) {
-                mLogger.error("Could not save cache to file " + fileName + ".\n" + jge.getMessage());
-            } catch (JsonMappingException jme) {
-                mLogger.error("Could not save cache to file " + fileName + ".\n" + jme.getMessage());
-            } catch (IOException ioe) {
-                mLogger.error("Could not save cache to file " + fileName + ".\n" + ioe.getMessage());
-            }
-        } else {
-            mLogger.error("Could not save cache, no writable directory");
+        String fileName = String.format("%08X.json", crc);
+        File cacheFile = (mCacheDir != null) ? new File(mCacheDir, fileName) : new File(fileName);
+        if (!cacheFile.exists()) {
+            cacheFile.mkdirs();
+        }
+        try {
+            this.mMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            this.mMapper.writeValue(cacheFile, toc.getTocElementMap());
+            //TODO: add "__class__" : "LogTocElement",
+            this.mLogger.info("Saved cache to " + fileName);
+            this.mCacheFiles.add(cacheFile);
+            //TODO: file leak?
+        } catch (JsonGenerationException jge) {
+            mLogger.error("Could not save cache to file " + fileName + ".\n" + jge.getMessage());
+        } catch (JsonMappingException jme) {
+            mLogger.error("Could not save cache to file " + fileName + ".\n" + jme.getMessage());
+        } catch (IOException ioe) {
+            mLogger.error("Could not save cache to file " + fileName + ".\n" + ioe.getMessage());
         }
     }
 
+    public void clear() {
+        for (File file : mCacheFiles) {
+            boolean delete = file.delete();
+            if (!delete) {
+                mLogger.error("Deleting cache file " + file.getAbsolutePath() + " failed.");
+            }
+        }
+    }
 }

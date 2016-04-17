@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyfliecontrol2;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +65,7 @@ import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -116,6 +118,7 @@ public class MainActivity extends Activity {
     private ImageButton mRingEffectButton;
     private ImageButton mHeadlightButton;
     private ImageButton mBuzzerSoundButton;
+    private File mCacheDir;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,6 +156,8 @@ public class MainActivity extends Activity {
         registerReceiver(mUsbReceiver, filter);
 
         initializeSounds();
+
+        setCacheDir();
     }
 
     private void initializeSounds() {
@@ -167,6 +172,25 @@ public class MainActivity extends Activity {
         });
         mSoundConnect = mSoundPool.load(this, R.raw.proxima, 1);
         mSoundDisconnect = mSoundPool.load(this, R.raw.tejat, 1);
+    }
+
+    private void setCacheDir() {
+        if (isExternalStorageWriteable()) {
+            Log.d(LOG_TAG, "External storage is writeable.");
+            if (mCacheDir == null) {
+                File appDir = getApplicationContext().getExternalFilesDir(null);
+                mCacheDir = new File(appDir, "TOC_cache");
+                mCacheDir.mkdirs();
+            }
+        } else {
+            Log.d(LOG_TAG, "External storage is not writeable.");
+            mCacheDir = null;
+        }
+    }
+
+    private boolean isExternalStorageWriteable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
     }
 
     private void setDefaultPreferenceValues(){
@@ -488,8 +512,6 @@ public class MainActivity extends Activity {
                             }
                         }
                     });
-                    //TODO: hack, temporary fix for missing Android file system access
-                    mCrazyflie.clearTocCache();
                     mCrazyflie.startConnectionSetup();
                 }
 
@@ -595,7 +617,7 @@ public class MainActivity extends Activity {
                 }
             });
 
-            mCrazyflie = new Crazyflie(driver);
+            mCrazyflie = new Crazyflie(driver, mCacheDir);
 
             // connect
             mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
