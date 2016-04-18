@@ -48,7 +48,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -61,7 +60,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -69,7 +67,7 @@ public class FirmwareDownloader {
 
     private static final String LOG_TAG = "FirmwareDownloader";
     private Context mContext;
-    public final static String DOWNLOAD_DIRECTORY = MainActivity.CF_DIR;
+    private final File mBootloaderDir;
     public final static String RELEASES_JSON = "cf_releases.json";
     public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
     private List<Firmware> mFirmwares = new ArrayList<Firmware>();
@@ -81,11 +79,12 @@ public class FirmwareDownloader {
     public FirmwareDownloader(Context context) {
         this.mContext = context;
         this.mDownloadListeners = Collections.synchronizedList(new LinkedList<FirmwareDownloadListener>());
+        this.mBootloaderDir = new File(mContext.getExternalFilesDir(null), BootloaderActivity.BOOTLOADER_DIR);
     }
 
     public void checkForFirmwareUpdate() {
-        File sdcard = Environment.getExternalStorageDirectory();
-        File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
+        File releasesFile = new File(mBootloaderDir, RELEASES_JSON);
+        mBootloaderDir.mkdirs();
 
         if (isNetworkAvailable()) {
             Log.d(LOG_TAG, "Network connection available.");
@@ -177,10 +176,9 @@ public class FirmwareDownloader {
     }
 
     private void writeToReleaseJsonFile(String input) throws IOException {
-        File sdcard = Environment.getExternalStorageDirectory();
-        File releasesFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + RELEASES_JSON);
+        File releasesFile = new File(mBootloaderDir, RELEASES_JSON);
+        mBootloaderDir.mkdirs();
         if (!releasesFile.exists()) {
-            releasesFile.getParentFile().mkdirs();
             releasesFile.createNewFile();
         }
         PrintWriter out = new PrintWriter(releasesFile);
@@ -217,8 +215,7 @@ public class FirmwareDownloader {
      * @return
      */
     public boolean isFileAlreadyDownloaded(String path) {
-        File sdcard = Environment.getExternalStorageDirectory();
-        File firmwareFile = new File(sdcard, DOWNLOAD_DIRECTORY + "/" + path);
+        File firmwareFile = new File(mBootloaderDir, path);
         return firmwareFile.exists() && firmwareFile.length() > 0;
     }
 
@@ -231,7 +228,7 @@ public class FirmwareDownloader {
             request.allowScanningByMediaScanner();
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
         }
-        request.setDestinationInExternalPublicDir(DOWNLOAD_DIRECTORY, tagName + "/" + fileName);
+        request.setDestinationInExternalFilesDir(mContext, null, BootloaderActivity.BOOTLOADER_DIR + "/" + tagName + "/" + fileName);
 
         // get download service and enqueue file
         mManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);

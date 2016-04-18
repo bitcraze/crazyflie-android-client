@@ -82,8 +82,6 @@ public class MainActivity extends Activity {
 
     private static final String LOG_TAG = "CrazyflieControl";
 
-    public static final String CF_DIR = "CrazyflieControl";
-
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 

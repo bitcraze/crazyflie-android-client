@@ -74,6 +74,8 @@ import android.widget.Toast;
 public class BootloaderActivity extends Activity {
 
     private static final String LOG_TAG = "BootloaderActivity";
+    public final static String BOOTLOADER_DIR = "bootloader";
+
     private Button mFlashFirmwareButton;
     private ImageButton mReleaseNotesButton;
     private Spinner mFirmwareSpinner;
@@ -377,8 +379,8 @@ public class BootloaderActivity extends Activity {
                 }
             });
 
-            File sdcard = Environment.getExternalStorageDirectory();
-            File firmwareFile = new File(sdcard, FirmwareDownloader.DOWNLOAD_DIRECTORY + "/" + mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
+            File bootloaderDir = new File(getApplicationContext().getExternalFilesDir(null), BOOTLOADER_DIR);
+            File firmwareFile = new File(bootloaderDir, mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
 
             long startTime = System.currentTimeMillis();
             try {
