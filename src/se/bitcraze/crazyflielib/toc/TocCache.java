@@ -135,13 +135,16 @@ public class TocCache {
     /**
      * Save a new cache to file
      */
-    public void insert (int crc, Toc toc) {
+    public void insert (int crc, CrtpPort port,  Toc toc) {
         String fileName = String.format("%08X.json", crc);
-        File cacheFile = (mCacheDir != null) ? new File(mCacheDir, fileName) : new File(fileName);
-        if (!cacheFile.exists()) {
-            cacheFile.mkdirs();
-        }
+        String subDir = (port == CrtpPort.PARAMETERS) ? PARAM_CACHE_DIR : LOG_CACHE_DIR;
+        File cacheDir = (mCacheDir != null) ? new File(mCacheDir, subDir) : new File(subDir);
+        File cacheFile = new File(cacheDir, fileName);
         try {
+            if (!cacheFile.exists()) {
+                cacheFile.getParentFile().mkdirs();
+                cacheFile.createNewFile();
+            }
             this.mMapper.enable(SerializationFeature.INDENT_OUTPUT);
             this.mMapper.writeValue(cacheFile, toc.getTocElementMap());
             //TODO: add "__class__" : "LogTocElement",

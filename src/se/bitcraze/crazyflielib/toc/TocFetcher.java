@@ -184,7 +184,7 @@ public class TocFetcher {
                 } else {
                     // No more variables in TOC
                     mLogger.info("No more variables in TOC.");
-                    mTocCache.insert(mCrc, mToc);
+                    mTocCache.insert(mCrc, mPort, mToc);
                     tocFetchFinished();
                 }
             }
