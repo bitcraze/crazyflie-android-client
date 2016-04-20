@@ -209,7 +209,7 @@ public class Crazyflie {
         for(CrtpPacket resendQueuePacket : mResendQueue) {
             if(isPacketMatchingExpectedReply(resendQueuePacket, packet)) {
                 mResendQueue.remove(resendQueuePacket);
-                mLogger.debug("QUEUE REMOVE: " + resendQueuePacket);
+                // mLogger.debug("QUEUE REMOVE: " + resendQueuePacket);
                 break;
             }
         }
@@ -261,7 +261,6 @@ public class Crazyflie {
             //TODO: fix hacky-di-hack
             if (this.mDriver instanceof RadioDriver) {
                 this.mDriver.notifyConnected();
-                startConnectionSetup();
             }
         }
         //self.packet_received.remove_callback(self._check_for_initial_packet_cb)

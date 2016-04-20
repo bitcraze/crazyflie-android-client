@@ -137,7 +137,7 @@ public class Crazyradio {
     }
 
     public void disconnect() {
-        mLogger.debug("Crazyradio disconnect()");
+        mLogger.debug("disconnect()");
         if(mUsbInterface != null) {
             mUsbInterface.releaseInterface();
         }

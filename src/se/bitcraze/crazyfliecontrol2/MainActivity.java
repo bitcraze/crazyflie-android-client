@@ -86,6 +86,7 @@ public class MainActivity extends Activity {
     private FlightDataView mFlightDataView;
 
     private Crazyflie mCrazyflie;
+    private CrtpDriver mDriver;
 
     private SharedPreferences mPreferences;
 
@@ -444,6 +445,136 @@ public class MainActivity extends Activity {
         }
     }
 
+    private ConnectionAdapter crazyflieConnectionAdapter = new ConnectionAdapter() {
+
+        @Override
+        public void connectionRequested(String connectionInfo) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connecting ...", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @Override
+        public void connected(String connectionInfo) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
+                    if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
+                        mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
+                    } else {
+                        mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
+                    }
+                }
+            });
+            mCrazyflie.startConnectionSetup();
+        }
+
+        @Override
+        public void setupFinished(String connectionInfo) {
+            final Toc paramToc = mCrazyflie.getParam().getToc();
+            if (paramToc != null && paramToc.getTocSize() > 0) {
+                mParamToc = paramToc;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                //activate buzzer sound button when a CF2 is recognized (a buzzer can not yet be detected separately)
+                mCrazyflie.getParam().addParamListener(new ParamListener("cpu", "flash") {
+                    @Override
+                    public void updated(String name, Number value) {
+                        mCpuFlash = mCrazyflie.getParam().getValue("cpu.flash").intValue();
+                        //enable buzzer action button when a CF2 is found (cpu.flash == 1024)
+                        if (mCpuFlash == 1024) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mBuzzerSoundButton.setEnabled(true);
+                                }
+                            });
+                        }
+                        Log.d(LOG_TAG, "CPU flash: " + mCpuFlash);
+                    }
+                });
+                mCrazyflie.getParam().requestParamUpdate("cpu.flash");
+                //set number of LED ring effects
+                mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
+                    @Override
+                    public void updated(String name, Number value) {
+                        mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
+                        //enable LED ring action buttons only when ring.neffect parameter is set correctly (=> hence it's a CF2 with a LED ring)
+                        if (mNoRingEffect > 0) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRingEffectButton.setEnabled(true);
+                                    mHeadlightButton.setEnabled(true);
+                                }
+                            });
+                        }
+                        Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
+                    }
+                });
+                mCrazyflie.getParam().requestParamUpdate("ring.neffect");
+            }
+
+            startSendJoystickDataThread();
+        }
+
+        @Override
+        public void connectionLost(String connectionInfo, final String msg) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
+                }
+            });
+            disconnect();
+        }
+
+        @Override
+        public void connectionFailed(String connectionInfo, final String msg) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                }
+            });
+            disconnect();
+        }
+
+        @Override
+        public void disconnected(String connectionInfo) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
+                    mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
+                    //disable action buttons after disconnect
+                    mRingEffectButton.setEnabled(false);
+                    mHeadlightButton.setEnabled(false);
+                    mBuzzerSoundButton.setEnabled(false);
+                }
+            });
+        }
+
+        @Override
+        public void linkQualityUpdated(final int quality) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mFlightDataView.setLinkQualityText(quality + "%");
+                }
+            });
+        }
+    };
+
     private void connect() {
         // ensure previous link is disconnected
         disconnect();
@@ -451,11 +582,11 @@ public class MainActivity extends Activity {
         int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
         int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
-        CrtpDriver driver = null;
+        mDriver = null;
 
         if(isCrazyradioAvailable(this)) {
             try {
-                driver = new RadioDriver(new UsbLinkAndroid(this));
+                mDriver = new RadioDriver(new UsbLinkAndroid(this));
             } catch (IllegalArgumentException e) {
                 Log.d(LOG_TAG, e.getMessage());
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -469,10 +600,10 @@ public class MainActivity extends Activity {
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
                 if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
                     Log.d(LOG_TAG, "Using bluetooth write with response");
-                    driver = new BleLink(this, true);
+                    mDriver = new BleLink(this, true);
                 } else {
                     Log.d(LOG_TAG, "Using bluetooth write without response");
-                    driver = new BleLink(this, false);
+                    mDriver = new BleLink(this, false);
                 }
             } else {
                 // TODO: improve error message
@@ -480,140 +611,12 @@ public class MainActivity extends Activity {
             }
         }
 
-        if (driver != null) {
+        if (mDriver != null) {
 
             // add listener for connection status
-            driver.addConnectionListener(new ConnectionAdapter() {
+            mDriver.addConnectionListener(crazyflieConnectionAdapter);
 
-                @Override
-                public void connectionRequested(String connectionInfo) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Connecting ...", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-
-                @Override
-                public void connected(String connectionInfo) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
-                            if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
-                                mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
-                            } else {
-                                mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
-                            }
-                        }
-                    });
-                    mCrazyflie.startConnectionSetup();
-                }
-
-                @Override
-                public void setupFinished(String connectionInfo) {
-                    final Toc paramToc = mCrazyflie.getParam().getToc();
-                    if (paramToc != null && paramToc.getTocSize() > 0) {
-                        mParamToc = paramToc;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                        //activate buzzer sound button when a CF2 is recognized (a buzzer can not yet be detected separately)
-                        mCrazyflie.getParam().addParamListener(new ParamListener("cpu", "flash") {
-                            @Override
-                            public void updated(String name, Number value) {
-                                mCpuFlash = mCrazyflie.getParam().getValue("cpu.flash").intValue();
-                                //enable buzzer action button when a CF2 is found (cpu.flash == 1024)
-                                if (mCpuFlash == 1024) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mBuzzerSoundButton.setEnabled(true);
-                                        }
-                                    });
-                                }
-                                Log.d(LOG_TAG, "CPU flash: " + mCpuFlash);
-                            }
-                        });
-                        mCrazyflie.getParam().requestParamUpdate("cpu.flash");
-                        //set number of LED ring effects
-                        mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
-                            @Override
-                            public void updated(String name, Number value) {
-                                mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
-                                //enable LED ring action buttons only when ring.neffect parameter is set correctly (=> hence it's a CF2 with a LED ring)
-                                if (mNoRingEffect > 0) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mRingEffectButton.setEnabled(true);
-                                            mHeadlightButton.setEnabled(true);
-                                        }
-                                    });
-                                }
-                                Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
-                            }
-                        });
-                        mCrazyflie.getParam().requestParamUpdate("ring.neffect");
-                    }
-
-                    startSendJoystickDataThread();
-                }
-
-                @Override
-                public void connectionLost(String connectionInfo, final String msg) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
-                        }
-                    });
-                    disconnect();
-                }
-
-                @Override
-                public void connectionFailed(String connectionInfo, final String msg) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    disconnect();
-                }
-
-                @Override
-                public void disconnected(String connectionInfo) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
-                            mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button));
-                            //disable action buttons after disconnect
-                            mRingEffectButton.setEnabled(false);
-                            mHeadlightButton.setEnabled(false);
-                            mBuzzerSoundButton.setEnabled(false);
-                        }
-                    });
-                }
-
-                @Override
-                public void linkQualityUpdated(final int quality) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mFlightDataView.setLinkQualityText(quality + "%");
-                        }
-                    });
-                }
-            });
-
-            mCrazyflie = new Crazyflie(driver, mCacheDir);
+            mCrazyflie = new Crazyflie(mDriver, mCacheDir);
 
             // connect
             mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
@@ -710,6 +713,10 @@ public class MainActivity extends Activity {
             mSendJoystickDataThread = null;
         }
 
+        if (mDriver != null) {
+            mDriver.removeConnectionListener(crazyflieConnectionAdapter);
+        }
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -720,7 +727,7 @@ public class MainActivity extends Activity {
     }
 
     public IController getController(){
-    	return mController;
+        return mController;
     }
 
     public static boolean isCrazyradioAvailable(Context context) {

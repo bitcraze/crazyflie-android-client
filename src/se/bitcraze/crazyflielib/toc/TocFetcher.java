@@ -67,6 +67,7 @@ public class TocFetcher {
     private Set<TocFetchFinishedListener> mTocFetchFinishedListeners = new CopyOnWriteArraySet<TocFetchFinishedListener>();
 
     private DataListener mDataListener;
+    private long tocFetchStartTime;
 
     public enum TocState {
         IDLE, GET_TOC_INFO, GET_TOC_ELEMENT, TOC_FETCH_FINISHED;
@@ -93,7 +94,7 @@ public class TocFetcher {
             }
         };
         this.mCrazyflie.addDataListener(mDataListener);
-
+        tocFetchStartTime = System.currentTimeMillis();
         requestTocInfo();
     }
 
@@ -103,7 +104,8 @@ public class TocFetcher {
      */
     public void tocFetchFinished() {
         this.mCrazyflie.removeDataListener(mDataListener);
-        mLogger.debug("Fetching TOC (Port: " + this.mPort + ") done.");
+        long tocFetchDuration = System.currentTimeMillis() - tocFetchStartTime;
+        mLogger.debug("Fetching TOC (Port: " + this.mPort + ") done in " + tocFetchDuration + "ms.");
         this.mState = TocState.TOC_FETCH_FINISHED;
         // finishedCallback();
         notifyTocFetchFinished();
