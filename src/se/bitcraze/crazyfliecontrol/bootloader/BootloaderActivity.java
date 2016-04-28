@@ -54,7 +54,6 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
@@ -325,8 +324,8 @@ public class BootloaderActivity extends Activity {
         //TODO: externalize
         //Check if firmware is compatible with Crazyflie
         int protocolVersion = mBootloader.getProtocolVersion();
-        boolean cfType2 = (protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
-                            protocolVersion == BootVersion.CF1_PROTO_VER_1) ? false : true;
+        boolean cfType2 = !(protocolVersion == BootVersion.CF1_PROTO_VER_0 ||
+                            protocolVersion == BootVersion.CF1_PROTO_VER_1);
 
         String cfversion = "Found Crazyflie " + (cfType2 ? "2.0" : "1.0") + ".";
         appendConsole(cfversion);
@@ -358,16 +357,16 @@ public class BootloaderActivity extends Activity {
         @Override
         protected String doInBackground(String... params) {
 
-            mBootloader.addBootloaderListener(new BootloaderListener() {
+            BootloaderListener bootloaderListener = new BootloaderListener() {
 
                 @Override
                 public void updateStatus(String status) {
-                    publishProgress(new String[]{status, null, null, null});
+                    publishProgress(status, null, null, null);
                 }
 
                 @Override
                 public void updateProgress(int progress, int max) {
-                    publishProgress(new String[]{null, "" + progress, "" + max,  null});
+                    publishProgress(null, "" + progress, "" + max, null);
                     if (isCancelled()) {
                         mBootloader.cancel();
                     }
@@ -375,9 +374,10 @@ public class BootloaderActivity extends Activity {
 
                 @Override
                 public void updateError(String error) {
-                    publishProgress(new String[]{null, null, null, error});
+                    publishProgress(null, null, null, error);
                 }
-            });
+            };
+            mBootloader.addBootloaderListener(bootloaderListener);
 
             File bootloaderDir = new File(getApplicationContext().getExternalFilesDir(null), BOOTLOADER_DIR);
             File firmwareFile = new File(bootloaderDir, mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
@@ -389,6 +389,7 @@ public class BootloaderActivity extends Activity {
                 Log.e(LOG_TAG, ioe.getMessage());
                 flashSuccessful = false;
             }
+            mBootloader.removeBootloaderListener(bootloaderListener);
             String flashTime = "Flashing took " + (System.currentTimeMillis() - startTime)/1000 + " seconds.";
             Log.d(LOG_TAG, flashTime);
             return flashSuccessful ? ("Flashing successful. " + flashTime) : "Flashing not successful.";

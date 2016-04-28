@@ -584,8 +584,7 @@ public class Bootloader {
     public static Manifest readManifest (File file) throws IOException {
         String errorMessage = "";
         try {
-            Manifest readValue = mMapper.readValue(file, Manifest.class);
-            return readValue;
+            return mMapper.readValue(file, Manifest.class);
         } catch (JsonParseException jpe) {
             errorMessage = jpe.getMessage();
         } catch (JsonMappingException jme) {
