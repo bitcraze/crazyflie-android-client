@@ -264,6 +264,7 @@ public class Crazyflie {
             //TODO: fix hacky-di-hack
             if (this.mDriver instanceof RadioDriver) {
                 this.mDriver.notifyConnected();
+                startConnectionSetup();
             }
         }
         //self.packet_received.remove_callback(self._check_for_initial_packet_cb)
@@ -278,7 +279,7 @@ public class Crazyflie {
     /**
      * Start the connection setup by refreshing the TOCs
      */
-    public void startConnectionSetup() {
+    private void startConnectionSetup() {
         mLogger.info("We are connected [" + mConnectionData.toString() + "], requesting connection setup...");
 
         mParam = new Param(this);

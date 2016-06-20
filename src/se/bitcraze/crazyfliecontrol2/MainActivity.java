@@ -470,7 +470,6 @@ public class MainActivity extends Activity {
                     }
                 }
             });
-            mCrazyflie.startConnectionSetup();
         }
 
         @Override

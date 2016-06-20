@@ -29,6 +29,7 @@ package se.bitcraze.crazyflielib.log;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -367,15 +368,16 @@ public class Logg {
             LogConfig logConfig = findLogConfig(id);
             
             if (logConfig != null) {
-                Map<String, Number> logDataMap = parseLogData(payload, logConfig);
-                notifyLogDataReceived(logConfig, logDataMap);
+                Map<String, Number> logDataMap = new HashMap<String, Number>();
+                int timestamp = parseLogData(payload, logConfig, logDataMap);
+                notifyLogDataReceived(logConfig, logDataMap, timestamp);
             } else {
                 mLogger.warn("Error no LogEntry to handle id=" + id);
             }
         }
     }
 
-    public static Map<String, Number> parseLogData(byte[] payload, LogConfig logConfig) {
+    public static int parseLogData(byte[] payload, LogConfig logConfig, Map<String, Number> logDataMap) {
         //get timestamp
         int timestamp = parseTimestamp(payload[1], payload[2], payload[3]);
         // logdata = packet.data[4:]
@@ -383,11 +385,10 @@ public class Logg {
         byte[] logData = new byte[payload.length-offset];
         System.arraycopy(payload, offset, logData, 0, logData.length);
 
-        Map<String, Number> logDataMap = logConfig.unpackLogData(logData);
+        logDataMap.putAll(logConfig.unpackLogData(logData));
         LoggerFactory.getLogger("Logging").debug("Unpacked log data (ID: " + logConfig.getId() + ") with time stamp " + timestamp);
         //TODO: what to do with the unpacked data?
-        //TODO: timestamps and callback (either here or in LogConfig.unpackLogData())
-        return logDataMap;
+        return timestamp;
     }
 
     // timestamps = struct.unpack("<BBB", packet.data[1:4])
@@ -565,10 +566,9 @@ public class Logg {
         }
     }
 
-    // TODO: timestamp?
-    public void notifyLogDataReceived(LogConfig logConfig, Map<String, Number> data) {
+    public void notifyLogDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp) {
         for(LogListener ll : this.mLogListeners) {
-            ll.logDataReceived(logConfig, data);
+            ll.logDataReceived(logConfig, data, timestamp);
         }
     }
 

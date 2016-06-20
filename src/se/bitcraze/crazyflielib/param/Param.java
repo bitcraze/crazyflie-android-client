@@ -232,12 +232,11 @@ public class Param {
      */
     // def refresh_toc(self, refresh_done_callback, toc_cache):
     public void refreshToc(TocFetchFinishedListener listener, TocCache tocCache) {
-        mLogger.debug("Param: refreshToc");
-        this.mToc = new Toc();
-        // toc_fetcher = TocFetcher(self.cf, ParamTocElement, CRTPPort.PARAM, self.toc, refresh_done_callback, toc_cache)
-        TocFetcher tocFetcher = new TocFetcher(mCrazyflie, CrtpPort.PARAMETERS, mToc, tocCache);
-        tocFetcher.addTocFetchFinishedListener(listener);
-        tocFetcher.start();
+       this.mToc = new Toc();
+       // toc_fetcher = TocFetcher(self.cf, ParamTocElement, CRTPPort.PARAM, self.toc, refresh_done_callback, toc_cache)
+       TocFetcher tocFetcher = new TocFetcher(mCrazyflie, CrtpPort.PARAMETERS, mToc, tocCache);
+       tocFetcher.addTocFetchFinishedListener(listener);
+       tocFetcher.start();
     }
 
     //TODO: only for debugging

@@ -37,6 +37,6 @@ public interface LogListener {
 
     public void logConfigStarted(LogConfig logConfig);
 
-    public void logDataReceived(LogConfig logConfig, Map<String, Number> data);
+    public void logDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp);
 
 }
