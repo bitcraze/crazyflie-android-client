@@ -42,6 +42,7 @@ import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
+import se.bitcraze.crazyflie.lib.crtp.ParameterPacket;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
 import se.bitcraze.crazyflie.lib.log.Logg;
@@ -670,10 +671,14 @@ public class MainActivity extends Activity {
      * Start thread to periodically send commands containing the user input
      */
     private void startSendJoystickDataThread() {
+        final int altHoldId = getAltHoldParamId();
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (mCrazyflie != null) {
+                    Log.d(LOG_TAG, "Thrust absolute: " + mController.getThrustAbsolute());
+//                    mCrazyflie.setParamValue("flightmode.althold", mController.isHover() ? 1 : 0);
+                    mCrazyflie.sendPacket(new ParameterPacket(altHoldId, mController.isHover() ? 1 : 0));
                     mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
 
                     try {
@@ -688,6 +693,17 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread.start();
     }
 
+    private int getAltHoldParamId() {
+        int altHoldId = -1;
+        if(mParamToc != null && mParamToc.getTocSize() > 0) {
+            altHoldId = mParamToc.getElementId("flightmode.althold");
+            Log.d(LOG_TAG, "flightmode.althold ID: " + altHoldId);
+        } else {
+            Log.d(LOG_TAG, "Hover mode not supported, because ParamTOC is empty");
+        }
+        return altHoldId;
+    }
+    
     // extra method for onClick attribute in XML
     public void switchLedRingEffect(View view) {
         runAltAction("ring.effect");
