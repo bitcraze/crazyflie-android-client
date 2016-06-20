@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
+import se.bitcraze.crazyflie.lib.bootloader.Bootloader.BootloaderListener;
+import se.bitcraze.crazyflie.lib.bootloader.Utilities.BootVersion;
+import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
-import se.bitcraze.crazyflielib.bootloader.Bootloader;
-import se.bitcraze.crazyflielib.bootloader.Bootloader.BootloaderListener;
-import se.bitcraze.crazyflielib.bootloader.Utilities.BootVersion;
-import se.bitcraze.crazyflielib.crazyradio.RadioDriver;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;

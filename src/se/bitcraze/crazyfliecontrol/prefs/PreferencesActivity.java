@@ -29,11 +29,11 @@ package se.bitcraze.crazyfliecontrol.prefs;
 
 import java.io.IOException;
 
+import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyfliecontrol.prefs.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
-import se.bitcraze.crazyflielib.crazyradio.ConnectionData;
-import se.bitcraze.crazyflielib.crazyradio.Crazyradio;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -48,7 +48,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;

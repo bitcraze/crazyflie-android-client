@@ -48,7 +48,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import se.bitcraze.crazyflielib.bootloader.Bootloader;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -62,6 +61,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
 
 public class FirmwareDownloader {
 
