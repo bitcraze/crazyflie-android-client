@@ -31,6 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Map.Entry;
 
 import se.bitcraze.crazyflie.lib.BleLink;
 import se.bitcraze.crazyflie.lib.crazyflie.ConnectionAdapter;
@@ -40,8 +44,13 @@ import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
+import se.bitcraze.crazyflie.lib.log.LogAdapter;
+import se.bitcraze.crazyflie.lib.log.LogConfig;
+import se.bitcraze.crazyflie.lib.log.LogListener;
+import se.bitcraze.crazyflie.lib.log.Logg;
 import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
+import se.bitcraze.crazyflie.lib.toc.VariableType;
 import se.bitcraze.crazyfliecontrol.controller.Controls;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
@@ -89,6 +98,9 @@ public class MainActivity extends Activity {
     private CrtpDriver mDriver;
     private Toc mParamToc;
     private Toc mLogToc;
+
+    private Logg mLogg;
+    private LogConfig mLogConfigStandard = new LogConfig("Standard", 1000);
 
     private SharedPreferences mPreferences;
 
@@ -530,6 +542,8 @@ public class MainActivity extends Activity {
                         Toast.makeText(getApplicationContext(), "Log TOC fetch finished: " + logToc.getTocSize(), Toast.LENGTH_SHORT).show();
                     }
                 });
+                createLogConfigs();
+                startLogConfigs();
             }
 
             startSendJoystickDataThread();
@@ -571,6 +585,7 @@ public class MainActivity extends Activity {
                     mBuzzerSoundButton.setEnabled(false);
                 }
             });
+            stopLogConfigs();
         }
 
         @Override
@@ -731,6 +746,7 @@ public class MainActivity extends Activity {
             public void run() {
                 // link quality is not available when there is no active connection
                 mFlightDataView.setLinkQualityText("n/a");
+                mFlightDataView.updateBattery(0f);
             }
         });
     }
@@ -746,5 +762,59 @@ public class MainActivity extends Activity {
         }
         List<UsbDevice> usbDeviceList = UsbLinkAndroid.findUsbDevices(usbManager, (short) Crazyradio.CRADIO_VID, (short) Crazyradio.CRADIO_PID);
         return !usbDeviceList.isEmpty();
+    }
+
+    private LogAdapter standardLogAdapter = new LogAdapter() {
+
+        public void logDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp) {
+            super.logDataReceived(logConfig, data, timestamp);
+
+            if ("Standard".equals(logConfig.getName())) {
+                final float battery = (float) data.get("pm.vbat");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFlightDataView.updateBattery(battery);
+                    }
+                });
+            }
+            for (Entry<String, Number> entry : data.entrySet()) {
+                Log.d(LOG_TAG, "\t Name: " + entry.getKey() + ", data: " + entry.getValue());
+            }
+        }
+
+    };
+
+    private void createLogConfigs() {
+        mLogConfigStandard.addVariable("pm.vbat", VariableType.FLOAT);
+        mLogg = mCrazyflie.getLogg();
+
+        if (mLogg != null) {
+            if (!mLogg.getLogConfigs().contains(mLogConfigStandard)) {
+                mLogg.addConfig(mLogConfigStandard);
+            }
+            mLogg.addLogListener(standardLogAdapter);
+        } else {
+            Log.e(LOG_TAG, "Logg was null!!");
+        }
+    }
+
+    /**
+     * Start basic logging config
+     */
+    private void startLogConfigs() {
+        if (mLogg != null) {
+            mLogg.start(mLogConfigStandard);
+        }
+    }
+
+    /**
+     * Stop basic logging config
+     */
+    private void stopLogConfigs() {
+        if (mLogg != null) {
+            mLogg.stop(mLogConfigStandard);
+            mLogg.removeLogListener(standardLogAdapter);
+        }
     }
 }

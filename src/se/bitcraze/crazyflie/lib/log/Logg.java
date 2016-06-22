@@ -531,6 +531,10 @@ public class Logg {
         }
     }
 
+    public List<LogConfig> getLogConfigs() {
+        return mLogConfigs;
+    }
+
     /* Log listener methods*/
 
 
@@ -544,7 +548,7 @@ public class Logg {
     /**
      * Remove the log listener
      */
-    public void removeLogListeners(LogListener logListener) {
+    public void removeLogListener(LogListener logListener) {
         mLogListeners.remove(logListener);
     }
 

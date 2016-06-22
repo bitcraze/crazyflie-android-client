@@ -128,6 +128,7 @@
     <string name="preferences_bootloader_title">Bootloader (Experimental)</string>
     
     <!-- FlightDataView -->
+    <string name="battery">Battery: %3.1f</string>
     <string name="pitch">Pitch: %3.0f</string>
     <string name="roll">Roll: % 3.0f</string>
     <string name="thrust">Thrust: % 3.0f%%</string>
