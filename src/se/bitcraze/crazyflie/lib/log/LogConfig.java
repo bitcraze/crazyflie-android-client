@@ -185,6 +185,10 @@ public class LogConfig {
         return this.mErrNo;
     }
 
+    public String getErrMsg() {
+        return Logg.ErrCodes.values()[this.mErrNo].getMsg();
+    }
+
     public boolean isAdded(){
         return this.mAdded;
     }

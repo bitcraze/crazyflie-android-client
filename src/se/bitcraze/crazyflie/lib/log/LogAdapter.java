@@ -19,7 +19,7 @@ public abstract class LogAdapter implements LogListener {
 
     @Override
     public void logConfigError(LogConfig logConfig) {
-        Log.e(LOG_TAG, "Error when logging '" + logConfig.getName() + "': " + logConfig.getErrNo());
+        Log.e(LOG_TAG, "Error when logging '" + logConfig.getName() + "': " + logConfig.getErrMsg());
     }
 
     @Override

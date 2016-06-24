@@ -312,7 +312,7 @@ public class Logg {
                 } else {
                     // msg = self._err_codes[error_status]
                     String msg = ErrCodes.values()[errorStatus].getMsg();
-                    mLogger.warn("Error " + errorStatus + " when starting ID=" + id + "(" + msg + ")");
+                    mLogger.warn("Error " + errorStatus + " when starting ID=" + id + " (" + msg + ")");
 
                     if (logConfig != null) {
                         logConfig.setErrNo(errorStatus);
