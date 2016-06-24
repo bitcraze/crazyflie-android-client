@@ -797,9 +797,7 @@ public class MainActivity extends Activity {
         mLogg = mCrazyflie.getLogg();
 
         if (mLogg != null) {
-            if (!mLogg.getLogConfigs().contains(mLogConfigStandard)) {
-                mLogg.addConfig(mLogConfigStandard);
-            }
+            mLogg.addConfig(mLogConfigStandard);
             mLogg.addLogListener(standardLogAdapter);
         } else {
             Log.e(LOG_TAG, "Logg was null!!");
@@ -821,6 +819,7 @@ public class MainActivity extends Activity {
     private void stopLogConfigs() {
         if (mLogg != null) {
             mLogg.stop(mLogConfigStandard);
+            mLogg.delete(mLogConfigStandard);
             mLogg.removeLogListener(standardLogAdapter);
         }
     }

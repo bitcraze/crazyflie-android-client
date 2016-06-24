@@ -529,6 +529,9 @@ public class Logg {
                 mCrazyflie.sendPacket(packet);
             }
         }
+        //hacky workarounds
+        logConfig.setAdded(false);
+        mLogConfigs.remove(logConfig);
     }
 
     public List<LogConfig> getLogConfigs() {
