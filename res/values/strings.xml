@@ -4,6 +4,10 @@
     <string name="app_name">Crazyflie Client</string>
     <string name="title_activity_main">Crazyflie Client</string>
 
+    <!-- Header -->
+    <string name="battery_text">%1$s</string>
+    <string name="linkQuality_text">%1$s</string>
+
     <!-- Menu -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>
@@ -128,12 +132,10 @@
     <string name="preferences_bootloader_title">Bootloader (Experimental)</string>
     
     <!-- FlightDataView -->
-    <string name="battery">Battery: %3.1f</string>
-    <string name="pitch">Pitch: %3.0f</string>
-    <string name="roll">Roll: % 3.0f</string>
-    <string name="thrust">Thrust: % 3.0f%%</string>
-    <string name="yaw">Yaw: % 3.0f</string>
-    <string name="linkQuality">Link: %1$s</string>
+    <string name="pitch">P: % 3.0f</string>
+    <string name="roll">R: % 3.0f</string>
+    <string name="thrust">T: % 3.0f%%</string>
+    <string name="yaw">Y: % 3.0f</string>
 
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>

@@ -32,8 +32,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Map.Entry;
 
 import se.bitcraze.crazyflie.lib.BleLink;
@@ -46,7 +44,6 @@ import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
-import se.bitcraze.crazyflie.lib.log.LogListener;
 import se.bitcraze.crazyflie.lib.log.Logg;
 import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
@@ -83,6 +80,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
@@ -133,12 +131,21 @@ public class MainActivity extends Activity {
     private ImageButton mBuzzerSoundButton;
     private File mCacheDir;
 
+    private TextView mTextView_battery;
+    private TextView mTextView_linkQuality;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         setDefaultPreferenceValues();
+
+        mTextView_battery = (TextView) findViewById(R.id.battery_text);
+        mTextView_linkQuality = (TextView) findViewById(R.id.linkQuality_text);
+
+        setBatteryLevel(-1.0f);
+        setLinkQualityText("N/A");
 
         mControls = new Controls(this, mPreferences);
         mControls.setDefaultPreferenceValues(getResources());
@@ -593,7 +600,7 @@ public class MainActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mFlightDataView.setLinkQualityText(quality + "%");
+                    setLinkQualityText(quality + "%");
                 }
             });
         }
@@ -745,8 +752,8 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 // link quality is not available when there is no active connection
-                mFlightDataView.setLinkQualityText("n/a");
-                mFlightDataView.updateBattery(0f);
+                setLinkQualityText("n/a");
+                setBatteryLevel(-1.0f);
             }
         });
     }
@@ -774,7 +781,7 @@ public class MainActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mFlightDataView.updateBattery(battery);
+                        setBatteryLevel(battery);
                     }
                 });
             }
@@ -816,5 +823,26 @@ public class MainActivity extends Activity {
             mLogg.stop(mLogConfigStandard);
             mLogg.removeLogListener(standardLogAdapter);
         }
+    }
+
+    public void setBatteryLevel(float battery) {
+        float normalizedBattery = battery - 3.0f;
+        String batteryPercentage = (int) (normalizedBattery * 100) + "%";
+        if (battery == -1f) {
+            batteryPercentage = "N/A";
+        } else if (normalizedBattery < 0f && normalizedBattery > -1f) {
+            batteryPercentage = "0%";
+        } else if (normalizedBattery > 1f) {
+            batteryPercentage = "100%";
+        }
+        mTextView_battery.setText(format(R.string.battery_text, batteryPercentage));
+    }
+
+    public void setLinkQualityText(String quality){
+        mTextView_linkQuality.setText(format(R.string.linkQuality_text, quality));
+    }
+
+    private String format(int identifier, Object o){
+        return String.format(getResources().getString(identifier), o);
     }
 }
