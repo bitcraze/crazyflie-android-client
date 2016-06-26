@@ -6,16 +6,21 @@
 
     <!-- Header -->
     <string name="battery_text">%1$s</string>
+    <string name="batteryIconContentDescription">Battery icon</string>
     <string name="linkQuality_text">%1$s</string>
+    <string name="linkQualityIconContentDescription">Link quality icon</string>
 
     <!-- Menu -->
     <string name="menu_connect">Connect</string>
+    <string name="menu_connect_ContentDescription">Connect/Disconnect button</string>
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_preferences">Preferences</string>
+    <string name="menu_preferences_ContentDescription">Preferences button</string>
     <string name="preferences_title">Crazyflie Client settings</string>
 
-    <string name="button_alt1_text">Alt1</string>
-    <string name="button_alt2_text">Alt2</string>
+    <string name="button_ledring_contentDescription">LED ring button</string>
+    <string name="button_headlight_contentDescription">Headlight button</string>
+    <string name="button_buzzer_contentDescription">Buzzer button</string>
 
     <!-- Connection settings -->
     <string name="preferences_radio_title">Connection settings</string>

@@ -17,7 +17,8 @@
         android:layout_marginTop="5dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"
+        android:contentDescription="@string/batteryIconContentDescription"/>
 
     <TextView
         android:id="@+id/battery_text"
@@ -41,7 +42,8 @@
         android:layout_marginEnd="4dp"
         android:layout_alignBottom="@+id/battery_icon"
         android:layout_toRightOf="@+id/battery_text"
-        android:layout_toEndOf="@+id/battery_text" />
+        android:layout_toEndOf="@+id/battery_text"
+        android:contentDescription="@string/linkQualityIconContentDescription"/>
 
     <TextView
         android:id="@+id/linkQuality_text"
@@ -70,7 +72,8 @@
         android:layout_marginTop="5dp"
         android:background="@drawable/custom_button"
         android:src="@drawable/ic_action_import_export"
-        android:elevation="2dp" />
+        android:elevation="2dp"
+        android:contentDescription="@string/menu_connect_ContentDescription"/>
 
     <ImageButton
         android:id="@+id/imageButton_settings"
@@ -87,7 +90,8 @@
         android:layout_marginTop="5dp"
         android:background="@drawable/custom_button"
         android:src="@drawable/ic_action_settings_light"
-        android:elevation="2dp" />
+        android:elevation="2dp"
+        android:contentDescription="@string/menu_preferences_ContentDescription"/>
 
     <!-- HEADER end -->
 
@@ -103,7 +107,8 @@
         android:background="@drawable/custom_button_action"
         android:src="@drawable/ic_led_ring"
         android:elevation="2dp"
-        android:onClick="switchLedRingEffect"/>
+        android:onClick="switchLedRingEffect"
+        android:contentDescription="@string/button_ledring_contentDescription"/>
 
     <ImageButton
         android:id="@+id/button_headLight"
@@ -116,7 +121,8 @@
         android:background="@drawable/custom_button_action"
         android:src="@drawable/ic_headlight"
         android:elevation="2dp"
-        android:onClick="toggleHeadlight" />
+        android:onClick="toggleHeadlight"
+        android:contentDescription="@string/button_headlight_contentDescription"/>
 
     <ImageButton
         android:id="@+id/button_buzzerSound"
@@ -130,7 +136,8 @@
         android:background="@drawable/custom_button_action"
         android:src="@drawable/ic_volume_up_black"
         android:elevation="2dp"
-        android:onClick="playBuzzerSound"/>
+        android:onClick="playBuzzerSound"
+        android:contentDescription="@string/button_buzzer_contentDescription"/>
 
     <se.bitcraze.crazyfliecontrol2.FlightDataView
         android:id="@+id/flightdataview"
