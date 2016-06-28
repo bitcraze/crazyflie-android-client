@@ -590,6 +590,7 @@ public class MainActivity extends Activity {
                     mRingEffectButton.setEnabled(false);
                     mHeadlightButton.setEnabled(false);
                     mBuzzerSoundButton.setEnabled(false);
+                    setBatteryLevel(-1.0f);
                 }
             });
             stopLogConfigs();
@@ -752,8 +753,7 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 // link quality is not available when there is no active connection
-                setLinkQualityText("n/a");
-                setBatteryLevel(-1.0f);
+                setLinkQualityText("N/A");
             }
         });
     }
@@ -826,13 +826,13 @@ public class MainActivity extends Activity {
 
     public void setBatteryLevel(float battery) {
         float normalizedBattery = battery - 3.0f;
-        String batteryPercentage = (int) (normalizedBattery * 100) + "%";
+        int batteryPercentage = (int) (normalizedBattery * 100);
         if (battery == -1f) {
-            batteryPercentage = "N/A";
+            batteryPercentage = 0;
         } else if (normalizedBattery < 0f && normalizedBattery > -1f) {
-            batteryPercentage = "0%";
+            batteryPercentage = 0;
         } else if (normalizedBattery > 1f) {
-            batteryPercentage = "100%";
+            batteryPercentage = 100;
         }
         mTextView_battery.setText(format(R.string.battery_text, batteryPercentage));
     }

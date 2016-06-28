@@ -5,9 +5,9 @@
     <string name="title_activity_main">Crazyflie Client</string>
 
     <!-- Header -->
-    <string name="battery_text">%1$s</string>
+    <string name="battery_text">%1$3d%%</string>
     <string name="batteryIconContentDescription">Battery icon</string>
-    <string name="linkQuality_text">%1$s</string>
+    <string name="linkQuality_text">%1$3s</string>
     <string name="linkQualityIconContentDescription">Link quality icon</string>
 
     <!-- Menu -->
