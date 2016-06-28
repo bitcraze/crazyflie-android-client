@@ -2,46 +2,82 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <TextView
-        android:id="@+id/pitch"
+        android:id="@+id/pitch_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:layout_marginStart="5dp"
+        android:text="@string/pitch_label"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/pitch"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:textAlignment="viewEnd"
+        android:gravity="end"
         android:text="@string/pitch"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/roll"
+        android:id="@+id/roll_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
+        android:text="@string/roll_label"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/roll"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:textAlignment="viewEnd"
+        android:gravity="end"
         android:text="@string/roll"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/thrust"
+        android:id="@+id/thrust_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
+        android:text="@string/thrust_label"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/thrust"
+        android:layout_width="38dp"
+        android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:textAlignment="viewEnd"
+        android:gravity="end"
         android:text="@string/thrust"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
-        android:id="@+id/yaw"
+        android:id="@+id/yaw_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginStart="2dp"
+        android:text="@string/yaw_label"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/yaw"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
+        android:textAlignment="viewEnd"
+        android:gravity="end"
         android:text="@string/yaw"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 

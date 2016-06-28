@@ -137,10 +137,14 @@
     <string name="preferences_bootloader_title">Bootloader (Experimental)</string>
     
     <!-- FlightDataView -->
-    <string name="pitch">P: % 3.0f</string>
-    <string name="roll">R: % 3.0f</string>
-    <string name="thrust">T: % 3.0f%%</string>
-    <string name="yaw">Y: % 3.0f</string>
+    <string name="pitch_label">P:</string>
+    <string name="pitch">%3.0f</string>
+    <string name="roll_label">R:</string>
+    <string name="roll">%3.0f</string>
+    <string name="thrust_label">T:</string>
+    <string name="thrust">%3.0f%%</string>
+    <string name="yaw_label">Y:</string>
+    <string name="yaw">%3.0f</string>
 
     <!-- Bootloader screen -->
     <string name="title_activity_bootloader">BootloaderActivity</string>
