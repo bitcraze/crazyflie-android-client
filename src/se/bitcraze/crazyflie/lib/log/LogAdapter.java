@@ -1,35 +1,36 @@
 package se.bitcraze.crazyflie.lib.log;
 
-import android.util.Log;
-
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter class for LogListener
  */
 public abstract class LogAdapter implements LogListener {
 
-    private static final String LOG_TAG = "LogAdapter";
+    final Logger mLogger = LoggerFactory.getLogger("LogAdapter");
 
     @Override
     public void logConfigAdded(LogConfig logConfig) {
         String msg = logConfig.isAdded() ? "' added" : "' deleted";
-        Log.d(LOG_TAG, "LogConfig '" + logConfig.getName() + msg);
+        mLogger.debug("LogConfig '" + logConfig.getName() + msg);
     }
 
     @Override
     public void logConfigError(LogConfig logConfig) {
-        Log.e(LOG_TAG, "Error when logging '" + logConfig.getName() + "': " + logConfig.getErrMsg());
+        mLogger.debug("Error when logging '" + logConfig.getName() + "': " + logConfig.getErrMsg());
     }
 
     @Override
     public void logConfigStarted(LogConfig logConfig) {
         String msg = logConfig.isStarted() ? "' started" : "' stopped";
-        Log.d(LOG_TAG, "LogConfig '" + logConfig.getName() + msg);
+        mLogger.debug("LogConfig '" + logConfig.getName() + msg);
     }
 
     @Override
     public void logDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp) {
-        Log.d(LOG_TAG, "LogConfig '" + logConfig.getName()  + "', timestamp: " + timestamp + ", data : ");
+        mLogger.debug("LogConfig '" + logConfig.getName()  + "', timestamp: " + timestamp + ", data : ");
     }
 }

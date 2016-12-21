@@ -35,17 +35,23 @@ import org.slf4j.LoggerFactory;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 
 public enum VariableType {
-    UINT8_T,
-    UINT16_T,
-    UINT32_T,
-    UINT64_T,
-    INT8_T,
-    INT16_T,
-    INT32_T,
-    INT64_T,
-    FLOAT,
-    DOUBLE;
+    UINT8_T (1),
+    UINT16_T (2),
+    UINT32_T (4),
+    UINT64_T (8),
+    INT8_T (1),
+    INT16_T (2),
+    INT32_T (4),
+    INT64_T (8),
+    FLOAT (4),
+    DOUBLE (8);
 
+    int mSize;
+    
+    VariableType(int size) {
+        this.mSize = size;
+    }
+    
     final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     /**
@@ -152,31 +158,9 @@ public enum VariableType {
     }
 
     public int getSize() {
-        switch (this) {
-            case UINT8_T:
-                return 1;
-            case UINT16_T:
-                return 2;
-            case UINT32_T:
-                return 4;
-            case UINT64_T:
-                mLogger.warn("UINT64_T not yet implemented");
-                return 8;
-            case INT8_T:
-                return 1;
-            case INT16_T:
-                return 2;
-            case INT32_T:
-                return 4;
-            case INT64_T:
-                return 8;
-            case FLOAT:
-                return 4;
-            case DOUBLE:
-                return 8;
-            default:
-                mLogger.warn("Parsing " + this.name() + " is not yet implemented");
-                return -1;
+        if (this == UINT64_T) {
+            mLogger.warn("UINT64_T not yet implemented");
         }
+        return this.mSize;
     }
 }

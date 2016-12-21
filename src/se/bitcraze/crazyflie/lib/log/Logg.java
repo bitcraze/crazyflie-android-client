@@ -73,28 +73,25 @@ public class Logg {
 
     private Set<LogListener> mLogListeners = new CopyOnWriteArraySet<LogListener>();
 
+    private static Map<Integer, String> mErrCodes = new HashMap<Integer, String>();
+
     /*
      * These codes can be decoded using os.stderror, but
      * some of the text messages will look very strange
      * in the UI, so they are redefined here
      */
-    public enum ErrCodes {
-        ENOMEM ("No more memory available"),
-        ENOEXEC ("Command not found"),
-        ENOENT ("No such log config ID"),
-        E2BIG ("Log config too large"),
-        EEXIST ("Log config already exists");
-
-        private String mMsg;
-
-        ErrCodes(String msg) {
-            this.mMsg = msg;
-        }
-
-        public String getMsg() {
-            return this.mMsg;
-        }
+    static {
+        mErrCodes.put(12, "No more memory available");
+        mErrCodes.put(8, "Command not found");
+        mErrCodes.put(2, "No such log config ID");
+        mErrCodes.put(7, "Log config too large");
+        mErrCodes.put(17, "Log config already exists");
     }
+
+    public static String getErrorMsg(int errNo) {
+        return mErrCodes.containsKey(errNo) ? mErrCodes.get(errNo) : "Unknown error code";
+    }
+
 
     public Logg(Crazyflie crazyflie) {
         this.mCrazyflie = crazyflie;
@@ -257,6 +254,7 @@ public class Logg {
             int errorStatus = payload[2];
             LogConfig logConfig = findLogConfig(id);
 
+            //TODO: use switch instead of if?
             if (cmd == CMD_CREATE_LOGCONFIG) {
                 if (logConfig != null) {
                     if (errorStatus == 0x00) {
@@ -272,24 +270,15 @@ public class Logg {
 
                             logConfig.setAdded(true);
                             notifyLogAdded(logConfig);
-                        }
-                        //TODO else?
-
-                    } else {
-                        // msg = self._err_codes[error_status]
-                        // TODO: quick workaround for errorStatus 17 ?!
-                        String msg = "";
-                        if (errorStatus == 17) {
-                            msg = "17!?";
                         } else {
-                            if (errorStatus > 4) {
-                                msg = "unknown errorStatus: " + errorStatus;
-                            } else {
-                                msg = ErrCodes.values()[errorStatus].getMsg();
-                            }
+                            //TODO can this ever happen?
+                            mLogger.warn("Log config ID=" + id + " is already added. Flag error?");
                         }
+                    } else {
+                        //TODO: logging is redundant if LogListener is set up correctly
+                        // msg = self._err_codes[error_status]
+                        String msg = getErrorMsg(errorStatus);
                         mLogger.warn("Error " + errorStatus + " when adding ID=" + id + " (" + msg + ")");
-
                         logConfig.setErrNo(errorStatus);
                         /*
                         TODO:
@@ -311,7 +300,7 @@ public class Logg {
                     }
                 } else {
                     // msg = self._err_codes[error_status]
-                    String msg = ErrCodes.values()[errorStatus].getMsg();
+                    String msg = getErrorMsg(errorStatus);
                     mLogger.warn("Error " + errorStatus + " when starting ID=" + id + " (" + msg + ")");
 
                     if (logConfig != null) {
@@ -334,6 +323,8 @@ public class Logg {
                         logConfig.setStarted(false);
                         notifyLogStarted(logConfig);
                     }
+                } else {
+                    mLogger.warn("Problem when stopping logging for ID=" +id);
                 }
             } else if (cmd == CMD_DELETE_LOGCONFIG) {
                 /*
@@ -348,6 +339,8 @@ public class Logg {
 //                        notifyLogStarted(logConfig);
                         notifyLogAdded(logConfig);
                     }
+                } else {
+                    mLogger.warn("Problem when deleting log config ID=" +id);
                 }
             } else if (cmd == CMD_RESET_LOGGING) {
                 // Guard against multiple responses due to re-sending
@@ -433,17 +426,24 @@ public class Logg {
         bb.put((byte) CMD_CREATE_LOGCONFIG);
         bb.put((byte) logConfigId);
 
+        if (logConfig.getLogVariables().isEmpty()) {
+            mLogger.warn("LogConfig " + logConfig.getName() + " is empty!");
+            return;
+        }
         for (LogVariable variable : logConfig.getLogVariables()) {
             VariableType variableType = variable.getVariableType();
-            int ordinal = variableType.ordinal();
             
             if(!variable.isTocVariable()) { // Memory location
+                //create LogTocElement to get the variableTypeId
+                LogTocElement memLogTocElement = new LogTocElement();
+                memLogTocElement.setCtype(variableType);
+                int variableTypeId = memLogTocElement.getVariableTypeId();
+                
                 // logger.debug("Logging to raw memory %d, 0x%04X", var.get_storage_and_fetch_byte(), var.address)
-                mLogger.debug("Logging to raw memory, address: " + variable.getAddress());
+                mLogger.debug("Logging to raw memory " + variableType.name() + ", address: " + variable.getAddress());
                 // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
                 // pk.data += struct.pack('<I', var.address)
-                //TODO: FIX THIS -> ordinal is wrong!!
-                bb.put(new byte[] {(byte) ordinal, (byte) variable.getAddress()});
+                bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
             } else { // Item in TOC
                 String name = variable.getName();
                 int tocElementId = mToc.getElementId(name);
@@ -455,7 +455,7 @@ public class Logg {
                     //TODO: return?
                 } 
                 // logger.debug("Adding %s with id=%d and type=0x%02X", var.name, self.cf.log.toc.get_element_id(var.name), var.get_storage_and_fetch_byte())
-                mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
+//                mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
                 // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
                 // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
                 bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
