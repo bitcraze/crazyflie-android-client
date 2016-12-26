@@ -633,13 +633,9 @@ public class MainActivity extends Activity {
             //use BLE
             if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) &&
                     getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-                if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false)) {
-                    Log.d(LOG_TAG, "Using bluetooth write with response");
-                    mDriver = new BleLink(this, true);
-                } else {
-                    Log.d(LOG_TAG, "Using bluetooth write without response");
-                    mDriver = new BleLink(this, false);
-                }
+                boolean writeWithResponse = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false);
+                Log.d(LOG_TAG, "Using bluetooth write with response - " + writeWithResponse);
+                mDriver = new BleLink(this, writeWithResponse);
             } else {
                 // TODO: improve error message
                 Log.e(LOG_TAG, "No BLE support available.");
