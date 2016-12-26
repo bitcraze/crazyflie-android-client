@@ -36,6 +36,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.bitcraze.crazyflie.lib.BleLink;
 import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
@@ -171,6 +172,11 @@ public class Crazyflie {
 
     //TODO: is this good enough?
     public boolean isConnected() {
+        // workaround for BleLink because it does not support Param and Logg subsystems yet
+        // TODO: this should be fixed somewhere else, because it adds a dependency to BLeLink
+        if (mDriver instanceof BleLink) {
+            return mState == State.CONNECTED;
+        }
         return mState == State.SETUP_FINISHED;
     }
 
@@ -258,6 +264,7 @@ public class Crazyflie {
     public void checkForInitialPacketCallback(CrtpPacket packet) {
         //TODO: should be made more reliable
         if (this.mState == State.INITIALIZED) {
+            mLogger.info("Initial packet has been received! => State.CONNECTED");
             this.mState = State.CONNECTED;
             //self.link_established.call(self.link_uri)
             //TODO: fix hacky-di-hack
@@ -402,7 +409,7 @@ public class Crazyflie {
         final Logger mLogger = LoggerFactory.getLogger("IncomingPacketHandler");
 
         public void run() {
-            while(getDriver().isConnected() && !Thread.currentThread().isInterrupted()) {
+            while(!Thread.currentThread().isInterrupted()) {
                 CrtpPacket packet = getDriver().receivePacket(1);
                 if(packet == null) {
                     continue;

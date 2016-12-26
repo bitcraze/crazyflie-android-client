@@ -484,6 +484,8 @@ public class MainActivity extends Activity {
                     Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
                     if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
                         mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected_ble));
+                        // TODO: Remove this once BleLink supports Param and Logg subsystems
+                        startSendJoystickDataThread();
                     } else {
                         mToggleConnectButton.setBackgroundDrawable(getResources().getDrawable(R.drawable.custom_button_connected));
                     }
@@ -608,6 +610,7 @@ public class MainActivity extends Activity {
     };
 
     private void connect() {
+        Log.d(LOG_TAG, "connect()");
         // ensure previous link is disconnected
         disconnect();
 
