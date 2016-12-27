@@ -103,11 +103,13 @@ public class BleLink extends CrtpDriver {
                 mGatt = gatt;
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mLogger.debug("onConnectionStateChange: STATE_DISCONNECTED");
-                //TODO: do this here or in disconnect method?
-//                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-//                mConnected = false;
-//                state = State.IDLE;
-//                notifyDisconnected();
+                // This is necessary to handle a disconnect on the copter side
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mConnected = false;
+                state = State.IDLE;
+                // it should actually be notifyConnectionLost, but there is
+                // no difference between a deliberate disconnect and a lost connection
+                notifyDisconnected();
             } else {
                 mLogger.debug("onConnectionStateChange: else: " + newState);
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);

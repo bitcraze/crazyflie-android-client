@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyfliecontrol.controller;
 
+import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyfliecontrol2.R;
@@ -137,14 +138,18 @@ public class GamepadController extends AbstractController {
             } else if (event.getKeyCode() == mAlt2Btn) {
                 mActivity.runAltAction(mControls.getAlt2Action());
             } else if (event.getKeyCode() == mHoverBtn) {
-                mHover = true;
-                mActivity.enableAltHoldMode(mHover);
+                if (mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                    mHover = true;
+                    mActivity.enableAltHoldMode(mHover);
+                }
             }
             break;
         case KeyEvent.ACTION_UP:
             if(event.getKeyCode() == mHoverBtn) {
-                mHover = false;
-                mActivity.enableAltHoldMode(mHover);
+                if (mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                    mHover = false;
+                    mActivity.enableAltHoldMode(mHover);
+                }
             }
             break;
         default:
