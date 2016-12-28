@@ -430,6 +430,7 @@ public class Logg {
             mLogger.warn("LogConfig " + logConfig.getName() + " is empty!");
             return;
         }
+        int noOfLogVariables = 0;
         for (LogVariable variable : logConfig.getLogVariables()) {
             VariableType variableType = variable.getVariableType();
             
@@ -444,30 +445,45 @@ public class Logg {
                 // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
                 // pk.data += struct.pack('<I', var.address)
                 bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
+                noOfLogVariables++;
             } else { // Item in TOC
                 String name = variable.getName();
                 int tocElementId = mToc.getElementId(name);
+                if (tocElementId == -1) {
+                    mLogger.error("Toc element " + name + " not found in TOC.");
+                    // TODO: create UI error message?
+                    continue;
+                }
                 
                 TocElement logTocElement = mToc.getElementByCompleteName(name);
-                int variableTypeId = logTocElement.getVariableTypeId();
-                if (variableTypeId == -1) {
-                    mLogger.error("VariableType " + variableType.name() + " not found in LogTocElement.VARIABLE_TYPE_MAP.");
-                    //TODO: return?
-                } 
-                // logger.debug("Adding %s with id=%d and type=0x%02X", var.name, self.cf.log.toc.get_element_id(var.name), var.get_storage_and_fetch_byte())
-//                mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
-                // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
-                // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
-                bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
+                if (logTocElement != null) {
+                    int variableTypeId = logTocElement.getVariableTypeId();
+                    if (variableTypeId == -1) {
+                        mLogger.error("VariableType " + variableType.name() + " not found in LogTocElement.VARIABLE_TYPE_MAP.");
+                        //TODO: notifyLogError(logConfig);?
+                        //TODO: return instead?
+                        continue;
+                    }
+                    // logger.debug("Adding %s with id=%d and type=0x%02X", var.name, self.cf.log.toc.get_element_id(var.name), var.get_storage_and_fetch_byte())
+                    // mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
+                    // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
+                    // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
+                    bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
+                    noOfLogVariables++;
+                }
             }
         }
-        mLogger.debug("Adding log config ID " + logConfigId);
 
-        // Create packet
-        Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-        CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
-        packet.setExpectedReply(new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfigId});
-        this.mCrazyflie.sendPacket(packet);
+        if (noOfLogVariables > 0) {
+            // Create packet
+            Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
+            CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
+            packet.setExpectedReply(new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfigId});
+            this.mCrazyflie.sendPacket(packet);
+            mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfLogVariables + " log variables.");
+        } else {
+            mLogger.error("No log variables added to log config, skipped creating log config " + logConfig.getName());
+        }
     }
 
     /**
