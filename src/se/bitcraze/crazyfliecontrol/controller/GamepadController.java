@@ -121,9 +121,7 @@ public class GamepadController extends AbstractController {
             if (event.getKeyCode() == mEmergencyBtn){
                 //quick solution
                 mControls.resetAxisValues();
-                if (mActivity.getCrazyflie() != null) {
-                    mActivity.disconnect();
-                }
+                mActivity.disconnect();
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             } else if (event.getKeyCode() == mRollTrimPlusBtn) {
                 mControls.increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
@@ -138,7 +136,8 @@ public class GamepadController extends AbstractController {
             } else if (event.getKeyCode() == mAlt2Btn) {
                 mActivity.runAltAction(mControls.getAlt2Action());
             } else if (event.getKeyCode() == mHoverBtn) {
-                if (mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                // workaround until BleLink supports param subsystem
+                if (mActivity.getCrazyflie() != null && mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
                     mHover = true;
                     mActivity.enableAltHoldMode(mHover);
                 }
@@ -146,7 +145,8 @@ public class GamepadController extends AbstractController {
             break;
         case KeyEvent.ACTION_UP:
             if(event.getKeyCode() == mHoverBtn) {
-                if (mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                // workaround until BleLink supports param subsystem
+                if (mActivity.getCrazyflie() != null && mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
                     mHover = false;
                     mActivity.enableAltHoldMode(mHover);
                 }
