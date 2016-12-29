@@ -32,6 +32,12 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 
 /**
  * Interface for receiving notifications about data received from the Crazyflie.
+ *
+ * TODO:
+ * -add channel?
+ * -add port mask (or use CrtpPort.ALL?)
+ * -add channel mask
+ *
  */
 public abstract class DataListener {
 

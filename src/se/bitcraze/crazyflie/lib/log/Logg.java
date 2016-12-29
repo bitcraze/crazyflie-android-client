@@ -41,13 +41,13 @@ import org.slf4j.LoggerFactory;
 import se.bitcraze.crazyflie.lib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflie.lib.crazyflie.DataListener;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
-import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket.Header;
+import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocElement;
-import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 import se.bitcraze.crazyflie.lib.toc.TocFetcher;
+import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
 
 //TODO: find better name
@@ -448,6 +448,10 @@ public class Logg {
                 noOfLogVariables++;
             } else { // Item in TOC
                 String name = variable.getName();
+                if (mToc == null) {
+                    mLogger.error("TOC is null.");
+                    return;
+                }
                 int tocElementId = mToc.getElementId(name);
                 if (tocElementId == -1) {
                     mLogger.error("Toc element " + name + " not found in TOC.");
@@ -459,7 +463,7 @@ public class Logg {
                 if (logTocElement != null) {
                     int variableTypeId = logTocElement.getVariableTypeId();
                     if (variableTypeId == -1) {
-                        mLogger.error("VariableType " + variableType.name() + " not found in LogTocElement.VARIABLE_TYPE_MAP.");
+                        mLogger.error("No variableType found for TOC element " + logTocElement.getCompleteName() + ".");
                         //TODO: notifyLogError(logConfig);?
                         //TODO: return instead?
                         continue;

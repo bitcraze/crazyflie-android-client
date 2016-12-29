@@ -46,8 +46,8 @@ import se.bitcraze.crazyflie.lib.crazyradio.RadioAck;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
-import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket.Header;
+import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 
 /**
  * Crazyflie radio bootloader for flashing firmware.

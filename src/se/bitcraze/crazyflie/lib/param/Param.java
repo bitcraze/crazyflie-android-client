@@ -41,13 +41,13 @@ import se.bitcraze.crazyflie.lib.crazyflie.ConnectionAdapter;
 import se.bitcraze.crazyflie.lib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflie.lib.crazyflie.DataListener;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
-import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket.Header;
+import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocElement;
-import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 import se.bitcraze.crazyflie.lib.toc.TocFetcher;
+import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 
 /**
  * Enables reading/writing of parameter values to/from the Crazyflie.
