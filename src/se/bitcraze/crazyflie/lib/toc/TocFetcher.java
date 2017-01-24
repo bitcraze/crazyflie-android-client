@@ -173,7 +173,7 @@ public class TocFetcher {
                         #       while 7 is lost then we will never resend for 7.
                         #       This is pretty hard to reproduce but happens...
                      */
-                    mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + payloadBuffer.get(0));
+                    mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + (payloadBuffer.get(0) & 0x00ff));
                     return;
                 }
 
