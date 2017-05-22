@@ -42,6 +42,8 @@ import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
+import se.bitcraze.crazyflie.lib.crtp.StopPacket;
+import se.bitcraze.crazyflie.lib.crtp.ZDistancePacket;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
 import se.bitcraze.crazyflie.lib.log.Logg;
@@ -672,9 +674,32 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                boolean isJumping = false;
+                int jumptime = -1;
                 while (mCrazyflie != null) {
                     // Log.d(LOG_TAG, "Thrust absolute: " + mController.getThrustAbsolute());
-                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+
+
+                    if (mController.getThrust() > 70.0f && isJumping == false) {
+                        isJumping = true;
+                        jumptime = 0;
+                    }
+                    if (mController.getThrust() < 70.0f /*&& jumpTime >= 25*/) {
+                        isJumping = false;
+                    }
+
+                    // mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                    if (mController.getThrust() > 0) {
+                        if (isJumping && jumptime < 25) {
+                            mCrazyflie.sendPacket(new ZDistancePacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), 0.50f));
+                            Log.d(LOG_TAG, "Sending jump!");
+                            jumptime++;
+                        } else {
+                            mCrazyflie.sendPacket(new ZDistancePacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), 0.25f));
+                        }
+                    } else {
+                        mCrazyflie.sendPacket(new StopPacket());
+                    }
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
