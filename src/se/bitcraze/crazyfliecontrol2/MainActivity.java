@@ -40,6 +40,7 @@ import se.bitcraze.crazyflie.lib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
+import se.bitcraze.crazyflie.lib.crtp.AltHoldPacket;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.StopPacket;
@@ -86,6 +87,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+
+import static java.lang.Math.abs;
 
 public class MainActivity extends Activity {
 
@@ -674,29 +677,20 @@ public class MainActivity extends Activity {
         mSendJoystickDataThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                boolean isJumping = false;
-                int jumptime = -1;
                 while (mCrazyflie != null) {
                     // Log.d(LOG_TAG, "Thrust absolute: " + mController.getThrustAbsolute());
 
 
-                    if (mController.getThrust() > 70.0f && isJumping == false) {
-                        isJumping = true;
-                        jumptime = 0;
-                    }
-                    if (mController.getThrust() < 70.0f /*&& jumpTime >= 25*/) {
-                        isJumping = false;
-                    }
-
                     // mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+
                     if (mController.getThrust() > 0) {
-                        if (isJumping && jumptime < 25) {
-                            mCrazyflie.sendPacket(new ZDistancePacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), 0.50f));
-                            Log.d(LOG_TAG, "Sending jump!");
-                            jumptime++;
-                        } else {
-                            mCrazyflie.sendPacket(new ZDistancePacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), 0.25f));
+                        float velocity = (mController.getThrust()-50.0f)/50.0f;
+
+                        // Z velovity deadzone
+                        if (abs(velocity) < 0.05) {
+                            velocity = 0;
                         }
+                        mCrazyflie.sendPacket(new AltHoldPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), velocity));
                     } else {
                         mCrazyflie.sendPacket(new StopPacket());
                     }
