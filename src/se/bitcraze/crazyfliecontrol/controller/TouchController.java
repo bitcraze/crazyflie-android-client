@@ -47,6 +47,9 @@ public class TouchController extends AbstractController {
 
     protected DualJoystickView mDualJoystickView;
 
+    protected boolean mRightJoystickReleased = true;
+    protected boolean mLeftJoystickReleased = true;
+
     public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
         super(controls, activity);
         this.mDualJoystickView = dualJoystickview;
@@ -87,6 +90,7 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnMoved(float pan, float tilt) {
+            mRightJoystickReleased = false;
             if (isRightAnalogFullTravelThrust()) {
                 tilt = (tilt + 1.0f) / 2.0f;
             }
@@ -99,12 +103,14 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnReleased() {
+            mRightJoystickReleased = true;
             // Log.i("Joystick-Right", "Release");
             mControls.setRightAnalogY(0);
             mControls.setRightAnalogX(0);
         }
 
         public void OnReturnedToCenter() {
+            mRightJoystickReleased = true;
             // Log.i("Joystick-Right", "Center");
             mControls.setRightAnalogY(0);
             mControls.setRightAnalogX(0);
@@ -115,6 +121,7 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnMoved(float pan, float tilt) {
+            mLeftJoystickReleased = false;
             if (isLeftAnalogFullTravelThrust()) {
                 tilt = (tilt + 1.0f) / 2.0f;
             }
@@ -127,15 +134,21 @@ public class TouchController extends AbstractController {
 
         @Override
         public void OnReleased() {
+            mLeftJoystickReleased = true;
             mControls.setLeftAnalogY(0);
             mControls.setLeftAnalogX(0);
         }
 
         public void OnReturnedToCenter() {
+            mLeftJoystickReleased = true;
             mControls.setLeftAnalogY(0);
             mControls.setLeftAnalogX(0);
         }
     };
+
+    public boolean areJoysticksReleased() {
+        return mRightJoystickReleased && mLeftJoystickReleased;
+    }
 
 
     public boolean isThrustRightAnalog() {

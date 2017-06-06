@@ -74,6 +74,7 @@ public class Controls {
     private int mGyroAmplification;
     private String mGyroAmplificationDefaultValue;
     private boolean mTouchThrustFullTravel;
+    private boolean mForceDisableTouchThrustFullTravel = false;
 
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
@@ -91,6 +92,15 @@ public class Controls {
     private String mMaxYawAngleDefaultValue;
     private String mMaxThrustDefaultValue;
     private String mMinThrustDefaultValue;
+
+    // altitude hold toggle
+    private boolean mAHTBool;
+    private int mAHTTransition;
+    private float mAHTDropSpeed;
+
+    // altitude hold toggle default values
+    private String mAHTTransitionDefaultValue;
+    private String mAHTDropSpeedDefaultValue;
 
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
@@ -115,6 +125,10 @@ public class Controls {
         mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
         mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
         mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
+
+        // altitude hold toggle
+        mAHTTransitionDefaultValue = res.getString(R.string.preferences_aht_transition_defaultValue);
+        mAHTDropSpeedDefaultValue = res.getString(R.string.preferences_aht_drops_defaultValue);
     }
 
     public void setControlConfig() {
@@ -129,7 +143,10 @@ public class Controls {
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
         this.mGyroAmplification = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_GYRO_AMP, mGyroAmplificationDefaultValue));
 
-        this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
+        if (mForceDisableTouchThrustFullTravel)
+            this.mTouchThrustFullTravel = false;
+        else
+            this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
 
         this.mAlt1Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT1_ACTION, mAlt1ActionDefaultValue);
         this.mAlt2Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT2_ACTION, mAlt2ActionDefaultValue);
@@ -147,6 +164,17 @@ public class Controls {
             this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
             this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
             this.mXmode = false;
+        }
+
+        // altitude hold toggle
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AHT_BOOL, false)) {
+            this.mAHTBool = true;
+            this.mAHTTransition = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION, mAHTTransitionDefaultValue));
+            this.mAHTDropSpeed = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_DROPS, mAHTDropSpeedDefaultValue));
+        } else {
+            this.mAHTBool = false;
+            this.mAHTTransition = Integer.parseInt(mAHTTransitionDefaultValue);
+            this.mAHTDropSpeed = Float.parseFloat(mAHTDropSpeedDefaultValue);
         }
     }
 
@@ -245,6 +273,15 @@ public class Controls {
         return mTouchThrustFullTravel;
     }
 
+    public void setForceDisableTouchThrustFullTravel(boolean value) {
+        if (value) this.mForceDisableTouchThrustFullTravel = true;
+        else this.mForceDisableTouchThrustFullTravel = false;
+    }
+
+    public boolean getForceDisableTouchThrustFullTravel() {
+        return mForceDisableTouchThrustFullTravel;
+    }
+
     public float getRightAnalog_X() {
         return mRight_analog_x;
     }
@@ -298,6 +335,12 @@ public class Controls {
     public int getMinThrust() {
         return mMinThrust;
     }
+
+    public boolean getAHTToggle() { return mAHTBool; }
+
+    public int getmAHTTransition() { return mAHTTransition; }
+
+    public float getmAHTDropSpeed() { return mAHTDropSpeed; }
 
     // TODO: move methods to Controls?
     public float getRollPitchFactor() {
