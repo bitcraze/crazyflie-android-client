@@ -158,19 +158,26 @@
             <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
                 custom:upperLimit="10"
                 custom:wholeNumber="true"
-                android:defaultValue="@string/preferences_aht_transition_defaultValue"
-                android:dialogTitle="@string/preferences_aht_transition_title"
-                android:key="pref_aht_transition"
-                android:title="@string/preferences_aht_transition_title" />
+                android:defaultValue="@string/preferences_aht_transition_time_defaultValue"
+                android:dialogTitle="@string/preferences_aht_transition_time_title"
+                android:key="pref_aht_transition_time"
+                android:title="@string/preferences_aht_transition_time_title" />
             <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
                 custom:lowerLimit="-1"
                 custom:upperLimit="0"
                 custom:wholeNumber="false"
                 custom:steps="10"
-                android:defaultValue="@string/preferences_aht_drops_defaultValue"
-                android:dialogTitle="@string/preferences_aht_drops_title"
-                android:key="pref_aht_drops"
-                android:title="@string/preferences_aht_drops_title" />
+                android:defaultValue="@string/preferences_aht_transition_dropspeed_defaultValue"
+                android:dialogTitle="@string/preferences_aht_transition_dropspeed_title"
+                android:key="pref_aht_transition_dropspeed"
+                android:title="@string/preferences_aht_transition_dropspeed_title" />
+            <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
+                custom:upperLimit="100"
+                custom:wholeNumber="true"
+                android:defaultValue="@string/preferences_aht_transition_takeover_threshold_defaultValue"
+                android:dialogTitle="@string/preferences_aht_transition_takeover_threshold_title"
+                android:key="pref_aht_transition_takeover_threshold"
+                android:title="@string/preferences_aht_transition_takeover_threshold_title" />
             <Preference
                 android:key="pref_reset_aht"
                 android:summary="@string/preferences_reset_aht_summary"

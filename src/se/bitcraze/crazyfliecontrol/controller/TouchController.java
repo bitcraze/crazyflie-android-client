@@ -57,7 +57,7 @@ public class TouchController extends AbstractController {
         updateAutoReturnMode();
     }
 
-    private void updateAutoReturnMode() {
+    public void updateAutoReturnMode() {
         this.mDualJoystickView.setAutoReturnMode(
                 isLeftAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER,
                 isRightAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER

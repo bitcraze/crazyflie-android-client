@@ -71,10 +71,12 @@
     <string name="preferences_aht_title">Altitude hold toggle preferences</string>
     <string name="preferences_aht_bool_summary_on">Altitude hold toggle mode. Use at your own risk!</string>
     <string name="preferences_aht_bool_summary_off">Altitude hold normal mode</string>
-    <string name="preferences_aht_transition_title">Altitude hold off transition time [s]</string>
-    <string name="preferences_aht_transition_defaultValue">5</string>
-    <string name="preferences_aht_drops_title">Altitude hold off drop speed [m/s]</string>
-    <string name="preferences_aht_drops_defaultValue">-0.1</string>
+    <string name="preferences_aht_transition_time_title">Transition time [s]</string>
+    <string name="preferences_aht_transition_time_defaultValue">5</string>
+    <string name="preferences_aht_transition_dropspeed_title">Transition drop speed [m/s]</string>
+    <string name="preferences_aht_transition_dropspeed_defaultValue">-0.1</string>
+    <string name="preferences_aht_transition_takeover_threshold_title">Transition thrust take-over threshold [%]</string>
+    <string name="preferences_aht_transition_takeover_threshold_defaultValue">50</string>
     <string name="preferences_reset_aht_title">Reset values</string>
     <string name="preferences_reset_aht_summary">Reset to default values</string>
 

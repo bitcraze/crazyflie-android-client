@@ -76,7 +76,7 @@ public abstract class AbstractController implements IController {
      */
     public float getThrust() {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
-        if (mActivity.isHoldAltitude()) {
+        if (mActivity.isHoldAltitudeTouch()) {
             if (abs(thrust) > mControls.getDeadzone()) {
                 return thrust*100;
             }

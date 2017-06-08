@@ -94,13 +94,15 @@ public class Controls {
     private String mMinThrustDefaultValue;
 
     // altitude hold toggle
-    private boolean mAHTBool;
-    private int mAHTTransition;
-    private float mAHTDropSpeed;
+    private boolean mAltitudeHoldToggleModeEnable;
+    private int mAltitudeHoldToggleModeTransitionTime;
+    private float mAltitudeHoldToggleModeTransitionDropSpeed;
+    private int mAltitudeHoldToggleModeTransitionTakeOverThreshold;
 
     // altitude hold toggle default values
-    private String mAHTTransitionDefaultValue;
-    private String mAHTDropSpeedDefaultValue;
+    private String mAltitudeHoldToggleModeTransitionTimeDefaultValue;
+    private String mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue;
+    private String mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue;
 
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
@@ -127,8 +129,9 @@ public class Controls {
         mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
 
         // altitude hold toggle
-        mAHTTransitionDefaultValue = res.getString(R.string.preferences_aht_transition_defaultValue);
-        mAHTDropSpeedDefaultValue = res.getString(R.string.preferences_aht_drops_defaultValue);
+        mAltitudeHoldToggleModeTransitionTimeDefaultValue = res.getString(R.string.preferences_aht_transition_time_defaultValue);
+        mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue = res.getString(R.string.preferences_aht_transition_dropspeed_defaultValue);
+        mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue = res.getString(R.string.preferences_aht_transition_takeover_threshold_defaultValue);
     }
 
     public void setControlConfig() {
@@ -168,13 +171,15 @@ public class Controls {
 
         // altitude hold toggle
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AHT_BOOL, false)) {
-            this.mAHTBool = true;
-            this.mAHTTransition = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION, mAHTTransitionDefaultValue));
-            this.mAHTDropSpeed = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_DROPS, mAHTDropSpeedDefaultValue));
+            this.mAltitudeHoldToggleModeEnable = true;
+            this.mAltitudeHoldToggleModeTransitionTime = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_TIME, mAltitudeHoldToggleModeTransitionTimeDefaultValue));
+            this.mAltitudeHoldToggleModeTransitionDropSpeed = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_DROPSPEED, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
+            this.mAltitudeHoldToggleModeTransitionTakeOverThreshold = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
         } else {
-            this.mAHTBool = false;
-            this.mAHTTransition = Integer.parseInt(mAHTTransitionDefaultValue);
-            this.mAHTDropSpeed = Float.parseFloat(mAHTDropSpeedDefaultValue);
+            this.mAltitudeHoldToggleModeEnable = false;
+            this.mAltitudeHoldToggleModeTransitionTime = Integer.parseInt(mAltitudeHoldToggleModeTransitionTimeDefaultValue);
+            this.mAltitudeHoldToggleModeTransitionDropSpeed = Float.parseFloat(mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue);
+            this.mAltitudeHoldToggleModeTransitionTakeOverThreshold = Integer.parseInt(mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue);
         }
     }
 
@@ -336,11 +341,13 @@ public class Controls {
         return mMinThrust;
     }
 
-    public boolean getAHTToggle() { return mAHTBool; }
+    public boolean getAltitudeHoldToggleModeEnable() { return mAltitudeHoldToggleModeEnable; }
 
-    public int getmAHTTransition() { return mAHTTransition; }
+    public int getAltitudeHoldToggleModeTransitionTime() { return mAltitudeHoldToggleModeTransitionTime; }
 
-    public float getmAHTDropSpeed() { return mAHTDropSpeed; }
+    public float getAltitudeHoldToggleModeTransitionDropSpeed() { return mAltitudeHoldToggleModeTransitionDropSpeed; }
+
+    public int getAltitudeHoldToggleModeTransitionTakeOverThreshold() { return mAltitudeHoldToggleModeTransitionTakeOverThreshold; }
 
     // TODO: move methods to Controls?
     public float getRollPitchFactor() {

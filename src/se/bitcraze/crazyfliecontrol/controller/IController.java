@@ -46,4 +46,6 @@ public interface IController {
     public boolean isHover();
 
     public boolean areJoysticksReleased();
+
+    public void updateAutoReturnMode();
 }

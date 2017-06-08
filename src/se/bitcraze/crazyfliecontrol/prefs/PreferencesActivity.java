@@ -83,8 +83,9 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
     public static final String KEY_PREF_AHT_BOOL = "pref_aht_bool";
     public static final String KEY_PREF_AHT_SCREEN = "pref_aht_screen";
-    public static final String KEY_PREF_AHT_TRANSITION = "pref_aht_transition";
-    public static final String KEY_PREF_AHT_DROPS = "pref_aht_drops";
+    public static final String KEY_PREF_AHT_TRANSITION_TIME = "pref_aht_transition_time";
+    public static final String KEY_PREF_AHT_TRANSITION_DROPSPEED = "pref_aht_transition_dropspeed";
+    public static final String KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD = "pref_aht_transition_takeover_threshold";
     public static final String KEY_PREF_RESET_AHT = "pref_reset_aht";
 
     public static final String KEY_PREF_CONTROLLER = "pref_controller";
@@ -140,8 +141,9 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
 
-        private String mAltHoldToggleTransitionDefaultValue;
-        private String mAltHoldToggleDropSpeedDefaultValue;
+        private String mAltitudeHoldToggleModeTransitionTimeDefaultValue;
+        private String mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue;
+        private String mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue;
 
         private String mGyroAmpDefaultValue;
 
@@ -294,15 +296,17 @@ public class PreferencesActivity extends PreferenceActivity {
             // altitude hold toggle mode settings
             findPreference(KEY_PREF_AHT_SCREEN).setEnabled(mSharedPreferences.getBoolean(KEY_PREF_AHT_BOOL, false));
 
-            mAltHoldToggleTransitionDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION, R.string.preferences_aht_transition_defaultValue);
-            mAltHoldToggleDropSpeedDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_DROPS, R.string.preferences_aht_drops_defaultValue);
+            mAltitudeHoldToggleModeTransitionTimeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_TIME, R.string.preferences_aht_transition_time_defaultValue);
+            mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_DROPSPEED, R.string.preferences_aht_transition_dropspeed_defaultValue);
+            mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, R.string.preferences_aht_transition_takeover_threshold_defaultValue);
 
             findPreference(KEY_PREF_RESET_AHT).setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    resetPreference(KEY_PREF_AHT_TRANSITION, mAltHoldToggleTransitionDefaultValue, null);
-                    resetPreference(KEY_PREF_AHT_DROPS, mAltHoldToggleDropSpeedDefaultValue, null);
+                    resetPreference(KEY_PREF_AHT_TRANSITION_TIME, mAltitudeHoldToggleModeTransitionTimeDefaultValue, null);
+                    resetPreference(KEY_PREF_AHT_TRANSITION_DROPSPEED, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue, null);
+                    resetPreference(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue, null);
                     return true;
                 }
             });
@@ -522,11 +526,14 @@ public class PreferencesActivity extends PreferenceActivity {
                     Toast.makeText(getActivity(), "You have been warned!", Toast.LENGTH_LONG).show();
                 }
             }
-            if (key.equals(KEY_PREF_AHT_TRANSITION)) {
-                findPreference(key).setSummary(sharedPreferences.getString(key,mAltHoldToggleTransitionDefaultValue));
+            if (key.equals(KEY_PREF_AHT_TRANSITION_TIME)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionTimeDefaultValue));
             }
-            if (key.equals(KEY_PREF_AHT_DROPS)) {
-                findPreference(key).setSummary(sharedPreferences.getString(key,mAltHoldToggleDropSpeedDefaultValue));
+            if (key.equals(KEY_PREF_AHT_TRANSITION_DROPSPEED)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
+            }
+            if (key.equals(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue));
             }
 
             // App settings

@@ -254,8 +254,7 @@ public class GamepadController extends AbstractController {
         return 0;
     }
 
-    public boolean areJoysticksReleased() {
-        return true;
-    }
+    public boolean areJoysticksReleased() { return false; }
 
+    public void updateAutoReturnMode() {}
 }
