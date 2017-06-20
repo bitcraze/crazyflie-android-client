@@ -81,6 +81,12 @@ public class PreferencesActivity extends PreferenceActivity {
     public static final String KEY_PREF_MIN_THRUST = "pref_minthrust";
     public static final String KEY_PREF_XMODE = "pref_xmode";
     public static final String KEY_PREF_RESET_AFC = "pref_reset_afc";
+    public static final String KEY_PREF_AHT_BOOL = "pref_aht_bool";
+    public static final String KEY_PREF_AHT_SCREEN = "pref_aht_screen";
+    public static final String KEY_PREF_AHT_TRANSITION_TIME = "pref_aht_transition_time";
+    public static final String KEY_PREF_AHT_TRANSITION_DROPSPEED = "pref_aht_transition_dropspeed";
+    public static final String KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD = "pref_aht_transition_takeover_threshold";
+    public static final String KEY_PREF_RESET_AHT = "pref_reset_aht";
 
     public static final String KEY_PREF_CONTROLLER = "pref_controller";
     public static final String KEY_PREF_USE_GYRO_BOOL = "pref_use_gyro_bool";
@@ -134,6 +140,10 @@ public class PreferencesActivity extends PreferenceActivity {
         private String mMaxYawAngleDefaultValue;
         private String mMaxThrustDefaultValue;
         private String mMinThrustDefaultValue;
+
+        private String mAltitudeHoldToggleModeTransitionTimeDefaultValue;
+        private String mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue;
+        private String mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue;
 
         private String mGyroAmpDefaultValue;
 
@@ -279,6 +289,24 @@ public class PreferencesActivity extends PreferenceActivity {
                     resetPreference(KEY_PREF_MAX_THRUST, mMaxThrustDefaultValue, null);
                     resetPreference(KEY_PREF_MIN_THRUST, mMinThrustDefaultValue, null);
                     resetPreference(KEY_PREF_XMODE, false);
+                    return true;
+                }
+            });
+
+            // altitude hold toggle mode settings
+            findPreference(KEY_PREF_AHT_SCREEN).setEnabled(mSharedPreferences.getBoolean(KEY_PREF_AHT_BOOL, false));
+
+            mAltitudeHoldToggleModeTransitionTimeDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_TIME, R.string.preferences_aht_transition_time_defaultValue);
+            mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_DROPSPEED, R.string.preferences_aht_transition_dropspeed_defaultValue);
+            mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue = setInitialSummaryAndReturnDefaultValue(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, R.string.preferences_aht_transition_takeover_threshold_defaultValue);
+
+            findPreference(KEY_PREF_RESET_AHT).setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    resetPreference(KEY_PREF_AHT_TRANSITION_TIME, mAltitudeHoldToggleModeTransitionTimeDefaultValue, null);
+                    resetPreference(KEY_PREF_AHT_TRANSITION_DROPSPEED, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue, null);
+                    resetPreference(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue, null);
                     return true;
                 }
             });
@@ -486,6 +514,26 @@ public class PreferencesActivity extends PreferenceActivity {
             if (key.equals(KEY_PREF_XMODE)) {
                 CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
                 pref.setChecked(sharedPreferences.getBoolean(key, false));
+            }
+
+            // altitude hold toggle settings
+            if (key.equals(KEY_PREF_AHT_BOOL)) {
+                Preference afcScreenPref = findPreference(KEY_PREF_AHT_SCREEN);
+                afcScreenPref.setEnabled(sharedPreferences.getBoolean(key, false));
+                if (!sharedPreferences.getBoolean(key, false)) {
+                    Toast.makeText(getActivity(), "Altitude hold toggle mode disabled.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), "You have been warned!", Toast.LENGTH_LONG).show();
+                }
+            }
+            if (key.equals(KEY_PREF_AHT_TRANSITION_TIME)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionTimeDefaultValue));
+            }
+            if (key.equals(KEY_PREF_AHT_TRANSITION_DROPSPEED)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
+            }
+            if (key.equals(KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD)) {
+                findPreference(key).setSummary(sharedPreferences.getString(key, mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue));
             }
 
             // App settings

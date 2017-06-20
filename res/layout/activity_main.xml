@@ -98,50 +98,68 @@
         android:contentDescription="@string/menu_preferences_ContentDescription"/>
 
     <!-- HEADER end -->
-
-    <ImageButton
-        android:id="@+id/button_ledRing"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:layout_marginRight="6dp"
-        android:layout_alignBottom="@+id/button_headLight"
-        android:layout_toLeftOf="@id/button_headLight"
-        android:layout_toStartOf="@id/button_headLight"
-        android:background="@drawable/custom_button_action"
-        android:src="@drawable/ic_led_ring"
-        android:elevation="2dp"
-        android:onClick="switchLedRingEffect"
-        android:contentDescription="@string/button_ledring_contentDescription"/>
-
-    <ImageButton
-        android:id="@+id/button_headLight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:layout_marginRight="6dp"
-        android:layout_below="@+id/imageButton_settings"
+    <RelativeLayout
+        android:id="@+id/buttons"
+        android:orientation="horizontal"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/custom_button_action"
-        android:src="@drawable/ic_headlight"
-        android:elevation="2dp"
-        android:onClick="toggleHeadlight"
-        android:contentDescription="@string/button_headlight_contentDescription"/>
-
-    <ImageButton
-        android:id="@+id/button_buzzerSound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:layout_marginRight="6dp"
-        android:layout_alignBottom="@+id/button_headLight"
-        android:layout_toRightOf="@id/button_headLight"
-        android:layout_toEndOf="@id/button_headLight"
-        android:background="@drawable/custom_button_action"
-        android:src="@drawable/ic_volume_up_black"
-        android:elevation="2dp"
-        android:onClick="playBuzzerSound"
-        android:contentDescription="@string/button_buzzer_contentDescription"/>
+        android:layout_below="@id/imageButton_settings">
+
+        <ImageButton
+            android:id="@+id/button_ledRing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:background="@drawable/custom_button_action"
+            android:src="@drawable/ic_led_ring"
+            android:elevation="2dp"
+            android:onClick="switchLedRingEffect"
+            android:contentDescription="@string/button_ledring_contentDescription"/>
+
+        <ImageButton
+            android:id="@+id/button_headLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_toRightOf="@id/button_ledRing"
+            android:layout_toEndOf="@id/button_ledRing"
+            android:background="@drawable/custom_button_action"
+            android:src="@drawable/ic_headlight"
+            android:elevation="2dp"
+            android:onClick="toggleHeadlight"
+            android:contentDescription="@string/button_headlight_contentDescription"/>
+
+        <ImageButton
+            android:id="@+id/button_buzzerSound"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_toRightOf="@id/button_headLight"
+            android:layout_toEndOf="@id/button_headLight"
+            android:background="@drawable/custom_button_action"
+            android:src="@drawable/ic_volume_up_black"
+            android:elevation="2dp"
+            android:onClick="playBuzzerSound"
+            android:contentDescription="@string/button_buzzer_contentDescription"/>
+
+        <ImageButton
+            android:id="@+id/button_holdAltitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_toRightOf="@id/button_buzzerSound"
+            android:layout_toEndOf="@id/button_buzzerSound"
+            android:background="@drawable/custom_button_action"
+            android:src="@drawable/ic_hold_altitude"
+            android:elevation="2dp"
+            android:onClick="holdAltitudeToggleMode"
+            android:contentDescription="@string/button_althold_contentDescription" />
+    </RelativeLayout>
 
     <se.bitcraze.crazyfliecontrol2.FlightDataView
         android:id="@+id/flightdataview"
@@ -149,7 +167,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/button_buzzerSound" />
+        android:layout_below="@id/buttons"/>
 
     <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
         android:id="@+id/joysticks"
@@ -160,5 +178,29 @@
         android:layout_marginTop="1dp"
         android:layout_below="@+id/flightdataview">
     </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_alignTop="@id/joysticks"
+        android:layout_alignBottom="@id/joysticks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true">
+
+        <ImageButton
+            android:background="@drawable/custom_button_power_off"
+            android:id="@+id/button_killswitch"
+            android:layout_height="100dp"
+            android:layout_width="100dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_power_off"
+            android:elevation="2dp"
+            android:onClick="holdAltitudeToggleModeKillSwitch"
+            android:contentDescription="@string/button_killswitch_contentDescription" />
+
+    </RelativeLayout>
 
 </RelativeLayout>

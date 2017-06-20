@@ -29,6 +29,7 @@ package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 import android.widget.Toast;
+import static java.lang.Math.abs;
 
 
 /**
@@ -75,8 +76,14 @@ public abstract class AbstractController implements IController {
      */
     public float getThrust() {
         float thrust = ((mControls.getMode() == 1 || mControls.getMode() == 3) ? mControls.getRightAnalog_Y() : mControls.getLeftAnalog_Y());
-        if (thrust > mControls.getDeadzone()) {
-            return mControls.getMinThrust() + (thrust * mControls.getThrustFactor());
+        if (mActivity.isHoldAltitudeTouch()) {
+            if (abs(thrust) > mControls.getDeadzone()) {
+                return thrust*100;
+            }
+        } else {
+            if (thrust > mControls.getDeadzone()) {
+                return mControls.getMinThrust() + (thrust * mControls.getThrustFactor());
+            }
         }
         return 0;
     }

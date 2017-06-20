@@ -74,6 +74,7 @@ public class Controls {
     private int mGyroAmplification;
     private String mGyroAmplificationDefaultValue;
     private boolean mTouchThrustFullTravel;
+    private boolean mForceDisableTouchThrustFullTravel = false;
 
     private String mModeDefaultValue;
     private String mDeadzoneDefaultValue;
@@ -91,6 +92,17 @@ public class Controls {
     private String mMaxYawAngleDefaultValue;
     private String mMaxThrustDefaultValue;
     private String mMinThrustDefaultValue;
+
+    // altitude hold toggle
+    private boolean mAltitudeHoldToggleModeEnable;
+    private int mAltitudeHoldToggleModeTransitionTime;
+    private float mAltitudeHoldToggleModeTransitionDropSpeed;
+    private int mAltitudeHoldToggleModeTransitionTakeOverThreshold;
+
+    // altitude hold toggle default values
+    private String mAltitudeHoldToggleModeTransitionTimeDefaultValue;
+    private String mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue;
+    private String mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue;
 
     public Controls(MainActivity activity, SharedPreferences preferences) {
         this.mActivity = activity;
@@ -115,6 +127,11 @@ public class Controls {
         mMaxYawAngleDefaultValue = res.getString(R.string.preferences_maxYawAngle_defaultValue);
         mMaxThrustDefaultValue = res.getString(R.string.preferences_maxThrust_defaultValue);
         mMinThrustDefaultValue = res.getString(R.string.preferences_minThrust_defaultValue);
+
+        // altitude hold toggle
+        mAltitudeHoldToggleModeTransitionTimeDefaultValue = res.getString(R.string.preferences_aht_transition_time_defaultValue);
+        mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue = res.getString(R.string.preferences_aht_transition_dropspeed_defaultValue);
+        mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue = res.getString(R.string.preferences_aht_transition_takeover_threshold_defaultValue);
     }
 
     public void setControlConfig() {
@@ -129,7 +146,10 @@ public class Controls {
         this.mUseGyro = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_USE_GYRO_BOOL, false);
         this.mGyroAmplification = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_GYRO_AMP, mGyroAmplificationDefaultValue));
 
-        this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
+        if (mForceDisableTouchThrustFullTravel)
+            this.mTouchThrustFullTravel = false;
+        else
+            this.mTouchThrustFullTravel = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true);
 
         this.mAlt1Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT1_ACTION, mAlt1ActionDefaultValue);
         this.mAlt2Action = mPreferences.getString(PreferencesActivity.KEY_PREF_ALT2_ACTION, mAlt2ActionDefaultValue);
@@ -147,6 +167,19 @@ public class Controls {
             this.mMaxThrust = Integer.parseInt(mMaxThrustDefaultValue);
             this.mMinThrust = Integer.parseInt(mMinThrustDefaultValue);
             this.mXmode = false;
+        }
+
+        // altitude hold toggle
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_AHT_BOOL, false)) {
+            this.mAltitudeHoldToggleModeEnable = true;
+            this.mAltitudeHoldToggleModeTransitionTime = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_TIME, mAltitudeHoldToggleModeTransitionTimeDefaultValue));
+            this.mAltitudeHoldToggleModeTransitionDropSpeed = Float.parseFloat(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_DROPSPEED, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
+            this.mAltitudeHoldToggleModeTransitionTakeOverThreshold = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_AHT_TRANSITION_TAKEOVER_THRESHOLD, mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue));
+        } else {
+            this.mAltitudeHoldToggleModeEnable = false;
+            this.mAltitudeHoldToggleModeTransitionTime = Integer.parseInt(mAltitudeHoldToggleModeTransitionTimeDefaultValue);
+            this.mAltitudeHoldToggleModeTransitionDropSpeed = Float.parseFloat(mAltitudeHoldToggleModeTransitionDropSpeedDefaultValue);
+            this.mAltitudeHoldToggleModeTransitionTakeOverThreshold = Integer.parseInt(mAltitudeHoldToggleModeTransitionTakeOverThresholdDefaultValue);
         }
     }
 
@@ -245,6 +278,15 @@ public class Controls {
         return mTouchThrustFullTravel;
     }
 
+    public void setForceDisableTouchThrustFullTravel(boolean value) {
+        if (value) this.mForceDisableTouchThrustFullTravel = true;
+        else this.mForceDisableTouchThrustFullTravel = false;
+    }
+
+    public boolean getForceDisableTouchThrustFullTravel() {
+        return mForceDisableTouchThrustFullTravel;
+    }
+
     public float getRightAnalog_X() {
         return mRight_analog_x;
     }
@@ -298,6 +340,14 @@ public class Controls {
     public int getMinThrust() {
         return mMinThrust;
     }
+
+    public boolean getAltitudeHoldToggleModeEnable() { return mAltitudeHoldToggleModeEnable; }
+
+    public int getAltitudeHoldToggleModeTransitionTime() { return mAltitudeHoldToggleModeTransitionTime; }
+
+    public float getAltitudeHoldToggleModeTransitionDropSpeed() { return mAltitudeHoldToggleModeTransitionDropSpeed; }
+
+    public int getAltitudeHoldToggleModeTransitionTakeOverThreshold() { return mAltitudeHoldToggleModeTransitionTakeOverThreshold; }
 
     // TODO: move methods to Controls?
     public float getRollPitchFactor() {

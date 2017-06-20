@@ -21,6 +21,8 @@
     <string name="button_ledring_contentDescription">LED ring button</string>
     <string name="button_headlight_contentDescription">Headlight button</string>
     <string name="button_buzzer_contentDescription">Buzzer button</string>
+    <string name="button_althold_contentDescription">Altitude hold button</string>
+    <string name="button_killswitch_contentDescription">Kill switch button</string>
 
     <!-- Connection settings -->
     <string name="preferences_radio_title">Connection settings</string>
@@ -65,6 +67,18 @@
     <string name="preferences_afc_bool_summary_off">Normal mode</string>
     <string name="preferences_xmode_title">X-Mode</string>
     <string name="preferences_xmode_summary">Client X-mode</string>
+    <string name="preferences_altholdtoggle">Altitude hold toggle</string>
+    <string name="preferences_aht_title">Altitude hold toggle preferences</string>
+    <string name="preferences_aht_bool_summary_on">Altitude hold toggle mode. Use at your own risk!</string>
+    <string name="preferences_aht_bool_summary_off">Altitude hold normal mode</string>
+    <string name="preferences_aht_transition_time_title">Transition time [s]</string>
+    <string name="preferences_aht_transition_time_defaultValue">5</string>
+    <string name="preferences_aht_transition_dropspeed_title">Transition drop speed [m/s]</string>
+    <string name="preferences_aht_transition_dropspeed_defaultValue">-0.1</string>
+    <string name="preferences_aht_transition_takeover_threshold_title">Transition thrust take-over threshold [%]</string>
+    <string name="preferences_aht_transition_takeover_threshold_defaultValue">50</string>
+    <string name="preferences_reset_aht_title">Reset values</string>
+    <string name="preferences_reset_aht_summary">Reset to default values</string>
 
     <!-- Controller settings -->
     <string name="preferences_controller_title">Controller settings</string>

@@ -44,7 +44,6 @@ import se.bitcraze.crazyflie.lib.crtp.AltHoldPacket;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.StopPacket;
-import se.bitcraze.crazyflie.lib.crtp.ZDistancePacket;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
 import se.bitcraze.crazyflie.lib.log.Logg;
@@ -74,6 +73,7 @@ import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -128,12 +128,19 @@ public class MainActivity extends Activity {
 
     private boolean mHeadlightToggle = false;
     private boolean mSoundToggle = false;
+    private boolean mHoldAltitudeTouch = false;
+    final private int HOLD_ALTITUDE_TRANSITION = 250;
+    private int mHoldAltitudeTransition = 0;
+    private boolean mHoldAltitudeToggleModeTransitionIsActive = false;
+    private CountDownTimer mHoldAltitudeToggleModeTransitionTimer;
     private int mRingEffect = 0;
     private int mNoRingEffect = 0;
     private int mCpuFlash = 0;
     private ImageButton mRingEffectButton;
     private ImageButton mHeadlightButton;
     private ImageButton mBuzzerSoundButton;
+    private ImageButton mHoldAltitudeButton;
+    private ImageButton mHoldAltitudeKillSwitchButton;
     private File mCacheDir;
 
     private TextView mTextView_battery;
@@ -173,6 +180,8 @@ public class MainActivity extends Activity {
         mRingEffectButton = (ImageButton) findViewById(R.id.button_ledRing);
         mHeadlightButton = (ImageButton) findViewById(R.id.button_headLight);
         mBuzzerSoundButton = (ImageButton) findViewById(R.id.button_buzzerSound);
+        mHoldAltitudeButton = (ImageButton) findViewById(R.id.button_holdAltitude);
+        mHoldAltitudeKillSwitchButton = (ImageButton) findViewById(R.id.button_killswitch);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
@@ -259,8 +268,8 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-              Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
-              startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, PreferencesActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -279,6 +288,13 @@ public class MainActivity extends Activity {
         mRingEffectButton.setEnabled(false);
         mHeadlightButton.setEnabled(false);
         mBuzzerSoundButton.setEnabled(false);
+        mHoldAltitudeButton.setEnabled(false);
+        mHoldAltitudeKillSwitchButton.setEnabled(false);
+        if (mControls.getAltitudeHoldToggleModeEnable())
+            mHoldAltitudeKillSwitchButton.setVisibility(View.VISIBLE);
+        else
+            mHoldAltitudeKillSwitchButton.setVisibility(View.INVISIBLE);
+
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_IMMERSIVE_MODE_BOOL, false)) {
             setHideyBar();
         }
@@ -411,8 +427,8 @@ public class MainActivity extends Activity {
                 }
                 break;
             case 1:
-                    // TODO: show warning if no game pad is found?
-                    mController = mGamepadController;
+                // TODO: show warning if no game pad is found?
+                mController = mGamepadController;
                 break;
             default:
                 break;
@@ -500,11 +516,11 @@ public class MainActivity extends Activity {
 
         @Override
         public void setupFinished(String connectionInfo) {
-           final Toc paramToc = mCrazyflie.getParam().getToc();
-           final Toc logToc = mCrazyflie.getLogg().getToc();
-           if (paramToc != null) {
-               mParamToc = paramToc;
-               runOnUiThread(new Runnable() {
+            final Toc paramToc = mCrazyflie.getParam().getToc();
+            final Toc logToc = mCrazyflie.getLogg().getToc();
+            if (paramToc != null) {
+                mParamToc = paramToc;
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getApplicationContext(), "Parameters TOC fetch finished: " + paramToc.getTocSize(), Toast.LENGTH_SHORT).show();
@@ -657,6 +673,12 @@ public class MainActivity extends Activity {
             // connect
             mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
 
+            if (mController instanceof TouchController) {
+                mHoldAltitudeButton.setEnabled(true);
+                if (mControls.getAltitudeHoldToggleModeEnable())
+                    mHoldAltitudeKillSwitchButton.setEnabled(true);
+            }
+
 //            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
 //
 //                @Override
@@ -670,6 +692,71 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void holdAltitudeTouchEnable() {
+        mHoldAltitudeTouch = true;
+        if (mHoldAltitudeToggleModeTransitionIsActive) {
+            // cancel transition timer
+            mHoldAltitudeToggleModeTransitionTimer.cancel();
+            mHoldAltitudeToggleModeTransitionIsActive = false;
+        }
+        if (mControls.isTouchThrustFullTravel()) {
+            // set auto return to center
+            mDualJoystickView.setAutoReturnMode(1, 1);
+            mControls.setForceDisableTouchThrustFullTravel(true);
+            mControls.setControlConfig();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mController.updateAutoReturnMode();
+                Toast.makeText(getApplicationContext(), "Altitude Hold enabled", Toast.LENGTH_SHORT).show();
+                mHoldAltitudeButton.setColorFilter(Color.parseColor("#5587BB"));
+            }
+        });
+    }
+
+    public void holdAltitudeTouchDisable() {
+        if (mControls.getAltitudeHoldToggleModeEnable() && mControls.getAltitudeHoldToggleModeTransitionTime() > 0 && !mHoldAltitudeToggleModeTransitionIsActive) {
+            // start transition timer
+            mHoldAltitudeToggleModeTransitionTimer =
+                    new CountDownTimer(mControls.getAltitudeHoldToggleModeTransitionTime()*1000, 1000) {
+                        public void onTick(long millisUntilFinished) {
+                            // maybe add countdown toast or something else
+                        }
+
+                        public void onFinish() {
+                            mHoldAltitudeToggleModeTransitionIsActive = false;
+                            mHoldAltitudeTouch = false;
+                        }
+                    }.start();
+            mHoldAltitudeToggleModeTransitionIsActive = true;
+        } else {
+            // immediately disable altitude hold
+            mHoldAltitudeTouch = false;
+            mHoldAltitudeToggleModeTransitionIsActive = false;
+        }
+        // reset auto return to previous configuration
+        if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_TOUCH_THRUST_FULL_TRAVEL, true)) {
+            if ((mControls.getMode() == 1) || (mControls.getMode() == 3)) {
+                mDualJoystickView.setAutoReturnMode(1, 2);
+                mDualJoystickView.autoReturn(true);
+            } else {
+                mDualJoystickView.setAutoReturnMode(2, 1);
+                mDualJoystickView.autoReturn(true);
+            }
+            mControls.setForceDisableTouchThrustFullTravel(false);
+            mControls.setControlConfig();
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mController.updateAutoReturnMode();
+                Toast.makeText(getApplicationContext(), "Altitude Hold disabled", Toast.LENGTH_SHORT).show();
+                mHoldAltitudeButton.clearColorFilter();
+            }
+        });
+    }
+
     /**
      * Start thread to periodically send commands containing the user input
      */
@@ -678,22 +765,27 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 while (mCrazyflie != null) {
-                    // Log.d(LOG_TAG, "Thrust absolute: " + mController.getThrustAbsolute());
-
-
-                    // mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
-
-                    if (mController.getThrust() > 0) {
-                        float velocity = (mController.getThrust()-50.0f)/50.0f;
-
-                        // Z velovity deadzone
-                        if (abs(velocity) < 0.05) {
-                            velocity = 0;
+                    if (!mHoldAltitudeTouch || mController instanceof GamepadController) {
+                        mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                    } else if (mHoldAltitudeTouch) {
+                        if (mController.areJoysticksReleased() && !mControls.getAltitudeHoldToggleModeEnable()) {
+                            // altitude hold is enabled without toggle mode, but there's no finger on screen
+                            mCrazyflie.sendPacket(new StopPacket());
+                        } else if (!mHoldAltitudeToggleModeTransitionIsActive) {
+                            // any altitude hold mode is active and no transition is ongoing
+                            mCrazyflie.sendPacket(new AltHoldPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), mController.getThrust() / 100.0f));
+                        } else {
+                            // remaining: alt hold toggle mode is enabled and transition is ongoing
+                            if (mController.getThrust() >= mControls.getAltitudeHoldToggleModeTransitionTakeOverThreshold()) {
+                                // user has taken control
+                                mHoldAltitudeToggleModeTransitionTimer.cancel();
+                                mHoldAltitudeToggleModeTransitionIsActive = false;
+                                mHoldAltitudeTouch = false;
+                            }
+                            // hold altitude / drop slowly while in transition
+                            mCrazyflie.sendPacket(new AltHoldPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), mControls.getAltitudeHoldToggleModeTransitionDropSpeed()));
                         }
-                        mCrazyflie.sendPacket(new AltHoldPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), velocity));
-                    } else {
-                        mCrazyflie.sendPacket(new StopPacket());
-                    }
+                    } // else send nothing
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
@@ -748,6 +840,32 @@ public class MainActivity extends Activity {
         }
     }
 
+    public void holdAltitudeToggleMode(View view) {
+        if (mCrazyflie != null && mController instanceof TouchController) {
+            // toggle states
+            if (mHoldAltitudeTouch) {
+                holdAltitudeTouchDisable();
+            } else {
+                holdAltitudeTouchEnable();
+            }
+        }
+    }
+
+    public boolean isHoldAltitudeTouch() {
+        return mHoldAltitudeTouch;
+    }
+
+    public void holdAltitudeToggleModeKillSwitch(View view) {
+        if (mCrazyflie != null) {
+            mCrazyflie.sendPacket(new StopPacket());
+            if (mHoldAltitudeTouch || mHoldAltitudeToggleModeTransitionIsActive) {
+                // ensure transition active is true, to prevent countdown creation in disable function
+                mHoldAltitudeToggleModeTransitionIsActive = true;
+                holdAltitudeTouchDisable();
+            }
+        }
+    }
+
     public void enableAltHoldMode(boolean hover) {
         // For safety reasons, altHold mode is only supported when the Crazyradio and a game pad are used
         if (mCrazyflie != null && mCrazyflie.getDriver() instanceof RadioDriver && mController instanceof GamepadController) {
@@ -761,6 +879,13 @@ public class MainActivity extends Activity {
     }
 
     public void disconnect() {
+        // ensure altitude hold touch is disabled
+        if (mHoldAltitudeTouch) {
+            mHoldAltitudeToggleModeTransitionIsActive = true;
+            holdAltitudeTouchDisable();
+        }
+        mHoldAltitudeButton.setEnabled(false);
+
         Log.d(LOG_TAG, "disconnect()");
         if (mCrazyflie != null) {
             mCrazyflie.disconnect();
