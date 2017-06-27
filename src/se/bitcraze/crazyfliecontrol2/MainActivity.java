@@ -41,6 +41,7 @@ import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.Crazyradio;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
+import se.bitcraze.crazyflie.lib.crtp.CommanderZdistancePacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
@@ -665,6 +666,27 @@ public class MainActivity extends Activity {
         }
     }
 
+    /*
+    if self._assisted_control == JoystickReader.ASSISTED_CONTROL_HEIGHTHOLD and data.assistedControl:
+        roll = data.roll + self.trim_roll
+        pitch = data.pitch + self.trim_pitch
+        yawrate = data.yaw
+        # Scale thrust to a value between -1.0 to 1.0
+        vz = (data.thrust - 32767) / 32767.0
+        # Integrate velosity setpoint
+        self._target_height += vz * INPUT_READ_PERIOD
+        # Cap target height
+        if self._target_height > MAX_TARGET_HEIGHT:
+            self._target_height = MAX_TARGET_HEIGHT
+        if self._target_height < MIN_TARGET_HEIGHT:
+            self._target_height = MIN_TARGET_HEIGHT
+        self.heighthold_input_updated.call(roll, -pitch, yawrate, self._target_height)
+    */
+
+    private boolean heightHold = false;
+    private boolean isZRangerDeckAvailable = true;
+    private static final float INITIAL_TARGET_HEIGHT = 0.4f;
+
     /**
      * Start thread to periodically send commands containing the user input
      */
@@ -674,7 +696,12 @@ public class MainActivity extends Activity {
             public void run() {
                 while (mCrazyflie != null) {
                     // Log.d(LOG_TAG, "Thrust absolute: " + mController.getThrustAbsolute());
-                    mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                    if (heightHold) {
+                        mCrazyflie.sendPacket(new CommanderZdistancePacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), INITIAL_TARGET_HEIGHT));
+                    } else {
+                        mCrazyflie.sendPacket(new CommanderPacket(mController.getRoll(), mController.getPitch(), mController.getYaw(), (char) (mController.getThrustAbsolute()), mControls.isXmode()));
+                    }
+
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
@@ -732,8 +759,12 @@ public class MainActivity extends Activity {
     public void enableAltHoldMode(boolean hover) {
         // For safety reasons, altHold mode is only supported when the Crazyradio and a game pad are used
         if (mCrazyflie != null && mCrazyflie.getDriver() instanceof RadioDriver && mController instanceof GamepadController) {
-//            Log.i(LOG_TAG, "flightmode.althold: getThrust(): " + mController.getThrustAbsolute());
-            mCrazyflie.setParamValue("flightmode.althold", hover ? 1 : 0);
+            if (isZRangerDeckAvailable) {
+                heightHold = hover;
+            } else {
+//                Log.i(LOG_TAG, "flightmode.althold: getThrust(): " + mController.getThrustAbsolute());
+                mCrazyflie.setParamValue("flightmode.althold", hover ? 1 : 0);
+            }
         }
     }
 

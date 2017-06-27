@@ -139,6 +139,11 @@ public class CrtpPacket {
     private byte[] mSerializedPacket;
     private byte[] mExpectedReply;
 
+    /* Generic commander packet types */
+//    public final static byte TYPE_STOP = 0;
+//    public final static byte TYPE_VELOCITY_WORLD = 1;
+    public final static byte TYPE_ZDISTANCE = 2;
+
     public CrtpPacket() {
         mPacketHeader = null;
         mPacketPayload = null;
