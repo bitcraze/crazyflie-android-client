@@ -27,10 +27,14 @@
 
 package se.bitcraze.crazyflie.lib;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,10 +72,13 @@ public class BleLink extends CrtpDriver {
 	private List<BluetoothGattCharacteristic> mLedsChars;
 	private BluetoothGatt mGatt;
 	private BluetoothGattCharacteristic mCrtpChar;
+	private BluetoothGattCharacteristic mCrtpDownChar;
 	private Timer mScannTimer;
 
 	private static final String CF_DEVICE_NAME = "Crazyflie";
 	private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
+
+    private static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
 	private static UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
     private static UUID CRTP = UUID.fromString("00000202-1C7F-4F9E-947B-43B7C00A9A08");
@@ -87,9 +94,12 @@ public class BleLink extends CrtpDriver {
 	protected enum State {IDLE, CONNECTING, CONNECTED};
 	protected State state = State.IDLE;
 
+    private final BlockingQueue<CrtpPacket> mInQueue;
+
 	public BleLink(Activity ctx, boolean writeWithAnswer) {
 		mContext = ctx;
 		mWriteWithAnswer = writeWithAnswer;
+        this.mInQueue = new LinkedBlockingQueue<CrtpPacket>();
 	}
 
 	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -127,10 +137,11 @@ public class BleLink extends CrtpDriver {
 			} else {
 				BluetoothGattService cfService = gatt.getService(CF_SERVICE);
 				mCrtpChar = cfService.getCharacteristic(CRTP);
+				mCrtpDownChar = cfService.getCharacteristic(CRTPDOWN);
 
-				gatt.setCharacteristicNotification(mCrtpChar, true);
+				gatt.setCharacteristicNotification(mCrtpDownChar, true);
 
-				BluetoothGattDescriptor descriptor = mCrtpChar.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805F9B34FB"));
+                BluetoothGattDescriptor descriptor = mCrtpDownChar.getDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
 				descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 				gatt.writeDescriptor(descriptor);
 
@@ -168,6 +179,14 @@ public class BleLink extends CrtpDriver {
 		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
 			//super.onCharacteristicChanged(gatt, characteristic);
 		    mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
+            CrtpPacket packet = unpack(characteristic.getValue());
+            if (packet != null) {
+                try {
+                    mInQueue.put(packet);
+                } catch (InterruptedException ie) {
+                    //
+                }
+            }
 		}
 	};
 
@@ -296,8 +315,72 @@ public class BleLink extends CrtpDriver {
 	}
 
     @Override
-    public CrtpPacket receivePacket(int wait) {
-        return isConnected() ? CrtpPacket.NULL_PACKET : null;
+    public CrtpPacket receivePacket(int time) {
+        try {
+            return mInQueue.poll((long) time, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            mLogger.error("InterruptedException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private byte[] tempByteArray = new byte[32];
+    private int tempPid = -1;
+    private int tempLength = -1;
+
+    private CrtpPacket unpack (byte[] packet) {
+        mLogger.debug("Received value for characteristic: {}, length: {}", packet.toString(), packet.length);
+
+        ControlByte header = new ControlByte(packet);
+
+        if (header.isStart()) {
+            Arrays.fill(tempByteArray, (byte) 0);
+            if (header.getLength() < 20) {
+                System.arraycopy(packet, 1, tempByteArray, 0, packet.length-1);
+                return new CrtpPacket(tempByteArray);
+            } else {
+                System.arraycopy(packet, 1, tempByteArray, 0, packet.length-1);
+                tempPid = header.getPid();
+                tempLength = header.getLength();
+            }
+        } else {
+            if (header.getPid() == tempPid) {
+                System.arraycopy(packet, 1, tempByteArray, 19, packet.length-1);
+                return new CrtpPacket(tempByteArray);
+            } else {
+                tempPid = -1;
+                tempLength= 0;
+                mLogger.debug("Bletooth link: Error while receiving long data: PID does not match!");
+            }
+        }
+        return null;
+    }
+
+
+    private class ControlByte {
+
+        boolean start = false;
+        int pid = -1;
+        int length = -1;
+
+        public ControlByte(byte[] array) {
+            this.start = (array[0]&0x80) != 0;
+            this.pid = (array[0]>>5)&0x03;
+            this.length = (array[0]&0x1F);
+        }
+
+        public boolean isStart() {
+            return start;
+        }
+
+        public int getLength() {
+            return length;
+        }
+
+        public int getPid() {
+            return pid;
+        }
+
     }
 
     /* CONNECTION LISTENER */
