@@ -7,22 +7,14 @@ import java.nio.ByteBuffer;
  */
 
 public class StopPacket extends CrtpPacket {
-    /**
-     * Create a new commander packet.
-     *
-     * @param roll (Deg.)
-     * @param pitch (Deg.)
-     * @param yaw (Deg./s)
-     * @param thrust (0-65535)
-     * @param clientXmode if true, then roll and pitch values are recalculated before sending them to the Crazyflie
-     */
+
     public StopPacket() {
-        super(0, CrtpPort.GENERIC_COMMANDER);
+        super(0, CrtpPort.COMMANDER_GENERIC);
     }
 
     @Override
     protected void serializeData(ByteBuffer buffer) {
-        buffer.put((byte)0x00);
+        buffer.put((byte) 0x00);
     }
 
     @Override
