@@ -35,6 +35,7 @@ import java.util.List;
 
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader.BootloaderListener;
+import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 import se.bitcraze.crazyflie.lib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
@@ -83,7 +84,7 @@ public class BootloaderActivity extends Activity {
     private TextView mConsoleTextView;
     private ProgressBar mProgressBar;
 
-    private Firmware mSelectedFirmware = null;
+    private FirmwareRelease mSelectedFirmwareRelease = null;
     private FirmwareDownloader mFirmwareDownloader;
     private Bootloader mBootloader;
     private FlashFirmwareTask mFlashFirmwareTask;
@@ -157,10 +158,10 @@ public class BootloaderActivity extends Activity {
     }
 
     public void showReleaseNotes(View view) {
-        if (mSelectedFirmware != null && mSelectedFirmware.getReleaseNotes() != null) {
+        if (mSelectedFirmwareRelease != null && mSelectedFirmwareRelease.getReleaseNotes() != null) {
             final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
             alertDialog.setTitle("Release notes:");
-            alertDialog.setMessage(mSelectedFirmware.getReleaseNotes());
+            alertDialog.setMessage(mSelectedFirmwareRelease.getReleaseNotes());
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", new DialogInterface.OnClickListener() {
 
                 @Override
@@ -177,16 +178,16 @@ public class BootloaderActivity extends Activity {
     }
 
     private void initializeFirmwareSpinner() {
-        mSpinnerAdapter = new CustomSpinnerAdapter(BootloaderActivity.this, R.layout.spinner_rows, new ArrayList<Firmware>());
+        mSpinnerAdapter = new CustomSpinnerAdapter(BootloaderActivity.this, R.layout.spinner_rows, new ArrayList<FirmwareRelease>());
         mSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mFirmwareSpinner.setAdapter(mSpinnerAdapter);
         mFirmwareSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Firmware firmware = (Firmware) mFirmwareSpinner.getSelectedItem();
-                if (firmware != null) {
-                    mSelectedFirmware = firmware;
+                FirmwareRelease firmwareRelease = (FirmwareRelease) mFirmwareSpinner.getSelectedItem();
+                if (firmwareRelease != null) {
+                    mSelectedFirmwareRelease = firmwareRelease;
                     mFlashFirmwareButton.setEnabled(true);
                     mReleaseNotesButton.setEnabled(true);
                 }
@@ -201,11 +202,11 @@ public class BootloaderActivity extends Activity {
         });
     }
 
-    public void updateFirmwareSpinner(List<Firmware> firmwares) {
+    public void updateFirmwareSpinner(List<FirmwareRelease> firmwareReleases) {
         mSpinnerAdapter.clear();
-        Collections.sort(firmwares);
-        Collections.reverse(firmwares);
-        mSpinnerAdapter.addAll(firmwares);
+        Collections.sort(firmwareReleases);
+        Collections.reverse(firmwareReleases);
+        mSpinnerAdapter.addAll(firmwareReleases);
     }
 
     public void appendConsole(String status) {
@@ -261,12 +262,12 @@ public class BootloaderActivity extends Activity {
         appendConsole("Downloading firmware...");
 
         mFirmwareDownloader.addDownloadListener(mDownloadListener);
-        mFirmwareDownloader.downloadFirmware(this.mSelectedFirmware);
+        mFirmwareDownloader.downloadFirmware(this.mSelectedFirmwareRelease);
     }
 
     private void startBootloader() {
 
-        if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName())) {
+        if (!mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmwareRelease.getTagName() + "/" + mSelectedFirmwareRelease.getAssetName())) {
             appendConsoleError("Firmware file can not be found.");
             stopFlashProcess(false);
             return;
@@ -331,8 +332,8 @@ public class BootloaderActivity extends Activity {
         appendConsole(cfversion);
 
         // check if firmware and CF are compatible
-        if (("CF2".equalsIgnoreCase(mSelectedFirmware.getType()) && !cfType2) ||
-            ("CF1".equalsIgnoreCase(mSelectedFirmware.getType()) && cfType2)) {
+        if (("CF2".equalsIgnoreCase(mSelectedFirmwareRelease.getType()) && !cfType2) ||
+            ("CF1".equalsIgnoreCase(mSelectedFirmwareRelease.getType()) && cfType2)) {
             appendConsoleError("Incompatible firmware version.");
             stopFlashProcess(false);
             return;
@@ -380,7 +381,7 @@ public class BootloaderActivity extends Activity {
             mBootloader.addBootloaderListener(bootloaderListener);
 
             File bootloaderDir = new File(getApplicationContext().getExternalFilesDir(null), BOOTLOADER_DIR);
-            File firmwareFile = new File(bootloaderDir, mSelectedFirmware.getTagName() + "/" + mSelectedFirmware.getAssetName());
+            File firmwareFile = new File(bootloaderDir, mSelectedFirmwareRelease.getTagName() + "/" + mSelectedFirmwareRelease.getAssetName());
 
             long startTime = System.currentTimeMillis();
             try {

@@ -25,14 +25,14 @@
  *
  */
 
-package se.bitcraze.crazyfliecontrol.bootloader;
+package se.bitcraze.crazyflie.lib.bootloader;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class Firmware implements Comparable<Firmware> {
+public class FirmwareRelease implements Comparable<FirmwareRelease> {
 
     private String mTagName;
     private String mName;
@@ -46,10 +46,10 @@ public class Firmware implements Comparable<Firmware> {
     private final SimpleDateFormat inputFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
     private final SimpleDateFormat outputFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
-    public Firmware() {
+    public FirmwareRelease() {
     }
 
-    public Firmware(String tagName, String name, String createdAt) {
+    public FirmwareRelease(String tagName, String name, String createdAt) {
         this.mTagName = tagName;
         this.mName = name;
 
@@ -119,7 +119,7 @@ public class Firmware implements Comparable<Firmware> {
     }
 
     @Override
-    public int compareTo(Firmware another) {
+    public int compareTo(FirmwareRelease another) {
         return this.mTagName.compareTo(another.getTagName());
     }
 

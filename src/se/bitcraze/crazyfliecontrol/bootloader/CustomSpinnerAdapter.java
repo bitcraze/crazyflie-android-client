@@ -29,6 +29,7 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.util.List;
 
+import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 import se.bitcraze.crazyfliecontrol2.R;
 import android.app.Activity;
 import android.content.Context;
@@ -38,16 +39,16 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class CustomSpinnerAdapter extends ArrayAdapter<Firmware> {
+public class CustomSpinnerAdapter extends ArrayAdapter<FirmwareRelease> {
 
     private Activity mActivity;
-    private List<Firmware> mFirmwares;
+    private List<FirmwareRelease> mFirmwareReleases;
     private LayoutInflater inflater;
 
-    public CustomSpinnerAdapter(Activity activity, int textViewResourceId, List<Firmware> firmwares) {
-        super(activity, textViewResourceId, firmwares);
+    public CustomSpinnerAdapter(Activity activity, int textViewResourceId, List<FirmwareRelease> firmwareReleases) {
+        super(activity, textViewResourceId, firmwareReleases);
         mActivity = activity;
-        mFirmwares = firmwares;
+        mFirmwareReleases = firmwareReleases;
         inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -64,17 +65,17 @@ public class CustomSpinnerAdapter extends ArrayAdapter<Firmware> {
     // this function is called for each row (Called data.size() times)
     public View getCustomView(int position, View convertView, ViewGroup parent) {
         View row = inflater.inflate(R.layout.spinner_rows, parent, false);
-        Firmware firmware = mFirmwares.get(position);
-        if (mFirmwares.isEmpty() || firmware == null) {
+        FirmwareRelease firmwareRelease = mFirmwareReleases.get(position);
+        if (mFirmwareReleases.isEmpty() || firmwareRelease == null) {
             return row;
         }
         TextView label = (TextView) row.findViewById(R.id.label);
         TextView date = (TextView) row.findViewById(R.id.date);
         TextView type = (TextView) row.findViewById(R.id.type);
         // Set values for each spinner row
-        label.setText(firmware.getTagName());
-        date.setText(firmware.getCreatedAt());
-        type.setText(firmware.getType());
+        label.setText(firmwareRelease.getTagName());
+        date.setText(firmwareRelease.getCreatedAt());
+        type.setText(firmwareRelease.getType());
         return row;
     }
 }

@@ -62,6 +62,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
+import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 
 public class FirmwareDownloader {
 
@@ -70,7 +71,7 @@ public class FirmwareDownloader {
     private final File mBootloaderDir;
     public final static String RELEASES_JSON = "cf_releases.json";
     public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
-    private List<Firmware> mFirmwares = new ArrayList<Firmware>();
+    private List<FirmwareRelease> mFirmwareReleases = new ArrayList<FirmwareRelease>();
     private long mDownloadReference = -42;
     private DownloadManager mManager;
 
@@ -119,7 +120,7 @@ public class FirmwareDownloader {
         Log.d(LOG_TAG, "Loading releases JSON from local file...");
         try {
             String input = new String(Bootloader.readFile(releasesFile));
-            mFirmwares = parseJson(input);
+            mFirmwareReleases = parseJson(input);
         } catch (JSONException jsone) {
             Log.d(LOG_TAG, jsone.getMessage());
             ((BootloaderActivity) mContext).appendConsoleError("Error while parsing JSON content.");
@@ -129,8 +130,8 @@ public class FirmwareDownloader {
             ((BootloaderActivity) mContext).appendConsoleError("Problems loading JSON file.");
             return;
         }
-        ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwares);
-        ((BootloaderActivity) mContext).appendConsole("Found " + mFirmwares.size() + " firmware files.");
+        ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwareReleases);
+        ((BootloaderActivity) mContext).appendConsole("Found " + mFirmwareReleases.size() + " firmware files.");
     }
 
     private boolean isFileTooOld (File file, long time) {
@@ -148,7 +149,7 @@ public class FirmwareDownloader {
             try {
                 input = downloadUrl(urls[0]);
                 Log.d(LOG_TAG, "Releases JSON downloaded.");
-                mFirmwares = parseJson(input);
+                mFirmwareReleases = parseJson(input);
             } catch (IOException ioe) {
                 Log.d(LOG_TAG, ioe.getMessage());
                 return "Unable to retrieve web page. Check your connectivity.";
@@ -165,12 +166,12 @@ public class FirmwareDownloader {
                 Log.d(LOG_TAG, ioe.getMessage());
                 return "Unable to save JSON file.";
             }
-            return "Found " + mFirmwares.size() + " firmware files.";
+            return "Found " + mFirmwareReleases.size() + " firmware files.";
         }
 
         @Override
         protected void onPostExecute(String result) {
-            ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwares);
+            ((BootloaderActivity) mContext).updateFirmwareSpinner(mFirmwareReleases);
             ((BootloaderActivity) mContext).appendConsole(result);
         }
     }
@@ -187,17 +188,17 @@ public class FirmwareDownloader {
         out.close();
     }
 
-    public void downloadFirmware(Firmware selectedFirmware) {
-        if (selectedFirmware != null) {
+    public void downloadFirmware(FirmwareRelease selectedFirmwareRelease) {
+        if (selectedFirmwareRelease != null) {
 
-            if (isFileAlreadyDownloaded(selectedFirmware.getTagName() + "/" + selectedFirmware.getAssetName())) {
+            if (isFileAlreadyDownloaded(selectedFirmwareRelease.getTagName() + "/" + selectedFirmwareRelease.getAssetName())) {
                 notifyDownloadFinished();
                 return;
             }
 
-            String browserDownloadUrl = selectedFirmware.getBrowserDownloadUrl();
+            String browserDownloadUrl = selectedFirmwareRelease.getBrowserDownloadUrl();
             if (isNetworkAvailable()) {
-                downloadFile(browserDownloadUrl, selectedFirmware.getAssetName(), selectedFirmware.getTagName());
+                downloadFile(browserDownloadUrl, selectedFirmwareRelease.getAssetName(), selectedFirmwareRelease.getTagName());
             } else {
                 Log.d(LOG_TAG, "Network connection not available.");
                 ((BootloaderActivity) mContext).appendConsoleError("No network connection available.\nPlease check your connectivity.");
@@ -272,9 +273,9 @@ public class FirmwareDownloader {
         return builder.toString();
     }
 
-    public List<Firmware> parseJson(String input) throws JSONException {
+    public List<FirmwareRelease> parseJson(String input) throws JSONException {
 
-        List<Firmware> firmwares = new ArrayList<Firmware>();
+        List<FirmwareRelease> firmwareReleases = new ArrayList<FirmwareRelease>();
 
         JSONArray releasesArray = new JSONArray(input);
         for (int i = 0; i < releasesArray.length(); i++) {
@@ -294,17 +295,17 @@ public class FirmwareDownloader {
                     if (assetName.contains("_dfu")) {
                         continue;
                     }
-                    Firmware firmware = new Firmware(tagName, name, createdAt);
-                    firmware.setReleaseNotes(body);
-                    firmware.setAsset(assetName, size, downloadURL);
-                    firmwares.add(firmware);
+                    FirmwareRelease firmwareRelease = new FirmwareRelease(tagName, name, createdAt);
+                    firmwareRelease.setReleaseNotes(body);
+                    firmwareRelease.setAsset(assetName, size, downloadURL);
+                    firmwareReleases.add(firmwareRelease);
                 }
             } else {
                 // Filter out firmwares without assets
                 Log.d(LOG_TAG, "Firmware " + tagName + " was filtered out, because it has no assets.");
             }
         }
-        return firmwares;
+        return firmwareReleases;
     }
 
     public BroadcastReceiver onComplete = new BroadcastReceiver() {
