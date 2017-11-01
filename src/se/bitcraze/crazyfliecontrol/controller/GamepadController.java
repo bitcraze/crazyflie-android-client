@@ -121,7 +121,7 @@ public class GamepadController extends AbstractController {
             if (event.getKeyCode() == mEmergencyBtn){
                 //quick solution
                 mControls.resetAxisValues();
-                mActivity.disconnect();
+                mActivity.getPresenter().disconnect();
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             } else if (event.getKeyCode() == mRollTrimPlusBtn) {
                 mControls.increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
@@ -132,23 +132,23 @@ public class GamepadController extends AbstractController {
             } else if (event.getKeyCode() == mPitchTrimMinusBtn) {
                 mControls.decreaseTrim(PreferencesActivity.KEY_PREF_PITCHTRIM);
             } else if (event.getKeyCode() == mAlt1Btn) {
-                mActivity.runAltAction(mControls.getAlt1Action());
+                mActivity.getPresenter().runAltAction(mControls.getAlt1Action());
             } else if (event.getKeyCode() == mAlt2Btn) {
-                mActivity.runAltAction(mControls.getAlt2Action());
+                mActivity.getPresenter().runAltAction(mControls.getAlt2Action());
             } else if (event.getKeyCode() == mHoverBtn) {
                 // workaround until BleLink supports param subsystem
-                if (mActivity.getCrazyflie() != null && mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                if (mActivity.getPresenter() != null && mActivity.getPresenter().getCrazyflie() != null && mActivity.getPresenter().getCrazyflie().getDriver() instanceof RadioDriver) {
                     mHover = true;
-                    mActivity.enableAltHoldMode(mHover);
+                    mActivity.getPresenter().enableAltHoldMode(mHover);
                 }
             }
             break;
         case KeyEvent.ACTION_UP:
             if(event.getKeyCode() == mHoverBtn) {
                 // workaround until BleLink supports param subsystem
-                if (mActivity.getCrazyflie() != null && mActivity.getCrazyflie().getDriver() instanceof RadioDriver) {
+                if (mActivity.getPresenter() != null && mActivity.getPresenter().getCrazyflie() != null && mActivity.getPresenter().getCrazyflie().getDriver() instanceof RadioDriver) {
                     mHover = false;
-                    mActivity.enableAltHoldMode(mHover);
+                    mActivity.getPresenter().enableAltHoldMode(mHover);
                 }
             }
             break;
