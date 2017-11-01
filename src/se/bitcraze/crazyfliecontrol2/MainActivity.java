@@ -277,6 +277,7 @@ public class MainActivity extends Activity {
         super.onPause();
         mControls.resetAxisValues();
         mController.disable();
+        updateFlightData();
         mPresenter.disconnect();
     }
 
@@ -383,6 +384,7 @@ public class MainActivity extends Activity {
 
     private void resetInputMethod() {
         mController.disable();
+        updateFlightData();
         switch (mControls.getControllerType()) {
             case 0:
                 // Use GyroscopeController if activated in the preferences
@@ -402,6 +404,7 @@ public class MainActivity extends Activity {
 
         }
         mController.enable();
+        Toast.makeText(this, "Using " + mController.getControllerName(), Toast.LENGTH_SHORT).show();
     }
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {

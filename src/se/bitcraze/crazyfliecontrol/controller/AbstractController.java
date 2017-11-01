@@ -28,7 +28,6 @@
 package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol2.MainActivity;
-import android.widget.Toast;
 
 
 /**
@@ -37,33 +36,31 @@ import android.widget.Toast;
  */
 public abstract class AbstractController implements IController {
 
-	protected Controls mControls;
-	protected boolean mIsDisabled;
-	protected MainActivity mActivity;
+    protected Controls mControls;
+    protected boolean mIsDisabled;
+    protected MainActivity mActivity;
 
     protected static final int MAX_THRUST = 65000;
 
-	public AbstractController(Controls controls, MainActivity activity) {
-		mControls = controls;
-		mActivity = activity;
-	}
+    public AbstractController(Controls controls, MainActivity activity) {
+        mControls = controls;
+        mActivity = activity;
+    }
 
-	public void enable(){
-		mIsDisabled = false;
-        Toast.makeText(mActivity, "Using " + getControllerName(), Toast.LENGTH_SHORT).show();
-	}
+    public void enable() {
+        mIsDisabled = false;
+    }
 
     public void disable() {
         mIsDisabled = true;
-        updateFlightData();
     }
 
     public boolean isDisabled() {
         return mIsDisabled;
     }
 
-    public String getControllerName(){
-    	return "unknown controller";
+    public String getControllerName() {
+        return "unknown controller";
     }
 
     public void updateFlightData() {
@@ -86,8 +83,8 @@ public abstract class AbstractController implements IController {
      */
     public float getThrustAbsolute() {
         float thrust = getThrust();
-        if(thrust > 0) {
-            return thrust/100 * MAX_THRUST;
+        if (thrust > 0) {
+            return thrust / 100 * MAX_THRUST;
         }
         return 0;
     }

@@ -45,4 +45,6 @@ public interface IController {
 
     public boolean isHover();
 
+    public String getControllerName();
+
 }
