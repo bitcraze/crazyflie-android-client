@@ -78,33 +78,8 @@ public class MainPresenter {
             if (paramToc != null) {
                 mParamToc = paramToc;
                 mainActivity.showToastie("Parameters TOC fetch finished: " + paramToc.getTocSize());
-                //activate buzzer sound button when a CF2 is recognized (a buzzer can not yet be detected separately)
-                mCrazyflie.getParam().addParamListener(new ParamListener("cpu", "flash") {
-                    @Override
-                    public void updated(String name, Number value) {
-                        mCpuFlash = mCrazyflie.getParam().getValue("cpu.flash").intValue();
-                        //enable buzzer action button when a CF2 is found (cpu.flash == 1024)
-                        if (mCpuFlash == 1024) {
-                            mainActivity.setBuzzerSoundButtonEnablement(true);
-                        }
-                        Log.d(LOG_TAG, "CPU flash: " + mCpuFlash);
-                    }
-                });
-                mCrazyflie.getParam().requestParamUpdate("cpu.flash");
-                //set number of LED ring effects
-                mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
-                    @Override
-                    public void updated(String name, Number value) {
-                        mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
-                        //enable LED ring action buttons only when ring.neffect parameter is set correctly (=> hence it's a CF2 with a LED ring)
-                        if (mNoRingEffect > 0) {
-                            mainActivity.setRingEffectButtonEnablement(true);
-                            mainActivity.setHeadlightButtonEnablement(true);
-                        }
-                        Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
-                    }
-                });
-                mCrazyflie.getParam().requestParamUpdate("ring.neffect");
+                checkForBuzzerDeck();
+                checkForNoOfRingEffects();
             }
             if (logToc != null) {
                 mLogToc = logToc;
@@ -112,7 +87,6 @@ public class MainPresenter {
                 createLogConfigs();
                 startLogConfigs();
             }
-
             startSendJoystickDataThread();
         }
 
@@ -142,6 +116,40 @@ public class MainPresenter {
             mainActivity.setLinkQualityText(quality + "%");
         }
     };
+
+    // TODO: Replace with specific test for buzzer deck
+    private void checkForBuzzerDeck() {
+        //activate buzzer sound button when a CF2 is recognized (a buzzer can not yet be detected separately)
+        mCrazyflie.getParam().addParamListener(new ParamListener("cpu", "flash") {
+            @Override
+            public void updated(String name, Number value) {
+                mCpuFlash = mCrazyflie.getParam().getValue("cpu.flash").intValue();
+                //enable buzzer action button when a CF2 is found (cpu.flash == 1024)
+                if (mCpuFlash == 1024) {
+                    mainActivity.setBuzzerSoundButtonEnablement(true);
+                }
+                Log.d(LOG_TAG, "CPU flash: " + mCpuFlash);
+            }
+        });
+        mCrazyflie.getParam().requestParamUpdate("cpu.flash");
+    }
+
+    private void checkForNoOfRingEffects() {
+        //set number of LED ring effects
+        mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
+            @Override
+            public void updated(String name, Number value) {
+                mNoRingEffect = mCrazyflie.getParam().getValue("ring.neffect").intValue();
+                //enable LED ring action buttons only when ring.neffect parameter is set correctly (=> hence it's a CF2 with a LED ring)
+                if (mNoRingEffect > 0) {
+                    mainActivity.setRingEffectButtonEnablement(true);
+                    mainActivity.setHeadlightButtonEnablement(true);
+                }
+                Log.d(LOG_TAG, "No of ring effects: " + mNoRingEffect);
+            }
+        });
+        mCrazyflie.getParam().requestParamUpdate("ring.neffect");
+    }
 
     /**
      * Start thread to periodically send commands containing the user input
