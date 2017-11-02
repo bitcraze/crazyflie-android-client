@@ -41,6 +41,10 @@ public abstract class AbstractController implements IController {
     protected MainActivity mActivity;
 
     protected static final int MAX_THRUST = 65000;
+    protected static final float MIN_TARGET_HEIGHT = 0.1f; // 10cm
+    protected static final float MAX_TARGET_HEIGHT = 1.2f; // 120cm
+    protected static final float INITIAL_TARGET_HEIGHT = 0.4f; // 40cm
+    protected float targetHeight = INITIAL_TARGET_HEIGHT;
 
     public AbstractController(Controls controls, MainActivity activity) {
         mControls = controls;
@@ -103,6 +107,15 @@ public abstract class AbstractController implements IController {
         float yaw = 0;
         yaw = (mControls.getMode() == 1 || mControls.getMode() == 2) ? mControls.getLeftAnalog_X() : mControls.getRightAnalog_X();
         return yaw * mControls.getYawFactor() * mControls.getDeadzone(yaw);
+    }
+
+    /**
+     * Return initial target height by default
+     *
+     * @return
+     */
+    public float getTargetHeight() {
+        return targetHeight;
     }
 
     /**

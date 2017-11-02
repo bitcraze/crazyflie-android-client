@@ -45,6 +45,8 @@ public interface IController {
 
     public boolean isHover();
 
+    public float getTargetHeight();
+
     public String getControllerName();
 
 }

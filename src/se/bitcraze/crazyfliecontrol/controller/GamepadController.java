@@ -254,4 +254,16 @@ public class GamepadController extends AbstractController {
         return 0;
     }
 
+    public float getTargetHeight() {
+        float thrust = getThrust();
+        float vz = (thrust - 32767) / 32767;
+        targetHeight += vz;
+        if (targetHeight > MAX_TARGET_HEIGHT) {
+            targetHeight = MAX_TARGET_HEIGHT;
+        } else if (targetHeight < MIN_TARGET_HEIGHT) {
+            targetHeight = MIN_TARGET_HEIGHT;
+        }
+        return targetHeight;
+    }
+
 }
