@@ -43,6 +43,8 @@ public class MainPresenter {
     private int mRingEffect = 0;
     private int mNoRingEffect = 0;
     private int mCpuFlash = 0;
+    private boolean isZrangerAvailable = false;
+    private boolean heightHold = false;
 
     private Thread mSendJoystickDataThread;
 
@@ -82,6 +84,7 @@ public class MainPresenter {
                 mainActivity.showToastie("Parameters TOC fetch finished: " + paramToc.getTocSize());
                 checkForBuzzerDeck();
                 checkForNoOfRingEffects();
+                checkForZRanger();
             }
             if (logToc != null) {
                 mLogToc = logToc;
@@ -136,6 +139,22 @@ public class MainPresenter {
         mCrazyflie.getParam().requestParamUpdate("cpu.flash");
     }
 
+    private void checkForZRanger() {
+        //this should return true when either a zRanger or a flow deck is connected
+        mCrazyflie.getParam().addParamListener(new ParamListener("deck.bcZRanger") {
+            @Override
+            public void updated(String name, Number value) {
+                isZrangerAvailable = mCrazyflie.getParam().getValue("deck.bcZRanger").intValue() == 1;
+                // TODO: indicate in the UI that the zRanger sensor is installed
+                if (isZrangerAvailable) {
+                    mainActivity.showToastie("Found zRanger sensor.");
+                }
+                Log.d(LOG_TAG, "is zRanger installed: " + isZrangerAvailable);
+            }
+        });
+        mCrazyflie.getParam().requestParamUpdate("deck.bcZRanger");
+    }
+
     private void checkForNoOfRingEffects() {
         //set number of LED ring effects
         mCrazyflie.getParam().addParamListener(new ParamListener("ring", "neffect") {
@@ -153,28 +172,6 @@ public class MainPresenter {
         mCrazyflie.getParam().requestParamUpdate("ring.neffect");
     }
 
-    /*
-    if self._assisted_control == JoystickReader.ASSISTED_CONTROL_HEIGHTHOLD and data.assistedControl:
-        roll = data.roll + self.trim_roll
-        pitch = data.pitch + self.trim_pitch
-        yawrate = data.yaw
-        # Scale thrust to a value between -1.0 to 1.0
-        vz = (data.thrust - 32767) / 32767.0
-        # Integrate velocity setpoint
-        self._target_height += vz * INPUT_READ_PERIOD
-        # Cap target height
-        if self._target_height > MAX_TARGET_HEIGHT:
-            self._target_height = MAX_TARGET_HEIGHT
-        if self._target_height < MIN_TARGET_HEIGHT:
-            self._target_height = MIN_TARGET_HEIGHT
-        self.heighthold_input_updated.call(roll, -pitch, yawrate, self._target_height)
-    */
-
-    private boolean heightHold = false;
-    // FIXME
-    private boolean isZRangerDeckAvailable = true;
-    private static final float INITIAL_TARGET_HEIGHT = 0.4f;
-
     /**
      * Start thread to periodically send commands containing the user input
      */
@@ -187,10 +184,11 @@ public class MainPresenter {
                     float pitch = mainActivity.getController().getPitch();
                     float yaw = mainActivity.getController().getYaw();
                     float thrustAbsolute = mainActivity.getController().getThrustAbsolute();
+                    float targetHeight = mainActivity.getController().getTargetHeight();
                     boolean xmode = mainActivity.getControls().isXmode();
 
                     if (heightHold) {
-                        mCrazyflie.sendPacket(new ZDistancePacket(roll, pitch, yaw, INITIAL_TARGET_HEIGHT));
+                        mCrazyflie.sendPacket(new ZDistancePacket(roll, pitch, yaw, targetHeight));
                     } else {
                         mCrazyflie.sendPacket(new CommanderPacket(roll, pitch, yaw, (char) thrustAbsolute, xmode));
                     }                    
@@ -275,7 +273,7 @@ public class MainPresenter {
     public void enableAltHoldMode(boolean hover) {
         // For safety reasons, altHold mode is only supported when the Crazyradio and a game pad are used
         if (mCrazyflie != null && mCrazyflie.getDriver() instanceof RadioDriver && mainActivity.getController() instanceof GamepadController) {
-            if (isZRangerDeckAvailable) {
+            if (isZrangerAvailable) {
                 heightHold = hover;
             } else {
 //                Log.i(LOG_TAG, "flightmode.althold: getThrust(): " + mController.getThrustAbsolute());
