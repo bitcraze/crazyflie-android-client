@@ -32,14 +32,15 @@ public abstract class ParamListener {
     private String mGroup;
     private String mName;
 
-    public ParamListener(String completeName) {
-        if (completeName.indexOf(".") == -1) {
-            throw new IllegalArgumentException("Complete name must include a '.' as separator between group and name.");
-        }
-        String[] split = completeName.split(".");
-        this.mGroup = split[0];
-        this.mName = split[1];
-    }
+//FIXME
+//    public ParamListener(String completeName) {
+//        if (completeName.isEmpty() || !completeName.contains(".")) {
+//            throw new IllegalArgumentException("Complete name must include a '.' as separator between group and name.");
+//        }
+//        String[] split = completeName.split(".");
+//        this.mGroup = split[0];
+//        this.mName = split[1];
+//    }
 
     public ParamListener(String group, String name) {
         this.mGroup = group;

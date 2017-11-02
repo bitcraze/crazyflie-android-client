@@ -21,6 +21,7 @@ import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
 import se.bitcraze.crazyfliecontrol.console.ConsoleListener;
+import se.bitcraze.crazyfliecontrol.controller.AbstractController;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 
 public class MainPresenter {
@@ -142,7 +143,7 @@ public class MainPresenter {
 
     private void checkForZRanger() {
         //this should return true when either a zRanger or a flow deck is connected
-        mCrazyflie.getParam().addParamListener(new ParamListener("deck.bcZRanger") {
+        mCrazyflie.getParam().addParamListener(new ParamListener("deck", "bcZRanger") {
             @Override
             public void updated(String name, Number value) {
                 isZrangerAvailable = mCrazyflie.getParam().getValue("deck.bcZRanger").intValue() == 1;
@@ -185,10 +186,9 @@ public class MainPresenter {
                     float pitch = mainActivity.getController().getPitch();
                     float yaw = mainActivity.getController().getYaw();
                     float thrustAbsolute = mainActivity.getController().getThrustAbsolute();
-                    float targetHeight = mainActivity.getController().getTargetHeight();
                     boolean xmode = mainActivity.getControls().isXmode();
-
                     if (heightHold) {
+                        float targetHeight = mainActivity.getController().getTargetHeight();
                         mCrazyflie.sendPacket(new ZDistancePacket(roll, pitch, yaw, targetHeight));
                     } else {
                         mCrazyflie.sendPacket(new CommanderPacket(roll, pitch, yaw, (char) thrustAbsolute, xmode));
@@ -277,6 +277,10 @@ public class MainPresenter {
         if (mCrazyflie != null && mCrazyflie.getDriver() instanceof RadioDriver && mainActivity.getController() instanceof GamepadController) {
             if (isZrangerAvailable) {
                 heightHold = hover;
+                // reset target height, when hover is deactivated
+                if (!hover) {
+                    ((GamepadController) mainActivity.getController()).setTargetHeight(AbstractController.INITIAL_TARGET_HEIGHT);
+                }
             } else {
 //                Log.i(LOG_TAG, "flightmode.althold: getThrust(): " + mController.getThrustAbsolute());
                 mCrazyflie.setParamValue("flightmode.althold", hover ? 1 : 0);
