@@ -73,12 +73,12 @@ public class Cloader {
     private boolean mCancelled = false;
 
     // Bootloader commands
-    public static int GET_INFO = 0x10;
-    public static int SET_ADDRESS = 0x11; // Only implemented on Crazyflie version 0x00
-    public static int GET_MAPPING = 0x12; // Only implemented in version 0x10 target 0xFF
-    public static int LOAD_BUFFER = 0x14;
-    public static int WRITE_FLASH = 0x18;
-    public static int READ_FLASH = 0x1C;
+    public final static int GET_INFO = 0x10;
+    public final static int SET_ADDRESS = 0x11; // Only implemented on Crazyflie version 0x00
+    public final static int GET_MAPPING = 0x12; // Only implemented in version 0x10 target 0xFF
+    public final static int LOAD_BUFFER = 0x14;
+    public final static int WRITE_FLASH = 0x18;
+    public final static int READ_FLASH = 0x1C;
 
 
     /**
@@ -114,7 +114,7 @@ public class Cloader {
     public ConnectionData scanForBootloader() {
         long startTime = System.currentTimeMillis();
         List<ConnectionData> resultList = new ArrayList<ConnectionData>();
-        while (resultList.size() == 0 && (System.currentTimeMillis() - startTime) < 10000) {
+        while (resultList.isEmpty() && (System.currentTimeMillis() - startTime) < 10000) {
             for (ConnectionData cd : mAvailableBootConnections) {
                 if(this.mDriver.scanSelected(cd.getChannel(), cd.getDataRate(), new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF})) {
                     resultList.add(cd);
@@ -123,7 +123,7 @@ public class Cloader {
         }
         mDriver.disconnect();
 
-        if (resultList.size() > 0) {
+        if (!resultList.isEmpty()) {
             return resultList.get(0);
         }
         return null;
@@ -135,8 +135,8 @@ public class Cloader {
         sendBootloaderPacket(new byte[]{(byte) targetId, (byte) 0xFF});
 
         CrtpPacket replyPk = this.mDriver.receivePacket(1);
-
         //while ((not pk or pk.header != 0xFF or struct.unpack("<BB", pk.data[0:2]) != (target_id, 0xFF)) and retry_counter >= 0 ):
+
         while(!isBootloaderReplyPacket(replyPk, targetId, 0xFF) /*&& retryCounter >= 0*/) {
             replyPk = this.mDriver.receivePacket(1);
             //retryCounter -= 1;
@@ -438,7 +438,7 @@ public class Cloader {
 
         if (mappingData.length % 2 != 0){
             //raise Exception("Malformed flash mapping packet")
-            mLogger.error("Malformed flash mapping packet: length is not even (" + mappingData.length + ")");
+            mLogger.error("Malformed flash mapping packet: length is not even (%s)", mappingData.length);
             //TODO: why is the length not even?
             //return new Integer[0];
         }
@@ -459,7 +459,7 @@ public class Cloader {
                 page += mappingData[(2*i)+1] & 0xFF; // "& 0xFF" deals with unsigned byte
             }
         }
-        return (Integer[]) mapping.toArray(new Integer[mapping.size()]);
+        return mapping.toArray(new Integer[mapping.size()]);
     }
 
     /**
@@ -540,8 +540,8 @@ public class Cloader {
                     retryCounter--;
                 }
                 if (retryCounter < 0) {
-                    System.out.println("Returning null...");
-                    return null;
+                    mLogger.debug("Returning null...");
+                    return new byte[0];
                 } else {
                     buff.put(replyPk.getPayload(), 6, replyPk.getPayload().length - 6);
                 }
@@ -604,7 +604,7 @@ public class Cloader {
         }
         if (errorCode != 0) {
           //TODO: also call listener
-          mLogger.error(mErrorMessage + " (error code: " + errorCode + ")");
+          mLogger.error("%s (error code: %s)", mErrorMessage, errorCode);
         }
 
         return replyPk.getPayload()[2] == 1;

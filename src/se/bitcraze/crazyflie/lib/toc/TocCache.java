@@ -46,8 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
-import se.bitcraze.crazyflie.lib.log.LogTocElement;
-import se.bitcraze.crazyflie.lib.param.ParamTocElement;
 
 /**
  *  Access to TOC cache. To turn off the cache functionality don't supply any directories.
@@ -110,12 +108,7 @@ public class TocCache {
             mLogger.debug("Found TOC cache file: " + pattern);
             try {
                 fetchedToc = new Toc();
-                Map<String, TocElement> readValue;
-                if (port == CrtpPort.PARAMETERS) {
-                    readValue = mMapper.readValue(hit, new TypeReference<Map<String, ParamTocElement>>() { });
-                } else {
-                    readValue = mMapper.readValue(hit, new TypeReference<Map<String, LogTocElement>>() { });
-                }
+                Map<String, TocElement> readValue = mMapper.readValue(hit, new TypeReference<Map<String, TocElement>>() { });
                 fetchedToc.setTocElementMap(readValue);
                 mLogger.debug("Number of cached elements: " + fetchedToc.getElements().size());
                 //TODO: file leak?

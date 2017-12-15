@@ -40,8 +40,6 @@ import se.bitcraze.crazyflie.lib.crazyflie.DataListener;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket.Header;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
-import se.bitcraze.crazyflie.lib.log.LogTocElement;
-import se.bitcraze.crazyflie.lib.param.ParamTocElement;
 
 /**
  * Fetches TOC entries from the Crazyflie
@@ -177,12 +175,7 @@ public class TocFetcher {
                     return;
                 }
 
-                TocElement tocElement;
-                if (mPort == CrtpPort.LOGGING) {
-                    tocElement = new LogTocElement(payloadBuffer.array());
-                } else {
-                    tocElement = new ParamTocElement(payloadBuffer.array());
-                }
+                TocElement tocElement = new TocElement(mPort, payloadBuffer.array());
                 mToc.addElement(tocElement);
 
                 mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");

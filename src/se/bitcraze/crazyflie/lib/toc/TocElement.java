@@ -28,21 +28,19 @@
 package se.bitcraze.crazyflie.lib.toc;
 
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 
 /**
  * An element in the TOC
  *
  */
-public class TocElement {
+public class TocElement implements Comparable<TocElement> {
 
-    protected Map<Integer, VariableType> mVariableTypeMap;
-
-    public static int RW_ACCESS = 1;
-    public static int RO_ACCESS = 0;
+    public static final int RW_ACCESS = 1;
+    public static final int RO_ACCESS = 0;
 
     private int mIdent = 0;
     private String mGroup = "";
@@ -51,8 +49,6 @@ public class TocElement {
     private int mAccess = RO_ACCESS;
 
     public TocElement() {
-        mVariableTypeMap = new HashMap<Integer, VariableType>(10);
-        fillVariableTypeMap();
     }
 
     /**
@@ -60,14 +56,16 @@ public class TocElement {
      *
      * @param data the binary payload of the element
      */
-    public TocElement(byte[] data) {
+    public TocElement(CrtpPort port, byte[] data) {
         this();
         if (data != null) {
             setGroupAndName(data);
-
-            setIdent(data[0]);
-
-            setCtype(mVariableTypeMap.get(data[1] & 0x0F));
+            setIdent(data[0] & 0x00ff);
+            if (port == CrtpPort.LOGGING) {
+                setCtype(new Toc().getVariableTypeMapLog().get(data[1] & 0x0F)); 
+            } else {
+                setCtype(new Toc().getVariableTypeMapParam().get(data[1] & 0x0F));
+            }
 
             // setting pytype not needed in Java cf lib
 
@@ -79,10 +77,10 @@ public class TocElement {
             }
         }
     }
-    
+
     protected void fillVariableTypeMap() {
-        
-    };
+        //empty on purpose, implemented in LogTocElement and ParamTocElement
+    }
 
     public int getIdent() {
         return mIdent;
@@ -115,21 +113,6 @@ public class TocElement {
 
     public VariableType getCtype() {
         return mCtype;
-    }
-
-    @JsonIgnore
-    public Map<Integer, VariableType> getMap() {
-        return mVariableTypeMap;
-    }
-
-    @JsonIgnore
-    public int getVariableTypeId() {
-        for (int key : mVariableTypeMap.keySet()) {
-            if (mVariableTypeMap.get(key) == this.mCtype) {
-                return key;
-            }
-        }
-        return -1;
     }
 
     public void setCtype(VariableType ctype) {
@@ -171,6 +154,7 @@ public class TocElement {
         result = prime * result + mAccess;
         result = prime * result + ((mCtype == null) ? 0 : mCtype.hashCode());
         result = prime * result + ((mGroup == null) ? 0 : mGroup.hashCode());
+        result = prime * result + mIdent;
         result = prime * result + ((mName == null) ? 0 : mName.hashCode());
         return result;
     }
@@ -200,6 +184,9 @@ public class TocElement {
         } else if (!mGroup.equals(other.mGroup)) {
             return false;
         }
+        if (mIdent != other.mIdent) {
+            return false;
+        }
         if (mName == null) {
             if (other.mName != null) {
                 return false;
@@ -208,6 +195,11 @@ public class TocElement {
             return false;
         }
         return true;
+    }
+
+    public int compareTo(TocElement te) {
+        int identCmp = Integer.compare(this.getIdent(), te.getIdent());
+        return (identCmp != 0 ? identCmp : this.getCompleteName().compareTo(te.getCompleteName()));
     }
 
 }

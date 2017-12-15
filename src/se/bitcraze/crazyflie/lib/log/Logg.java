@@ -46,8 +46,8 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocElement;
-import se.bitcraze.crazyflie.lib.toc.TocFetcher;
 import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
+import se.bitcraze.crazyflie.lib.toc.TocFetcher;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
 
 //TODO: find better name
@@ -122,6 +122,11 @@ public class Logg {
     //TODO: only for debugging
     public Toc getToc() {
         return this.mToc;
+    }
+
+    //TODO fix
+    public void setToc(Toc toc) {
+        this.mToc = toc;
     }
 
     /**
@@ -436,9 +441,9 @@ public class Logg {
             
             if(!variable.isTocVariable()) { // Memory location
                 //create LogTocElement to get the variableTypeId
-                LogTocElement memLogTocElement = new LogTocElement();
+                TocElement memLogTocElement = new TocElement();
                 memLogTocElement.setCtype(variableType);
-                int variableTypeId = memLogTocElement.getVariableTypeId();
+                int variableTypeId = mToc.getVariableTypeIdLog(variableType);
                 
                 // logger.debug("Logging to raw memory %d, 0x%04X", var.get_storage_and_fetch_byte(), var.address)
                 mLogger.debug("Logging to raw memory " + variableType.name() + ", address: " + variable.getAddress());
@@ -461,7 +466,7 @@ public class Logg {
                 
                 TocElement logTocElement = mToc.getElementByCompleteName(name);
                 if (logTocElement != null) {
-                    int variableTypeId = logTocElement.getVariableTypeId();
+                    int variableTypeId = mToc.getVariableTypeIdLog(variableType);
                     if (variableTypeId == -1) {
                         mLogger.error("No variableType found for TOC element " + logTocElement.getCompleteName() + ".");
                         //TODO: notifyLogError(logConfig);?
