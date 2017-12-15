@@ -46,8 +46,8 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocElement;
-import se.bitcraze.crazyflie.lib.toc.TocFetcher;
 import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
+import se.bitcraze.crazyflie.lib.toc.TocFetcher;
 
 /**
  * Enables reading/writing of parameter values to/from the Crazyflie.
@@ -187,7 +187,7 @@ public class Param {
                 mGroupUpdateListeners.get(tocElement.getGroup()).updated(completeName, number);
             }
         } else {
-            mLogger.debug("Variable id " + varId + " not found in TOC");
+            mLogger.debug("Variable id {} not found in TOC", varId);
         }
     }
 
@@ -276,9 +276,9 @@ public class Param {
     public void setValue(String completeName, Number value) {
         TocElement tocElement = mToc.getElementByCompleteName(completeName);
         if (tocElement == null) {
-            mLogger.warn("Cannot set value for " + completeName + ", it's not in the TOC!");
+            mLogger.warn("Cannot set value for {}, it's not in the TOC!", completeName);
         } else if (tocElement.getAccess() == TocElement.RO_ACCESS) {
-            mLogger.debug(completeName + " is read only, not trying to set value");
+            mLogger.debug("{} is read only, not trying to set value", completeName);
         } else {
             //TODO: extract into method
             Header header = new Header(WRITE_CHANNEL, CrtpPort.PARAMETERS);
@@ -304,7 +304,7 @@ public class Param {
     public Number getValue(String completeName) {
         TocElement tocElement = mToc.getElementByCompleteName(completeName);
         if (tocElement == null) {
-            mLogger.warn("Cannot get value for " + completeName + ", it's not in the TOC!");
+            mLogger.warn("Cannot get value for {}, it's not in the TOC!", completeName);
             return -1;
         }
         if (getValuesMap().size() > 0) {
@@ -319,7 +319,7 @@ public class Param {
      * This thread will update params through a queue to make sure that we get back values
      *
      */
-    public class ParamUpdaterThread implements Runnable {
+    private class ParamUpdaterThread implements Runnable {
 
         final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
@@ -425,9 +425,9 @@ public class Param {
                         // self.cf.send_packet(pk, expected_reply=(pk.datat[0:2]))
                         packet.setExpectedReply(new byte[] {packet.getPayload()[0]});
                         if (packet.getHeader().getChannel() == READ_CHANNEL) {
-                            mLogger.debug("Requesting updated for param with ID " + mReqParam);
+                            mLogger.debug("Requesting updated for param with ID {}", (mReqParam & 0x00ff));
                         } else {
-                            mLogger.debug("Setting param with ID " + mReqParam);
+                            mLogger.debug("Setting param with ID {}", (mReqParam & 0x00ff));
                         }
                         mCrazyflie.sendPacket(packet);
                     } else {

@@ -242,7 +242,7 @@ public class Logg {
      *
      * @param packet
      */
-    public void newPacketReceived(CrtpPacket packet) {
+    private void newPacketReceived(CrtpPacket packet) {
         int channel = packet.getHeader().getChannel();
 
         //TODO: cmd vs id in payload[0] !?!
@@ -375,7 +375,7 @@ public class Logg {
         }
     }
 
-    public static int parseLogData(byte[] payload, LogConfig logConfig, Map<String, Number> logDataMap) {
+    /*packge orivate */ static int parseLogData(byte[] payload, LogConfig logConfig, Map<String, Number> logDataMap) {
         //get timestamp
         int timestamp = parseTimestamp(payload[1], payload[2], payload[3]);
         // logdata = packet.data[4:]
@@ -580,25 +580,25 @@ public class Logg {
         mLogListeners.remove(logListener);
     }
 
-    public void notifyLogAdded(LogConfig logConfig) {
+    private void notifyLogAdded(LogConfig logConfig) {
         for(LogListener ll : this.mLogListeners) {
             ll.logConfigAdded(logConfig);
         }
     }
 
-    public void notifyLogError(LogConfig logConfig) {
+    private void notifyLogError(LogConfig logConfig) {
         for(LogListener ll : this.mLogListeners) {
             ll.logConfigError(logConfig);
         }
     }
 
-    public void notifyLogStarted(LogConfig logConfig) {
+    private void notifyLogStarted(LogConfig logConfig) {
         for(LogListener ll : this.mLogListeners) {
             ll.logConfigStarted(logConfig);
         }
     }
 
-    public void notifyLogDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp) {
+    private void notifyLogDataReceived(LogConfig logConfig, Map<String, Number> data, int timestamp) {
         for(LogListener ll : this.mLogListeners) {
             ll.logDataReceived(logConfig, data, timestamp);
         }

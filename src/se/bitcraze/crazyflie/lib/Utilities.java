@@ -5,7 +5,7 @@
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
  *
- * Copyright (C) 2015 Bitcraze AB
+ * Copyright (C) 2017 Bitcraze AB
  *
  * Crazyflie Nano Quadcopter Client
  *
@@ -25,33 +25,30 @@
  *
  */
 
-package se.bitcraze.crazyflie.lib.bootloader;
+package se.bitcraze.crazyflie.lib;
 
-/**
- * Bootloading utilities for the Crazyflie.
- *
- */
 public class Utilities {
 
-    public static class BootVersion {
-        public final static int CF1_PROTO_VER_0 = 0x00;
-        public final static int CF1_PROTO_VER_1 = 0x01;
-        public final static int CF2_PROTO_VER = 0x10;
-
-        public static String toVersionString(int ver) {
-            if (ver == BootVersion.CF1_PROTO_VER_0 || ver == BootVersion.CF1_PROTO_VER_1) {
-                return "Crazyflie Nano Quadcopter (1.0)";
-            } else if (ver == BootVersion.CF2_PROTO_VER) {
-                return "Crazyflie 2.0";
-            }
-            return "Unknown";
+    /**
+     * Returns byte array as comma separated string
+     * (for debugging purposes)
+     *
+     * @param data
+     * @return
+     */
+    public static String getByteString(byte[] data) {
+        StringBuffer sb = new StringBuffer();
+        for (byte b : data) {
+            sb.append(b);
+            sb.append(",");
         }
+        return sb.toString();
     }
 
     public static String getHexString(byte... array) {
         StringBuffer sb = new StringBuffer();
         for (byte b : array) {
-            sb.append(String.format("0x%02X", b));
+            sb.append(String.format("%02X", b));
             sb.append(" ");
         }
         return sb.toString();
@@ -69,5 +66,5 @@ public class Utilities {
         System.arraycopy(array, offset, strippedArray, 0, strippedArray.length);
         return strippedArray;
     }
-
+    
 }

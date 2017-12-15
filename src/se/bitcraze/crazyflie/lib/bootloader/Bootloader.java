@@ -50,17 +50,16 @@ import java.util.zip.ZipInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflie.lib.bootloader.Target.TargetTypes;
-import se.bitcraze.crazyflie.lib.bootloader.Utilities.BootVersion;
-import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
-import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import se.bitcraze.crazyflie.lib.bootloader.Target.TargetTypes;
+import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
+import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 
 /**
  * Bootloading utilities for the Crazyflie.
@@ -118,7 +117,8 @@ public class Bootloader {
             if (bootloaderConnection != null) {
                 mLogger.info("startBootloader: bootloader connection found");
                 try {
-                    this.mCload.openBootloaderConnection(bootloaderConnection);
+                    this.mCload.setConnectionData(bootloaderConnection);
+                    this.mCload.openBootloaderConnection();
                     started = this.mCload.checkLinkAndGetInfo(TargetTypes.STM32); //TODO: what is the real parameter for this?
                 } catch (IOException e) {
                     mLogger.warn(e.getMessage());

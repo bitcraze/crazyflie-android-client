@@ -29,6 +29,8 @@ package se.bitcraze.crazyflie.lib.crazyflie;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -45,6 +47,7 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.log.Logg;
 import se.bitcraze.crazyflie.lib.param.Param;
+import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 
@@ -110,20 +113,18 @@ public class Crazyflie {
 
     };
 
-    public void connect(int channel, int datarate) {
-        connect(new ConnectionData(channel, datarate));
-    }
-
-    public void connect(ConnectionData connectionData) {
+    public void connect() {
         mLogger.debug("Connect");
-        mConnectionData = connectionData;
         mState = State.INITIALIZED;
 
         addPacketListener(mPacketListener);
 
         // try to connect
         try {
-            mDriver.connect(mConnectionData);
+            if (mDriver instanceof RadioDriver) {
+                ((RadioDriver) mDriver).setConnectionData(mConnectionData);
+            }
+            mDriver.connect();
         } catch (IOException ioe) {
             mLogger.debug(ioe.getMessage());
 //            notifyConnectionFailed("Connection failed: " + ioe.getMessage());
@@ -185,6 +186,10 @@ public class Crazyflie {
         return mState;
     }
 
+    public void setConnectionData(ConnectionData connectionData) {
+        this.mConnectionData = connectionData;
+    }
+
     /**
      * Send a packet through the driver interface
      *
@@ -240,7 +245,7 @@ public class Crazyflie {
             while(true) {
                 if (!mResendQueue.isEmpty()) {
                     CrtpPacket resendPacket = mResendQueue.poll();
-                    mLogger.debug("RESEND: " + resendPacket + " ID: " + resendPacket.getPayload()[0]);
+                    mLogger.debug("RESEND: {} ID: {}", resendPacket, resendPacket.getPayload()[0]);
                     sendPacket(resendPacket);
                 }
                 try {
@@ -261,7 +266,7 @@ public class Crazyflie {
      *
      * @param packet
      */
-    public void checkForInitialPacketCallback(CrtpPacket packet) {
+    private void checkForInitialPacketCallback(CrtpPacket packet) {
         //TODO: should be made more reliable
         if (this.mState == State.INITIALIZED) {
             mLogger.info("Initial packet has been received! => State.CONNECTED");
@@ -286,7 +291,7 @@ public class Crazyflie {
      * Start the connection setup by refreshing the TOCs
      */
     private void startConnectionSetup() {
-        mLogger.info("We are connected [" + mConnectionData.toString() + "], requesting connection setup...");
+        mLogger.info("We are connected [{}], requesting connection setup...", mConnectionData.toString());
 
         mParam = new Param(this);
         //must be defined first to be usable in Log TocFetchFinishedListener
@@ -382,14 +387,12 @@ public class Crazyflie {
 
     /* PACKET LISTENER */
 
-    //TODO: should PacketListener methods be public?
-
-    public void addPacketListener(PacketListener listener) {
+    private void addPacketListener(PacketListener listener) {
         mLogger.debug("Adding packet listener...");
         this.mPacketListeners.add(listener);
     }
 
-    public void removePacketListener(PacketListener listener) {
+    private void removePacketListener(PacketListener listener) {
         mLogger.debug("Removing packet listener...");
         this.mPacketListeners.remove(listener);
     }
@@ -404,22 +407,19 @@ public class Crazyflie {
     /**
      * Handles incoming packets and sends the data to the correct listeners
      */
-    public class IncomingPacketHandler implements Runnable {
+    private class IncomingPacketHandler implements Runnable {
 
         final Logger mLogger = LoggerFactory.getLogger("IncomingPacketHandler");
 
         public void run() {
             while(!Thread.currentThread().isInterrupted()) {
                 CrtpPacket packet = getDriver().receivePacket(1);
-                if(packet == null) {
-                    continue;
+                if(packet != null) {
+                    //All-packet callbacks
+                    //self.cf.packet_received.call(pk)
+                    notifyPacketReceived(packet);
+                    notifyDataReceived(packet);
                 }
-
-                //All-packet callbacks
-                //self.cf.packet_received.call(pk)
-                notifyPacketReceived(packet);
-
-                notifyDataReceived(packet);
             }
             mLogger.debug("IncomingPacketHandlerThread was interrupted.");
         }

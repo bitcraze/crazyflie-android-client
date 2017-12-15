@@ -84,7 +84,7 @@ public class TocFetcher {
      *
      */
     public void start() {
-        mLogger.debug("Starting to fetch TOC (Port: " + this.mPort + ")...");
+        mLogger.debug("Starting to fetch TOC (Port: {})...", this.mPort);
 
         mDataListener = new DataListener(this.mPort) {
             @Override
@@ -97,14 +97,13 @@ public class TocFetcher {
         requestTocInfo();
     }
 
-
     /**
      * Callback for when the TOC fetching is finished
      */
     public void tocFetchFinished() {
         this.mCrazyflie.removeDataListener(mDataListener);
         long tocFetchDuration = System.currentTimeMillis() - tocFetchStartTime;
-        mLogger.debug("Fetching TOC (Port: " + this.mPort + ") done in " + tocFetchDuration + "ms.");
+        mLogger.debug("Fetching TOC (Port: {}) done in {}ms.", this.mPort, tocFetchDuration);
         this.mState = TocState.TOC_FETCH_FINISHED;
         // finishedCallback();
         notifyTocFetchFinished(this.mPort);
@@ -119,12 +118,11 @@ public class TocFetcher {
         return this.mNoOfItems;
     }
 
-    public void newPacketReceived(CrtpPacket packet) {
+    private void newPacketReceived(CrtpPacket packet) {
         if (packet.getHeader().getChannel() != TOC_CHANNEL) {
             return;
         }
         // payload = struct.pack("B" * (len(packet.datal) - 1), *packet.datal[1:])
-
         int offset = 1;
         byte[] payload = new byte[packet.getPayload().length-offset];
         System.arraycopy(packet.getPayload(), offset, payload, 0, payload.length);
@@ -132,38 +130,15 @@ public class TocFetcher {
 
         if (mState == TocState.GET_TOC_INFO) {
             if (packet.getPayload()[0] == CMD_TOC_INFO) {
-                // [self.nbr_of_items, self._crc] = struct.unpack("<BI", payload[:5])
-                this.mNoOfItems = payloadBuffer.get();
-                // Fix for TOC > 128 items (fixed by Arnaud)
-                this.mNoOfItems &= 0x00ff;
-                this.mCrc = payloadBuffer.getInt();
-                mToc.setCrc(mCrc);
-
-                mLogger.debug("[" + this.mPort + "]: Got TOC CRC, " + this.mNoOfItems + " items and CRC=" + String.format("0x%08X", this.mCrc));
-
-                //Try to find toc in cache
-                Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;
-                if (cacheData != null) {
-                    // self.toc.toc = cache_data
-                    // assigning a toc to another toc directly does not work
-                    mToc.setTocElementMap(cacheData.getTocElementMap());
-                    mLogger.info("TOC for port " + mPort + " found in cache.");
-                    tocFetchFinished();
-                } else {
-                    this.mState = TocState.GET_TOC_ELEMENT;
-                    this.mRequestedIndex = 0;
-                    requestTocElement(this.mRequestedIndex);
-                }
+                handleCmdTocInfo(payloadBuffer);
             }
         } else if (mState == TocState.GET_TOC_ELEMENT) {
-
             if (packet.getPayload()[0] == CMD_TOC_ELEMENT) {
-
                 // Always add new element, but only request new if it's not the last one.
-
                 // if self.requested_index != ord(payload[0]):
-             // Fix for TOC > 128 items (fixed by Arnaud)
-                if (this.mRequestedIndex != (payloadBuffer.get(0) & 0x00ff)) {
+                // Fix for TOC > 128 items (fixed by Arnaud)
+                int actualIndex = payloadBuffer.get(0) & 0x00ff;
+                if (this.mRequestedIndex != actualIndex) {
                     /*
                         # TODO: There might be a timing issue here with resending old
                         #       packets while loosing new ones. Then if 7 is requested
@@ -171,26 +146,53 @@ public class TocFetcher {
                         #       while 7 is lost then we will never resend for 7.
                         #       This is pretty hard to reproduce but happens...
                      */
-                    mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + (payloadBuffer.get(0) & 0x00ff));
+                    mLogger.warn("[{}]: Was expecting {} but got {}", this.mPort, this.mRequestedIndex, actualIndex);
                     return;
                 }
-
-                TocElement tocElement = new TocElement(mPort, payloadBuffer.array());
-                mToc.addElement(tocElement);
-
-                mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");
-
-                if(mRequestedIndex < (mNoOfItems - 1)) {
-                    mLogger.debug("[" + this.mPort + "]: More variables, requesting index " + (this.mRequestedIndex + 1));
-                    this.mRequestedIndex++;
-                    requestTocElement(this.mRequestedIndex);
-                } else {
-                    // No more variables in TOC
-                    mLogger.info("No more variables in TOC.");
-                    mTocCache.insert(mCrc, mPort, mToc);
-                    tocFetchFinished();
-                }
+                handleCmdTocElement(payloadBuffer);
             }
+        }
+    }
+
+    private void handleCmdTocInfo(ByteBuffer payloadBuffer) {
+        // [self.nbr_of_items, self._crc] = struct.unpack("<BI", payload[:5])
+        // Fix for TOC > 128 items (fixed by Arnaud)
+        this.mNoOfItems = payloadBuffer.get() & 0x00ff;
+        this.mCrc = payloadBuffer.getInt();
+        mToc.setCrc(mCrc);
+
+        mLogger.debug("[{}]: Got TOC CRC, {} items and CRC={}", this.mPort, this.mNoOfItems, String.format("0x%08X", this.mCrc));
+
+        //Try to find toc in cache
+        Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;
+        if (cacheData != null) {
+            // self.toc.toc = cache_data
+            // assigning a toc to another toc directly does not work
+            mToc.setTocElementMap(cacheData.getTocElementMap());
+            mLogger.info("TOC for port {} found in cache.", mPort);
+            tocFetchFinished();
+        } else {
+            this.mState = TocState.GET_TOC_ELEMENT;
+            this.mRequestedIndex = 0;
+            requestTocElement(this.mRequestedIndex);
+        }
+    }
+
+    private void handleCmdTocElement(ByteBuffer payloadBuffer) {
+        TocElement tocElement = new TocElement(mPort, payloadBuffer.array());
+        mToc.addElement(tocElement);
+
+        mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");
+
+        if(mRequestedIndex < (mNoOfItems - 1)) {
+            mLogger.debug("[{}]: More variables, requesting index {}", this.mPort, (this.mRequestedIndex + 1));
+            this.mRequestedIndex++;
+            requestTocElement(this.mRequestedIndex);
+        } else {
+            // No more variables in TOC
+            mLogger.info("No more variables in TOC.");
+            mTocCache.insert(mCrc, mPort, mToc);
+            tocFetchFinished();
         }
     }
 
@@ -198,7 +200,7 @@ public class TocFetcher {
         //# Request the TOC CRC
         this.mState = TocState.GET_TOC_INFO;
 
-        mLogger.debug("Requesting TOC info on port " + this.mPort);
+        mLogger.debug("Requesting TOC info on port {}", this.mPort);
         Header header = new Header(TOC_CHANNEL, mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_INFO});
         packet.setExpectedReply(new byte[]{CMD_TOC_INFO});
@@ -206,7 +208,7 @@ public class TocFetcher {
     }
 
     private void requestTocElement(int index) {
-        mLogger.debug("Requesting index " + index + " on port " + this.mPort);
+        mLogger.debug("Requesting index {} on port {}", index, this.mPort);
         Header header = new Header(TOC_CHANNEL, this.mPort);
         CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_TOC_ELEMENT, (byte) index});
         packet.setExpectedReply(new byte[]{CMD_TOC_ELEMENT, (byte) index});
