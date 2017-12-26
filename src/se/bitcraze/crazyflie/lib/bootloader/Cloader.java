@@ -293,7 +293,7 @@ public class Cloader {
             ((RadioDriver) mDriver).setConnectionData(connectionData);
         }
     }
-    
+
     /**
      * Try to get a connection with the bootloader by requesting info
      * 5 times. This let roughly 10 seconds to boot the copter ...
