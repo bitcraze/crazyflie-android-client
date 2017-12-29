@@ -416,7 +416,7 @@ public class RadioDriver extends CrtpDriver {
         return this.mRadioDriverThread != null;
     }
 
-        /* CONNECTION LISTENER */
+    /* CONNECTION LISTENER */
 
     /**
      * Notify all registered listeners about a requested connection

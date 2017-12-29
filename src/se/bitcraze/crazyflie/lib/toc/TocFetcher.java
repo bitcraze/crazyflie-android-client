@@ -146,7 +146,11 @@ public class TocFetcher {
                         #       while 7 is lost then we will never resend for 7.
                         #       This is pretty hard to reproduce but happens...
                      */
+<<<<<<< Upstream, based on dev_fix_compile_errors
                     mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + actualIndex + ".");
+=======
+                    mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + actualIndex);
+>>>>>>> 4dbf2a7 Fix ConsolePacket text parsing
                     return;
                 }
                 handleCmdTocElement(payloadBuffer);
@@ -161,7 +165,11 @@ public class TocFetcher {
         this.mCrc = payloadBuffer.getInt();
         mToc.setCrc(mCrc);
 
+<<<<<<< Upstream, based on dev_fix_compile_errors
         mLogger.debug("[this.mPort]: Got TOC CRC, "+ this.mNoOfItems + " items and CRC=" + String.format("0x%08X", this.mCrc) + ".");
+=======
+//        mLogger.debug("[{}]: Got TOC CRC, {} items and CRC={}", this.mPort, this.mNoOfItems, String.format("0x%08X", this.mCrc));
+>>>>>>> 4dbf2a7 Fix ConsolePacket text parsing
 
         //Try to find toc in cache
         Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;

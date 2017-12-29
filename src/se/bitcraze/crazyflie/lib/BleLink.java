@@ -324,6 +324,84 @@ public class BleLink extends CrtpDriver {
         }
     }
 
+    /* CONNECTION LISTENER */
+
+    /**
+     * Notify all registered listeners about a requested connection
+     */
+    @Override
+    protected void notifyConnectionRequested() {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionRequested("Bluetooth");
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a connect.
+     */
+    @Override
+    public void notifyConnected() {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connected("Bluetooth");
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a finished setup.
+     */
+    @Override
+    public void notifySetupFinished() {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.setupFinished("Bluetooth");
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a failed connection attempt.
+     *
+     * @param msg
+     */
+    @Override
+    protected void notifyConnectionFailed(String msg) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionFailed("Bluetooth", msg);
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a lost connection.
+     *
+     * @param msg
+     */
+    @Override
+    protected void notifyConnectionLost(String msg) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionLost("Bluetooth", msg);
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a disconnect.
+     */
+    @Override
+    protected void notifyDisconnected() {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.disconnected("Bluetooth");
+        }
+    }
+
+    /**
+     * Notify all registered listeners about a link quality update.
+     *
+     * @param percent quality of the link (0 = connection lost, 100 = good)
+     */
+    @Override
+    protected void notifyLinkQualityUpdated(int percent) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.linkQualityUpdated(percent);
+        }
+    }
+
     private byte[] tempByteArray = new byte[32];
     private int tempPid = -1;
     private int tempLength = -1;
@@ -383,33 +461,4 @@ public class BleLink extends CrtpDriver {
 
     }
 
-    /* CONNECTION LISTENER */
-
-    @Override
-    protected void notifyLinkQualityUpdated(int percent) {
-    }
-
-    @Override
-    protected void notifyDisconnected() {
-    }
-
-    @Override
-    protected void notifyConnectionFailed(String msg) {
-    }
-
-    @Override
-    protected void notifyConnectionLost(String msg) {
-    }
-
-    @Override
-    protected void notifyConnectionRequested() {
-    }
-
-    @Override
-    public void notifyConnected() {
-    }
-
-    @Override
-    public void notifySetupFinished() {
-    }
 }

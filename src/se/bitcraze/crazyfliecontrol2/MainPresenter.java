@@ -210,17 +210,55 @@ public class MainPresenter {
             // connect
             mCrazyflie.connect();
 
-//            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
-//
-//                @Override
-//                public void dataReceived(CrtpPacket packet) {
-//                    Log.d(LOG_TAG, "Received console packet: " + packet);
-//                }
-//
-//            });
+            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
+
+                @Override
+                public void dataReceived(CrtpPacket packet) {
+                    //skip packet when it only contains zeros
+                    if (containsOnly00(packet.getPayload())) {
+                        return;
+                    }
+                    Log.d(LOG_TAG, "Received console packet: " + parseConsoleText(packet));
+                }
+
+            });
         } else {
             mainActivity.showToastie("Cannot connect: Crazyradio not attached and Bluetooth LE not available");
         }
+    }
+
+    private StringBuffer consoleBuffer = new StringBuffer();
+
+    private String parseConsoleText(CrtpPacket packet) {
+        byte[] payload = packet.getPayload();
+        String result = "";
+        String trimmedText = new String(payload).trim();
+        if (contains0A(payload)) {
+            consoleBuffer.append(trimmedText);
+            result = consoleBuffer.toString();
+            consoleBuffer = new StringBuffer();
+        } else {
+            consoleBuffer.append(trimmedText);
+        }
+        return result;
+    }
+
+    private boolean contains0A(byte[] payload) {
+        for (byte b : payload) {
+            if (b == 10) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsOnly00(byte[] payload) {
+        for (byte b : payload) {
+            if (b != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void disconnect() {
