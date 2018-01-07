@@ -218,7 +218,9 @@ public class MainPresenter {
                     if (containsOnly00(packet.getPayload())) {
                         return;
                     }
-                    Log.d(LOG_TAG, "Received console packet: " + parseConsoleText(packet));
+                    String parsedText = parseConsoleText(packet);
+                    Log.d(LOG_TAG, "Received console packet: " + parsedText);
+                    mainActivity.appendToConsole(parsedText);
                 }
 
             });

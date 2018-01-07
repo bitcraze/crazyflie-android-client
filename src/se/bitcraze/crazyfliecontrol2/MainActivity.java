@@ -41,6 +41,8 @@ import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -59,11 +61,17 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -76,6 +84,9 @@ public class MainActivity extends Activity {
     private DualJoystickView mDualJoystickView;
     private FlightDataView mFlightDataView;
 
+    private ScrollView mConsoleScrollView;
+    private TextView mConsoleTextView;
+
     private SharedPreferences mPreferences;
 
     private IController mController;
@@ -85,9 +96,7 @@ public class MainActivity extends Activity {
     private String mRadioDatarateDefaultValue;
 
     private boolean mDoubleBackToExitPressedOnce = false;
-
     private Controls mControls;
-
     private SoundPool mSoundPool;
     private boolean mLoaded;
     private int mSoundConnect;
@@ -134,6 +143,10 @@ public class MainActivity extends Activity {
         initializeMenuButtons();
 
         mFlightDataView = (FlightDataView) findViewById(R.id.flightdataview);
+
+        mConsoleScrollView = (ScrollView) findViewById(R.id.console_scrollView);
+        mConsoleTextView = (TextView) findViewById(R.id.console_textView);
+        registerForContextMenu(mConsoleTextView);
 
         //action buttons
         mRingEffectButton = (ImageButton) findViewById(R.id.button_ledRing);
@@ -321,6 +334,34 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        if (v.getId() == R.id.console_textView) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            menu.add(Menu.NONE, 0, 0, "Copy to clipboard");
+            menu.add(Menu.NONE, 1, 1, "Clear console");
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case 0:
+                ClipboardManager cm = (ClipboardManager) getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clipData = ClipData.newPlainText("console text", mConsoleTextView.getText());
+                cm.setPrimaryClip(clipData);
+                showToastie("Copied to clipboard");
+                break;
+            case 1:
+                mConsoleTextView.setText("");
+                showToastie("Cleared console");
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void setHideyBar() {
         Log.i(LOG_TAG, "Activating immersive mode");
@@ -342,6 +383,22 @@ public class MainActivity extends Activity {
     //TODO: fix indirection
     public void updateFlightData(){
         mFlightDataView.updateFlightData(mController.getPitch(), mController.getRoll(), mController.getThrust(), mController.getYaw());
+    }
+
+    public void appendToConsole(String text) {
+        final String ftext = text;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mConsoleTextView.append("\n" + ftext);
+                mConsoleScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mConsoleScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                    }
+                });
+            }
+        });
     }
 
     @Override
