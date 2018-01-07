@@ -211,8 +211,17 @@ public class MainActivity extends Activity {
         boolean isScreenLock = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SCREEN_ROTATION_LOCK_BOOL, false);
         if(isScreenLock){
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }else{
+        } else{
             this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        }
+    }
+
+    private void checkConsole() {
+        boolean showConsole = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_SHOW_CONSOLE_BOOL, false);
+        if (showConsole) {
+            mConsoleScrollView.setVisibility(View.VISIBLE);
+        } else {
+            mConsoleScrollView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -270,6 +279,7 @@ public class MainActivity extends Activity {
         mGamepadController.setControlConfig();
         resetInputMethod();
         checkScreenLock();
+        checkConsole();
         //disable action buttons
         mRingEffectButton.setEnabled(false);
         mHeadlightButton.setEnabled(false);

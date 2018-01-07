@@ -42,11 +42,11 @@
         </PreferenceCategory>
         <PreferenceCategory android:title="@string/preferences_category_bluetooth">
             <CheckBoxPreference
-	            android:defaultValue="false"
-	            android:key="pref_blatency_bool"
-	            android:summaryOff="@string/preferences_ble_latency_fix_summary"
-	            android:summaryOn="@string/preferences_ble_latency_fix_summary"
-	            android:title="@string/preferences_ble_latency_fix" />
+                android:defaultValue="false"
+                android:key="pref_blatency_bool"
+                android:summaryOff="@string/preferences_ble_latency_fix_summary"
+                android:summaryOn="@string/preferences_ble_latency_fix_summary"
+                android:title="@string/preferences_ble_latency_fix" />
         </PreferenceCategory>
     </PreferenceScreen>
 
@@ -287,6 +287,12 @@
             android:key="pref_immersive_mode_bool"
             android:title="@string/preferences_immersive_mode_title"
             android:summary="@string/preferences_immersive_mode_summary" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_show_console_bool"
+            android:title="@string/preferences_show_console_title"
+            android:summary="@string/preferences_show_console_summary" />
     </PreferenceScreen>
 
     <Preference

@@ -110,6 +110,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
     public static final String KEY_PREF_SCREEN_ROTATION_LOCK_BOOL = "pref_screen_rotation_lock_bool";
     public static final String KEY_PREF_IMMERSIVE_MODE_BOOL = "pref_immersive_mode_bool";
+    public static final String KEY_PREF_SHOW_CONSOLE_BOOL = "pref_show_console_bool";
 
     private static final int RADIOCHANNEL_UPPER_LIMIT = 125;
 
@@ -494,6 +495,10 @@ public class PreferencesActivity extends PreferenceActivity {
                 pref.setChecked(sharedPreferences.getBoolean(key, false));
             }
             if (key.equals(KEY_PREF_IMMERSIVE_MODE_BOOL)) {
+                CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
+                pref.setChecked(sharedPreferences.getBoolean(key, false));
+            }
+            if (key.equals(KEY_PREF_SHOW_CONSOLE_BOOL)) {
                 CheckBoxPreference pref = (CheckBoxPreference) findPreference(key);
                 pref.setChecked(sharedPreferences.getBoolean(key, false));
             }

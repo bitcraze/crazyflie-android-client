@@ -135,6 +135,8 @@
     <string name="preferences_screen_rotation_lock_summary"></string>
     <string name="preferences_immersive_mode_title">Full screen mode</string>
     <string name="preferences_immersive_mode_summary">Requires Android 4.4</string>
+    <string name="preferences_show_console_title">Show console</string>
+    <string name="preferences_show_console_summary">Display console messages from Crazyflie</string>
 
     <string name="preferences_bootloader_title">Bootloader</string>
     
