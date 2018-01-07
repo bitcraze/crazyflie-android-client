@@ -151,6 +151,26 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/button_buzzerSound" />
 
+    <ScrollView
+        android:id="@+id/console_scrollView"
+        android:layout_width="180dp"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/flightdataview"
+        android:layout_marginTop="25dp"
+        android:scrollbars="vertical"
+        android:fillViewport="true">
+
+        <TextView
+            android:id="@+id/console_textView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="10dp"
+            android:background="@drawable/stroke_bg"
+            android:padding="2dp"
+            android:gravity="top"/>
+    </ScrollView>
+
     <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
         android:id="@+id/joysticks"
         android:layout_width="match_parent"
