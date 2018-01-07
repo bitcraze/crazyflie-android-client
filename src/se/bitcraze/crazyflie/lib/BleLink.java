@@ -72,6 +72,7 @@ public class BleLink extends CrtpDriver {
 	private List<BluetoothGattCharacteristic> mLedsChars;
 	private BluetoothGatt mGatt;
 	private BluetoothGattCharacteristic mCrtpChar;
+	private BluetoothGattCharacteristic mCrtpUpChar;
 	private BluetoothGattCharacteristic mCrtpDownChar;
 	private Timer mScannTimer;
 
@@ -137,6 +138,7 @@ public class BleLink extends CrtpDriver {
 			} else {
 				BluetoothGattService cfService = gatt.getService(CF_SERVICE);
 				mCrtpChar = cfService.getCharacteristic(CRTP);
+				mCrtpUpChar = cfService.getCharacteristic(CRTPUP);
 				mCrtpDownChar = cfService.getCharacteristic(CRTPDOWN);
 
 				gatt.setCharacteristicNotification(mCrtpDownChar, true);
@@ -276,43 +278,47 @@ public class BleLink extends CrtpDriver {
         });
     }
 
-	@Override
-	public boolean isConnected() {
-		return state == State.CONNECTED;
-	}
+    @Override
+    public boolean isConnected() {
+        return state == State.CONNECTED;
+    }
 
-	int ctr = 0;
-	@Override
-	public void sendPacket(CrtpPacket packet) {
+    int ctr = 0;
+    @Override
+    public void sendPacket(CrtpPacket packet) {
+        // FIXME: Skipping half of the commander packets to avoid queuing up packets on slow BLE
+        if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0)) {
+            return;
+        }
+        if (packet.getPayload().length <= 20) {
+            //send normal CRTP packet
+            mContext.runOnUiThread(new SendBlePacket(packet));
+        } else {
+            //split and send two CRTPUP packets
+            sendSplitPacket(packet);
+            // TODO: test with echo packet
+        }
+    }
 
-		// FIXME: Skipping half of the commander packets to avoid queuing up packets on slow BLE
-		if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0)) {
-			return;
-		}
+    int pid = 0;
+    private void sendSplitPacket(CrtpPacket packet) {
+        //send plain bytearrays with controlbyte header
+        // controlbyte + crtpheader + payload (19bytes)
+        byte[] firstPacket = new byte[20];
+        firstPacket[0] = new ControlByte(true, pid, packet.toByteArray().length).toByte();
+        firstPacket[1] = packet.getHeaderByte();
+        System.arraycopy(packet.getPayload(),0, firstPacket, 2, 18);
+        // send first packet
+        mContext.runOnUiThread(new SendBlePacket(firstPacket, mCrtpUpChar));
 
-		class SendBlePacket implements Runnable {
-			CrtpPacket pk;
-
-            public SendBlePacket(CrtpPacket pk) {
-                this.pk = pk;
-            }
-
-			public void run() {
-				if(mConnected && mWritten) {
-					if (mWriteWithAnswer) {
-						mCrtpChar.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-						mWritten = false;
-					} else {
-						mCrtpChar.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-						mWritten = true;
-					}
-					mCrtpChar.setValue(pk.toByteArray());
-					mGatt.writeCharacteristic(mCrtpChar);
-				}
-	        }
-		}
-		mContext.runOnUiThread(new SendBlePacket(packet));
-	}
+        // controlbyte + payload (rest)
+        byte[] secondPacket = new byte[20];
+        secondPacket[0] = new ControlByte(false, pid, 0).toByte();
+        System.arraycopy(packet.getPayload(),19, secondPacket, 1, packet.getPayload().length-1);
+        // send second packet
+        mContext.runOnUiThread(new SendBlePacket(secondPacket, mCrtpUpChar));
+        pid = (pid+1)%4;
+    }
 
     @Override
     public CrtpPacket receivePacket(int time) {
@@ -434,6 +440,39 @@ public class BleLink extends CrtpDriver {
         return null;
     }
 
+    private class SendBlePacket implements Runnable {
+        byte[] ba;
+        BluetoothGattCharacteristic characteristic;
+
+        public SendBlePacket(byte[] ba, BluetoothGattCharacteristic characteristic) {
+            this.ba = ba;
+            this.characteristic = characteristic;
+        }
+
+        /**
+         * Sends packet with CRTP characteristic
+         *
+         * @param packet
+         */
+        public SendBlePacket(CrtpPacket packet){
+            this(packet.toByteArray(), mCrtpChar);
+        }
+
+
+        public void run() {
+            if(mConnected && mWritten) {
+                if (mWriteWithAnswer) {
+                    characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+                    mWritten = false;
+                } else {
+                    characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+                    mWritten = true;
+                }
+                characteristic.setValue(ba);
+                mGatt.writeCharacteristic(characteristic);
+            }
+        }
+    }
 
     private class ControlByte {
 
@@ -447,16 +486,27 @@ public class BleLink extends CrtpDriver {
             this.length = (array[0]&0x1F);
         }
 
+        public ControlByte(boolean start, int pid, int length) {
+            this.start = start;
+            this.pid = pid;
+            this.length = length;
+        }
+
+        public byte toByte() {
+            int b = (start ? 0x80:0x00) | ((pid&0x03)<<5) | ((length-1)&0x1f);
+            return (byte) b;
+        }
+
         public boolean isStart() {
             return start;
         }
 
-        public int getLength() {
-            return length;
-        }
-
         public int getPid() {
             return pid;
+        }
+
+        public int getLength() {
+            return length;
         }
 
     }
