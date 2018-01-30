@@ -266,7 +266,8 @@
 
         <se.bitcraze.crazyfliecontrol.prefs.SliderPreference
             android:key="pref_touch_slider_size"
-            android:title="@string/preferences_joystick_size_title"/>
+            android:title="@string/preferences_joystick_size_title"
+            custom:lowerLimit="10"/>
 
     </PreferenceScreen>
 
