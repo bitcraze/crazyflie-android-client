@@ -29,7 +29,6 @@ package se.bitcraze.crazyfliecontrol.controller;
 
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 
-import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickMovedListener;
 import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
 
@@ -45,27 +44,30 @@ public class TouchController extends AbstractController {
 
     protected int mMovementRange = 1000;  // "resolution"
 
-    protected DualJoystickView mDualJoystickView;
+    protected JoystickView mJoystickViewLeft;
+    protected JoystickView mJoystickViewRight;
 
-    public TouchController(Controls controls, MainActivity activity, DualJoystickView dualJoystickview) {
+    public TouchController(Controls controls, MainActivity activity, JoystickView joystickviewLeft, JoystickView joystickviewRight) {
         super(controls, activity);
-        this.mDualJoystickView = dualJoystickview;
-        this.mDualJoystickView.setMovementRange(mMovementRange, mMovementRange);
+        this.mJoystickViewLeft = joystickviewLeft;
+        this.mJoystickViewRight = joystickviewRight;
+        this.mJoystickViewLeft.setMovementRange(mMovementRange);
+        this.mJoystickViewRight.setMovementRange(mMovementRange);
         updateAutoReturnMode();
     }
 
     private void updateAutoReturnMode() {
-        this.mDualJoystickView.setAutoReturnMode(
-                isLeftAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER,
-                isRightAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER
-        );
-        this.mDualJoystickView.autoReturn(true);
+        this.mJoystickViewLeft.setAutoReturnMode(isLeftAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER);
+        this.mJoystickViewLeft.autoReturn(true);
+        this.mJoystickViewRight.setAutoReturnMode(isRightAnalogFullTravelThrust() ? JoystickView.AUTO_RETURN_BOTTOM : JoystickView.AUTO_RETURN_CENTER);
+        this.mJoystickViewRight.autoReturn(true);
     }
 
     @Override
     public void enable() {
         super.enable();
-        this.mDualJoystickView.setOnJoystickMovedListener(_listenerLeft, _listenerRight);
+        this.mJoystickViewLeft.setOnJoystickMovedListener(_listenerLeft);
+        this.mJoystickViewRight.setOnJoystickMovedListener(_listenerRight);
         updateAutoReturnMode();
     }
 
@@ -75,7 +77,8 @@ public class TouchController extends AbstractController {
         mControls.setRightAnalogX(0);
         mControls.setLeftAnalogY(0);
         mControls.setLeftAnalogX(0);
-        this.mDualJoystickView.setOnJoystickMovedListener(null, null);
+        this.mJoystickViewLeft.setOnJoystickMovedListener(null);
+        this.mJoystickViewRight.setOnJoystickMovedListener(null);
         super.disable();
     }
 

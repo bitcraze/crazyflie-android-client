@@ -74,13 +74,14 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
 
 public class MainActivity extends Activity {
 
     private static final String LOG_TAG = "CrazyflieControl";
 
-    private DualJoystickView mDualJoystickView;
+    private JoystickView mJoystickViewLeft;
+    private JoystickView mJoystickViewRight;
     private FlightDataView mFlightDataView;
 
     private ScrollView mConsoleScrollView;
@@ -130,8 +131,10 @@ public class MainActivity extends Activity {
         mControls.setDefaultPreferenceValues(getResources());
 
         //Default controller
-        mDualJoystickView = (DualJoystickView) findViewById(R.id.joysticks);
-        mController = new TouchController(mControls, this, mDualJoystickView);
+        mJoystickViewLeft = (JoystickView) findViewById(R.id.joystick_left);
+        mJoystickViewRight = (JoystickView) findViewById(R.id.joystick_right);
+        mJoystickViewRight.setLeft(false);
+        mController = new TouchController(mControls, this, mJoystickViewLeft, mJoystickViewRight);
 
         //initialize gamepad controller
         mGamepadController = new GamepadController(mControls, this, mPreferences);
@@ -273,7 +276,8 @@ public class MainActivity extends Activity {
         super.onResume();
         //TODO: improve
         PreferencesActivity.setDefaultJoystickSize(this);
-        mDualJoystickView.setPreferences(mPreferences);
+        mJoystickViewLeft.setPreferences(mPreferences);
+        mJoystickViewRight.setPreferences(mPreferences);
         mControls.setControlConfig();
         mGamepadController.setControlConfig();
         resetInputMethod();
@@ -286,7 +290,7 @@ public class MainActivity extends Activity {
         if (mPreferences.getBoolean(PreferencesActivity.KEY_PREF_IMMERSIVE_MODE_BOOL, false)) {
             setHideyBar();
         }
-        mDualJoystickView.requestLayout();
+        //mJoystickViewLeft.requestLayout();
     }
 
     @Override
@@ -459,10 +463,10 @@ public class MainActivity extends Activity {
             case 0:
                 // Use GyroscopeController if activated in the preferences
                 if (mControls.isUseGyro()) {
-                    mController = new GyroscopeController(mControls, this, mDualJoystickView);
+                    mController = new GyroscopeController(mControls, this, mJoystickViewLeft, mJoystickViewRight);
                 } else {
                     // TODO: reuse existing touch controller?
-                    mController = new TouchController(mControls, this, mDualJoystickView);
+                    mController = new TouchController(mControls, this, mJoystickViewLeft, mJoystickViewRight);
                 }
                 break;
             case 1:

@@ -35,7 +35,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView;
+import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
 
 /**
  * The GyroscopeController extends the TouchController and uses the gyroscope sensors
@@ -53,8 +53,8 @@ public class GyroscopeController extends TouchController {
     private float mSensorRoll = 0;
     private float mSensorPitch = 0;
 
-    public GyroscopeController(Controls controls, MainActivity activity, DualJoystickView dualJoystickView) {
-        super(controls, activity, dualJoystickView);
+    public GyroscopeController(Controls controls, MainActivity activity, JoystickView joystickviewLeft, JoystickView joystickviewRight) {
+        super(controls, activity, joystickviewLeft, joystickviewRight);
         mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) != null) {

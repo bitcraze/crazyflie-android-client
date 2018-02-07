@@ -163,7 +163,7 @@
 
         <TextView
             android:id="@+id/console_textView"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="10dp"
             android:background="@drawable/stroke_bg"
@@ -171,14 +171,22 @@
             android:gravity="top"/>
     </ScrollView>
 
-    <com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView
-        android:id="@+id/joysticks"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+    <com.MobileAnarchy.Android.Widgets.Joystick.JoystickView
+        android:id="@+id/joystick_left"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/flightdataview"
         android:gravity="bottom"
-        android:layout_marginTop="1dp"
-        android:layout_below="@+id/flightdataview">
-    </com.MobileAnarchy.Android.Widgets.Joystick.DualJoystickView>
+        android:layout_toLeftOf="@+id/console_scrollView"
+        android:layout_toStartOf="@+id/console_scrollView"/>
+
+    <com.MobileAnarchy.Android.Widgets.Joystick.JoystickView
+        android:id="@+id/joystick_right"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/flightdataview"
+        android:gravity="bottom"
+        android:layout_toRightOf="@+id/console_scrollView"
+        android:layout_toEndOf="@+id/console_scrollView"/>
 
 </RelativeLayout>

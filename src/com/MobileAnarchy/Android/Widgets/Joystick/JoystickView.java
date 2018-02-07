@@ -1,6 +1,7 @@
 package com.MobileAnarchy.Android.Widgets.Joystick;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,17 +11,13 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 
+import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+
 public class JoystickView extends View {
     public static final int INVALID_POINTER_ID = -1;
+    private static final String TAG = "JoystickView";
 
-    // =========================================
-    // Private Members
-    // =========================================
-    private final boolean D = false;
-    String TAG = "JoystickView";
-
-    private Paint dbgPaint1;
-    private Paint dbgPaint2;
+    private boolean isLeft = true;
 
     private Paint bgPaint;
     private Paint handlePaint;
@@ -61,6 +58,8 @@ public class JoystickView extends View {
     private float touchPressure;
     private boolean clicked;
     private float clickThreshold;
+
+    private float prefRatio = 1;
 
     // Last touch point in view coordinates
     private int pointerId = INVALID_POINTER_ID;
@@ -117,16 +116,6 @@ public class JoystickView extends View {
 
     private void initJoystickView() {
         setFocusable(true);
-
-        dbgPaint1 = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dbgPaint1.setColor(Color.RED);
-        dbgPaint1.setStrokeWidth(1);
-        dbgPaint1.setStyle(Paint.Style.STROKE);
-
-        dbgPaint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dbgPaint2.setColor(Color.GREEN);
-        dbgPaint2.setStrokeWidth(1);
-        dbgPaint2.setStyle(Paint.Style.STROKE);
 
         bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bgPaint.setColor(Color.BLACK);
@@ -247,8 +236,11 @@ public class JoystickView extends View {
     // Drawing Functionality
     // =========================================
 
+    // onSizeChanged?
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         // Here we make sure that we have a perfect circle
         int measuredWidth = measure(widthMeasureSpec);
         int measuredHeight = measure(heightMeasureSpec);
@@ -259,19 +251,32 @@ public class JoystickView extends View {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
-        int d = Math.min(getMeasuredWidth(), getMeasuredHeight());
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+        int size = Math.min(width, height);
 
-        dimX = d;
+        size = Math.round(size*prefRatio);
+
+        dimX = size;
         /* dimY = d; */
 
-        cX = d / 2;
-        cY = d / 2;
+
+        if (!isLeft && (width > size)){
+            cX = (width-size) + (size / 2);
+        } else {
+            cX = size / 2;
+        }
+        if (height > size) {
+            cY = (height-size) + (size / 2);
+        } else {
+            cY = size / 2;
+        }
 
         bgRadius = dimX / 2 - innerPadding;
-        handleRadius = (int) (d * 0.20);
+        handleRadius = (int) (size * 0.20);
         handleInnerBoundaries = handleRadius;
         float oldMovementRadius = movementRadius;
-        movementRadius = Math.min(cX, cY) - handleInnerBoundaries;
+        movementRadius = (size / 2) - handleInnerBoundaries;
         if(oldMovementRadius != movementRadius) {
             autoReturn(true);
         }
@@ -293,9 +298,15 @@ public class JoystickView extends View {
         return result;
     }
 
+    public void setPreferences(SharedPreferences prefs){
+        prefRatio = Float.parseFloat(prefs.getString(PreferencesActivity.KEY_PREF_JOYSTICK_SIZE, "100"));
+        prefRatio/=100.0;
+        requestLayout();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.save();
+//        canvas.save();
         // Draw the background
         canvas.drawCircle(cX, cY, bgRadius, bgPaint);
 
@@ -303,29 +314,9 @@ public class JoystickView extends View {
         handleX = touchX + cX;
         handleY = touchY + cY;
         canvas.drawCircle(handleX, handleY, handleRadius, handlePaint);
-
-        if (D) {
-            canvas.drawRect(1, 1, getMeasuredWidth() - 1, getMeasuredHeight() - 1, dbgPaint1);
-
-            canvas.drawCircle(handleX, handleY, 3, dbgPaint1);
-
-            if (movementConstraint == CONSTRAIN_CIRCLE) {
-                canvas.drawCircle(cX, cY, this.movementRadius, dbgPaint1);
-            } else {
-                canvas.drawRect(cX - movementRadius, cY - movementRadius, cX + movementRadius, cY + movementRadius, dbgPaint1);
-            }
-
-            // Origin to touch point
-            canvas.drawLine(cX, cY, handleX, handleY, dbgPaint2);
-
-            int baseY = (int) (touchY < 0 ? cY + handleRadius : cY - handleRadius);
-            canvas.drawText(String.format("%s (%.0f,%.0f)", TAG, touchX, touchY), handleX - 20, baseY - 7, dbgPaint2);
-            canvas.drawText("(" + String.format("%.0f, %.1f", radial, angle * 57.2957795) + (char) 0x00B0 + ")", handleX - 20, baseY + 15, dbgPaint2);
-        }
-
         // Log.d(TAG, String.format("touch(%f,%f)", touchX, touchY));
         // Log.d(TAG, String.format("onDraw(%.1f,%.1f)\n\n", handleX, handleY));
-        canvas.restore();
+//        canvas.restore();
     }
 
     // Constrain touch within a box
@@ -550,5 +541,13 @@ public class JoystickView extends View {
     public void setTouchOffset(int x, int y) {
         offsetX = x;
         offsetY = y;
+    }
+
+    public boolean isLeft() {
+        return isLeft;
+    }
+
+    public void setLeft(boolean left) {
+        isLeft = left;
     }
 }
