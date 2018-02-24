@@ -29,8 +29,6 @@ package se.bitcraze.crazyflie.lib.crazyflie;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -47,7 +45,6 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.log.Logg;
 import se.bitcraze.crazyflie.lib.param.Param;
-import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.TocCache;
 import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 

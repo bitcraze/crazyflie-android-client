@@ -70,7 +70,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
-import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -298,8 +297,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        mControls.resetAxisValues();
-        mController.disable();
+        if (mControls != null) {
+            mControls.resetAxisValues();
+        }
+        if (mController != null) {
+            mController.disable();
+        }
         updateFlightData();
         mPresenter.disconnect();
     }

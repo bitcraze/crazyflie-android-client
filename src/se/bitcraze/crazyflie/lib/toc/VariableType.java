@@ -61,6 +61,9 @@ public enum VariableType {
      * @return the parsed variable
      */
     public Number parse(ByteBuffer buffer) {
+        if (buffer.capacity() < 4) {
+            return -1;
+        }
         ByteBuffer tempBuffer = ByteBuffer.allocate(8).order(CrtpPacket.BYTE_ORDER);
         //TODO: simplify
         tempBuffer.put(buffer.get());
@@ -68,6 +71,9 @@ public enum VariableType {
         tempBuffer.put(buffer.get());
         tempBuffer.put(buffer.get());
         if(this == INT64_T || this == DOUBLE) {
+            if (buffer.capacity() < 8) {
+                return -1;
+            }
             tempBuffer.put(buffer.get());
             tempBuffer.put(buffer.get());
             tempBuffer.put(buffer.get());
