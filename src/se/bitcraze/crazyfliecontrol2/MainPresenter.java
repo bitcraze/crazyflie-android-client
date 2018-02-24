@@ -180,6 +180,7 @@ public class MainPresenter {
         mDriver = null;
         try {
             mDriver = new RadioDriver(new UsbLinkAndroid(mainActivity));
+            mCrazyflie.setConnectionData(new ConnectionData(radioChannel, radioDatarate));
         } catch (IllegalArgumentException e) {
             Log.d(LOG_TAG, e.getMessage());
             mainActivity.showToastie(e.getMessage());
@@ -187,7 +188,7 @@ public class MainPresenter {
             Log.e(LOG_TAG, e.getMessage());
             mainActivity.showToastie(e.getMessage());
         }
-        connect(radioChannel, radioDatarate, mCacheDir);
+        connect(mCacheDir);
     }
 
     public void connectBle(boolean writeWithResponse, File mCacheDir) {
@@ -196,10 +197,10 @@ public class MainPresenter {
         disconnect();
         mDriver = null;
         mDriver = new BleLink(mainActivity, writeWithResponse);
-        connect(-1, -1, mCacheDir);
+        connect(mCacheDir);
     }
 
-    public void connect(int radioChannel, int radioDatarate, File mCacheDir) {
+    public void connect(File mCacheDir) {
         if (mDriver != null) {
             // add listener for connection status
             mDriver.addConnectionListener(crazyflieConnectionAdapter);
@@ -207,7 +208,7 @@ public class MainPresenter {
             mCrazyflie = new Crazyflie(mDriver, mCacheDir);
 
             // connect
-            mCrazyflie.connect(new ConnectionData(radioChannel, radioDatarate));
+            mCrazyflie.connect();
 
 //            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
 //

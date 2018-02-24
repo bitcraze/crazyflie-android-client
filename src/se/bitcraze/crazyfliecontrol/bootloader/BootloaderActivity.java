@@ -33,10 +33,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import se.bitcraze.crazyflie.lib.bootloader.BootVersion;
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
-import se.bitcraze.crazyflie.lib.bootloader.Utilities.BootVersion;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
 import se.bitcraze.crazyfliecontrol2.MainActivity;

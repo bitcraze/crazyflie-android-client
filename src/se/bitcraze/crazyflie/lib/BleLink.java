@@ -197,9 +197,7 @@ public class BleLink extends CrtpDriver {
 	};
 
 	@Override
-	public void connect(ConnectionData connectionData) {
-	    this.mConnectionData = connectionData;
-	    // TODO: connectionData is unused until BLE can address specific quadcopter
+	public void connect() {
 		if (state != State.IDLE) {
 			throw new IllegalArgumentException("Connection already started");
 		}
@@ -302,20 +300,33 @@ public class BleLink extends CrtpDriver {
         return isConnected() ? CrtpPacket.NULL_PACKET : null;
     }
 
+    /* CONNECTION LISTENER */
+
     @Override
-    public boolean scanSelected(int channel, int datarate, byte[] packet) {
-        // TODO Auto-generated method stub
-        return false;
+    protected void notifyLinkQualityUpdated(int percent) {
     }
 
     @Override
-    public void startSendReceiveThread() {
-        // TODO Auto-generated method stub
+    protected void notifyDisconnected() {
     }
 
     @Override
-    public void stopSendReceiveThread() {
-        // TODO Auto-generated method stub
+    protected void notifyConnectionFailed(String msg) {
     }
 
+    @Override
+    protected void notifyConnectionLost(String msg) {
+    }
+
+    @Override
+    protected void notifyConnectionRequested() {
+    }
+
+    @Override
+    public void notifyConnected() {
+    }
+
+    @Override
+    public void notifySetupFinished() {
+    }
 }

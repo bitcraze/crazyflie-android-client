@@ -146,7 +146,7 @@ public class TocFetcher {
                         #       while 7 is lost then we will never resend for 7.
                         #       This is pretty hard to reproduce but happens...
                      */
-                    mLogger.warn("[{}]: Was expecting {} but got {}", this.mPort, this.mRequestedIndex, actualIndex);
+                    mLogger.warn("[" + this.mPort + "]: Was expecting " + this.mRequestedIndex + " but got " + actualIndex + ".");
                     return;
                 }
                 handleCmdTocElement(payloadBuffer);
@@ -161,7 +161,7 @@ public class TocFetcher {
         this.mCrc = payloadBuffer.getInt();
         mToc.setCrc(mCrc);
 
-        mLogger.debug("[{}]: Got TOC CRC, {} items and CRC={}", this.mPort, this.mNoOfItems, String.format("0x%08X", this.mCrc));
+        mLogger.debug("[this.mPort]: Got TOC CRC, "+ this.mNoOfItems + " items and CRC=" + String.format("0x%08X", this.mCrc) + ".");
 
         //Try to find toc in cache
         Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;
