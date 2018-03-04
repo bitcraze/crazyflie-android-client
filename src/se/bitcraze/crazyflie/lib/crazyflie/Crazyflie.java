@@ -58,7 +58,6 @@ public class Crazyflie {
     private Thread mResendQueueHandlerThread;
 
     private Set<DataListener> mDataListeners = new CopyOnWriteArraySet<DataListener>();
-    private Set<PacketListener> mPacketListeners = new CopyOnWriteArraySet<PacketListener>();
 
     private State mState = State.DISCONNECTED;
 
@@ -98,22 +97,9 @@ public class Crazyflie {
         this.mTocCache = new TocCache(tocCacheDir);
     }
 
-    private PacketListener mPacketListener = new PacketListener() {
-
-        public void packetReceived(CrtpPacket packet) {
-            checkReceivedPackets(packet);
-        }
-
-        public void packetSent() {
-        }
-
-    };
-
     public void connect() {
         mLogger.debug("connect()");
         mState = State.INITIALIZED;
-
-        addPacketListener(mPacketListener);
 
         // try to connect
         try {
@@ -164,7 +150,6 @@ public class Crazyflie {
             if(mResendQueueHandlerThread != null) {
                 mResendQueueHandlerThread.interrupt();
             }
-            removePacketListener(mPacketListener);
             mState = State.DISCONNECTED;
         }
     }
@@ -375,25 +360,6 @@ public class Crazyflie {
         }
     }
 
-    /* PACKET LISTENER */
-
-    private void addPacketListener(PacketListener listener) {
-        mLogger.debug("Adding packet listener...");
-        this.mPacketListeners.add(listener);
-    }
-
-    private void removePacketListener(PacketListener listener) {
-        mLogger.debug("Removing packet listener...");
-        this.mPacketListeners.remove(listener);
-    }
-
-    private void notifyPacketReceived(CrtpPacket inPacket) {
-        checkForInitialPacketCallback(inPacket);
-        for (PacketListener pl : this.mPacketListeners) {
-            pl.packetReceived(inPacket);
-        }
-    }
-
     /**
      * Handles incoming packets and sends the data to the correct listeners
      */
@@ -408,7 +374,10 @@ public class Crazyflie {
                 if(packet != null) {
                     //All-packet callbacks
                     //self.cf.packet_received.call(pk)
-                    notifyPacketReceived(packet);
+
+                    checkForInitialPacketCallback(packet);
+                    checkReceivedPackets(packet);
+
                     notifyDataReceived(packet);
                 }
             }
