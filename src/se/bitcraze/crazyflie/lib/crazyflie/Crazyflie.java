@@ -36,7 +36,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.bitcraze.crazyflie.lib.BleLink;
 import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
@@ -170,17 +169,7 @@ public class Crazyflie {
 
     //TODO: is this good enough?
     public boolean isConnected() {
-        // workaround for BleLink because it does not support Param and Logg subsystems yet
-        // TODO: this should be fixed somewhere else, because it adds a dependency to BleLink
-        if (mDriver instanceof BleLink) {
-            return mState == State.CONNECTED;
-        }
         return mState == State.SETUP_FINISHED;
-    }
-
-    // TODO: should this be public?
-    public State getState() {
-        return mState;
     }
 
     public void setConnectionData(ConnectionData connectionData) {
@@ -270,11 +259,9 @@ public class Crazyflie {
             mLogger.info("Initial packet has been received! => State.CONNECTED");
             this.mState = State.CONNECTED;
             //self.link_established.call(self.link_uri)
-            //TODO: fix hacky-di-hack
-            if (this.mDriver instanceof RadioDriver) {
-                this.mDriver.notifyConnected();
-                startConnectionSetup();
-            }
+            //FIXME: Crazyflie should not call mDriver.notifyConnected()
+            this.mDriver.notifyConnected();
+            startConnectionSetup();
         }
         //self.packet_received.remove_callback(self._check_for_initial_packet_cb)
         // => IncomingPacketHandler
