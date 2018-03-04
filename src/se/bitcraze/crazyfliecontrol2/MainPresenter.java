@@ -177,7 +177,7 @@ public class MainPresenter {
     }
 
     public void connectCrazyradio(int radioChannel, int radioDatarate, File mCacheDir) {
-        Log.d(LOG_TAG, "connect()");
+        Log.d(LOG_TAG, "connectCrazyradio()");
         // ensure previous link is disconnected
         disconnect();
         mDriver = null;
@@ -195,7 +195,7 @@ public class MainPresenter {
     }
 
     public void connectBle(boolean writeWithResponse, File mCacheDir) {
-        Log.d(LOG_TAG, "connect()");
+        Log.d(LOG_TAG, "connectBle()");
         // ensure previous link is disconnected
         disconnect();
         mDriver = null;

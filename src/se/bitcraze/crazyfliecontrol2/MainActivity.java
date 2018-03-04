@@ -232,9 +232,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                // TODO: can this be placed somewhere else?
-                int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
-                int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
 
                 try {
                     if (mPresenter != null && mPresenter.getCrazyflie() != null && mPresenter.getCrazyflie().isConnected()) {
@@ -242,6 +239,9 @@ public class MainActivity extends Activity {
                     } else {
                         // TODO: FIXME
                         if(isCrazyradioAvailable(MainActivity.this)) {
+                            // TODO: can this be placed somewhere else?
+                            int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
+                            int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
                             mPresenter.connectCrazyradio(radioChannel, radioDatarate, mCacheDir);
                         } else {
                             if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
@@ -301,6 +301,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(LOG_TAG, "onPause()");
         if (mControls != null) {
             mControls.resetAxisValues();
         }
@@ -313,6 +314,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        Log.d(LOG_TAG, "onDestroy()");
         unregisterReceiver(mUsbReceiver);
         mSoundPool.release();
         mSoundPool = null;
@@ -371,7 +373,7 @@ public class MainActivity extends Activity {
                 break;
             case 1:
                 mConsoleTextView.setText("");
-                showToastie("Cleared console");
+                showToastie("Console cleared");
                 break;
             default:
                 break;

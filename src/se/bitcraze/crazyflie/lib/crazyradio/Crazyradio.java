@@ -361,7 +361,7 @@ public class Crazyradio {
      * Slow manual scan
      *
      * @param datarate
-     * @throws IOExceptionsbInterface
+     * @throws IOException
      */
     private List<ConnectionData> scanChannelsSlow(int datarate) throws IOException {
         mLogger.debug("Slow manual scan...");

@@ -436,7 +436,7 @@ public class BleLink extends CrtpDriver {
             } else {
                 tempPid = -1;
                 tempLength= 0;
-                mLogger.debug("Bletooth link: Error while receiving long data: PID does not match!");
+                mLogger.debug("Bluetooth link: Error while receiving long data: PID does not match!");
             }
         }
         return null;

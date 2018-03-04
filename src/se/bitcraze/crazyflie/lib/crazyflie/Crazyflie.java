@@ -111,7 +111,7 @@ public class Crazyflie {
     };
 
     public void connect() {
-        mLogger.debug("Connect");
+        mLogger.debug("connect()");
         mState = State.INITIALIZED;
 
         addPacketListener(mPacketListener);
@@ -147,8 +147,8 @@ public class Crazyflie {
     }
 
     public void disconnect() {
+        mLogger.debug("disconnect()");
         if (mState != State.DISCONNECTED) {
-            mLogger.debug("disconnect()");
 
             if (mDriver.isConnected()) {
                 //Send commander packet with all values set to 0 before closing the connection
@@ -264,6 +264,7 @@ public class Crazyflie {
      * @param packet
      */
     private void checkForInitialPacketCallback(CrtpPacket packet) {
+        mLogger.info("checkForInitialPacketCallback...");
         //TODO: should be made more reliable
         if (this.mState == State.INITIALIZED) {
             mLogger.info("Initial packet has been received! => State.CONNECTED");
@@ -288,7 +289,10 @@ public class Crazyflie {
      * Start the connection setup by refreshing the TOCs
      */
     private void startConnectionSetup() {
-        mLogger.info("We are connected [{}], requesting connection setup...", mConnectionData.toString());
+        if (mConnectionData != null) {
+            mLogger.info("We are connected [{}], requesting connection setup...", mConnectionData.toString());
+        }
+        mLogger.info("We are connected [BLE], requesting connection setup...");
 
         mParam = new Param(this);
         //must be defined first to be usable in Log TocFetchFinishedListener
@@ -409,6 +413,7 @@ public class Crazyflie {
         final Logger mLogger = LoggerFactory.getLogger("IncomingPacketHandler");
 
         public void run() {
+            mLogger.debug("IncomingPacketHandlerThread was started.");
             while(!Thread.currentThread().isInterrupted()) {
                 CrtpPacket packet = getDriver().receivePacket(1);
                 if(packet != null) {
