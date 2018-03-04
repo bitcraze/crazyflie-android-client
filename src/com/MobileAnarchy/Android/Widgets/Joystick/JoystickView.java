@@ -263,6 +263,7 @@ public class JoystickView extends View {
 
         if (!isLeft && (width > size)){
             cX = (width-size) + (size / 2);
+            setTouchOffsetX(width-size);
         } else {
             cX = size / 2;
         }
@@ -407,9 +408,9 @@ public class JoystickView extends View {
 
             // Translate touch position to center of view
             float x = ev.getX(pointerIndex);
-            touchX = x - cX - offsetX;
+            touchX = x - cX;
             float y = ev.getY(pointerIndex);
-            touchY = y - cY - offsetY;
+            touchY = y - cY;
 
             // Log.d(TAG, String.format("ACTION_MOVE: (%03.0f, %03.0f) => (%03.0f, %03.0f)", x, y, touchX, touchY));
 
@@ -541,6 +542,10 @@ public class JoystickView extends View {
     public void setTouchOffset(int x, int y) {
         offsetX = x;
         offsetY = y;
+    }
+
+    private void setTouchOffsetX(int x) {
+        offsetX = x;
     }
 
     public boolean isLeft() {
