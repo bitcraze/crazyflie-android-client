@@ -34,45 +34,45 @@ package se.bitcraze.crazyflie.lib.crazyflie;
 public abstract class ConnectionAdapter implements ConnectionListener {
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionRequested(java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionRequested()
      */
     @Override
-    public void connectionRequested(String connectionInfo) {
+    public void connectionRequested() {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connected(java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connected()
      */
     @Override
-    public void connected(String connectionInfo) {
+    public void connected() {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#setupFinished(java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#setupFinished()
      */
     @Override
-    public void setupFinished(String connectionInfo) {
+    public void setupFinished() {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionFailed(java.lang.String, java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionFailed(java.lang.String)
      */
     @Override
-    public void connectionFailed(String connectionInfo, String msg) {
+    public void connectionFailed(String msg) {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionLost(java.lang.String, java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#connectionLost(java.lang.String)
      */
     @Override
-    public void connectionLost(String connectionInfo, String msg) {
+    public void connectionLost(String msg) {
     }
 
     /* (non-Javadoc)
-     * @see se.bitcraze.crazyflielib.ConnectionListener#disconnected(java.lang.String)
+     * @see se.bitcraze.crazyflielib.ConnectionListener#disconnected()
      */
     @Override
-    public void disconnected(String connectionInfo) {
+    public void disconnected() {
     }
 
     /* (non-Javadoc)

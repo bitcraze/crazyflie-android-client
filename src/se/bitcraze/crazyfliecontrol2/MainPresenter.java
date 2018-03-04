@@ -58,12 +58,12 @@ public class MainPresenter {
     private ConnectionAdapter crazyflieConnectionAdapter = new ConnectionAdapter() {
 
         @Override
-        public void connectionRequested(String connectionInfo) {
+        public void connectionRequested() {
             mainActivity.showToastie("Connecting ...");
         }
 
         @Override
-        public void connected(String connectionInfo) {
+        public void connected() {
             mainActivity.showToastie("Connected");
             if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
                 mainActivity.setConnectionButtonConnectedBle();
@@ -75,7 +75,7 @@ public class MainPresenter {
         }
 
         @Override
-        public void setupFinished(String connectionInfo) {
+        public void setupFinished() {
             final Toc paramToc = mCrazyflie.getParam().getToc();
             final Toc logToc = mCrazyflie.getLogg().getToc();
             if (paramToc != null) {
@@ -94,20 +94,20 @@ public class MainPresenter {
         }
 
         @Override
-        public void connectionLost(String connectionInfo, final String msg) {
+        public void connectionLost(final String msg) {
             mainActivity.showToastie(msg);
             mainActivity.setConnectionButtonDisconnected();
             disconnect();
         }
 
         @Override
-        public void connectionFailed(String connectionInfo, final String msg) {
+        public void connectionFailed(final String msg) {
             mainActivity.showToastie(msg);
             disconnect();
         }
 
         @Override
-        public void disconnected(String connectionInfo) {
+        public void disconnected() {
             mainActivity.showToastie("Disconnected");
             mainActivity.setConnectionButtonDisconnected();
             mainActivity.disableButtonsAndResetBatteryLevel();

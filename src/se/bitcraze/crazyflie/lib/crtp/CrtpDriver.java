@@ -95,42 +95,69 @@ public abstract class CrtpDriver {
     /**
      * Notify all registered listeners about a requested connection
      */
-    protected abstract void notifyConnectionRequested();
+    protected void notifyConnectionRequested(){
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionRequested();
+        }
+    }
 
     /**
      * Notify all registered listeners about a connect.
      */
-    public abstract void notifyConnected();
-
+    public void notifyConnected(){
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connected();
+        }
+    }
     /**
      * Notify all registered listeners about a finished setup.
      */
-    public abstract void notifySetupFinished();
+    public void notifySetupFinished(){
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.setupFinished();
+        }
+    }
 
     /**
      * Notify all registered listeners about a failed connection attempt.
      *
      * @param msg
      */
-    protected abstract void notifyConnectionFailed(String msg);
+    protected void notifyConnectionFailed(String msg) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionFailed(msg);
+        }
+    }
 
     /**
      * Notify all registered listeners about a lost connection.
      *
      * @param msg
      */
-    protected abstract void notifyConnectionLost(String msg);
+    protected void notifyConnectionLost(String msg) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.connectionLost(msg);
+        }
+    }
 
     /**
      * Notify all registered listeners about a disconnect.
      */
-    protected abstract void notifyDisconnected();
+    protected void notifyDisconnected() {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.disconnected();
+        }
+    }
 
     /**
      * Notify all registered listeners about a link quality update.
      *
      * @param percent quality of the link (0 = connection lost, 100 = good)
      */
-    protected abstract void notifyLinkQualityUpdated(int percent);
+    protected void notifyLinkQualityUpdated(int percent) {
+        for (ConnectionListener cl : this.mConnectionListeners) {
+            cl.linkQualityUpdated(percent);
+        }
+    }
 
 }

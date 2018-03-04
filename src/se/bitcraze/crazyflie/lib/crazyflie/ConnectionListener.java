@@ -34,47 +34,37 @@ public interface ConnectionListener {
 
     /**
      * Callback when the user requests a connection
-     *
-     * @param connectionInfo
      */
-    public void connectionRequested(String connectionInfo);
+    public void connectionRequested();
 
     /**
      * Callback when the first packet in a new link is received
-     *
-     * @param connectionInfo
      */
-    public void connected(String connectionInfo);
+    public void connected();
 
     /**
      * Callback when a Crazyflie has been connected and the TOCs have been downloaded.
-     *
-     * @param connectionInfo
      */
-    public void setupFinished(String connectionInfo);
+    public void setupFinished();
 
     /**
      * Callback when initial connection fails (i.e no Crazyflie at the specified address)
      *
-     * @param connectionInfo
      * @param msg
      */
-    public void connectionFailed(String connectionInfo, String msg);
+    public void connectionFailed(String msg);
 
     /**
      * Callback when disconnected after a connection has been made (i.e Crazyflie moves out of range)
      *
-     * @param connectionInfo
      * @param msg
      */
-    public void connectionLost(String connectionInfo, String msg);
+    public void connectionLost(String msg);
 
     /**
      * Callback when the Crazyflie is disconnected (called in all cases)
-     *
-     * @param connectionInfo
      */
-    public void disconnected(String connectionInfo);
+    public void disconnected();
 
     /**
      * Called when the link driver updates the link quality measurement
