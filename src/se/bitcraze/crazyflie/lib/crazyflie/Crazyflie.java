@@ -118,6 +118,9 @@ public class Crazyflie {
         // try to connect
         try {
             if (mDriver instanceof RadioDriver) {
+                if (mConnectionData == null) {
+                    throw new IllegalStateException("ConnectionData must be set for Crazyradio connections!");
+                }
                 ((RadioDriver) mDriver).setConnectionData(mConnectionData);
             }
             mDriver.connect();
@@ -152,10 +155,9 @@ public class Crazyflie {
             if (mDriver.isConnected()) {
                 //Send commander packet with all values set to 0 before closing the connection
                 sendPacket(new CommanderPacket(0, 0, 0, (char) 0));
-                mDriver.disconnect();
-            } else {
-                mDriver.disconnect();
             }
+            mDriver.disconnect();
+
             if(mIncomingPacketHandlerThread != null) {
                 mIncomingPacketHandlerThread.interrupt();
             }
