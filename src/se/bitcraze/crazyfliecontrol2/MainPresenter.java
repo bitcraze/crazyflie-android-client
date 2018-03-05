@@ -22,6 +22,7 @@ import se.bitcraze.crazyflie.lib.log.Logg;
 import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
+import se.bitcraze.crazyfliecontrol.console.ConsoleListener;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
 
 public class MainPresenter {
@@ -203,7 +204,7 @@ public class MainPresenter {
         connect(mCacheDir);
     }
 
-    public void connect(File mCacheDir) {
+    private void connect(File mCacheDir) {
         if (mDriver != null) {
             // add listener for connection status
             mDriver.addConnectionListener(crazyflieConnectionAdapter);
@@ -213,57 +214,13 @@ public class MainPresenter {
             // connect
             mCrazyflie.connect();
 
-            mCrazyflie.addDataListener(new DataListener(CrtpPort.CONSOLE) {
-
-                @Override
-                public void dataReceived(CrtpPacket packet) {
-                    //skip packet when it only contains zeros
-                    if (containsOnly00(packet.getPayload())) {
-                        return;
-                    }
-                    String parsedText = parseConsoleText(packet);
-                    Log.d(LOG_TAG, "Received console packet: " + parsedText);
-                    mainActivity.appendToConsole(parsedText);
-                }
-
-            });
+            // add console listener
+            ConsoleListener consoleListener = new ConsoleListener();
+            consoleListener.setMainActivity(mainActivity);
+            mCrazyflie.addDataListener(consoleListener);
         } else {
             mainActivity.showToastie("Cannot connect: Crazyradio not attached and Bluetooth LE not available");
         }
-    }
-
-    private StringBuffer consoleBuffer = new StringBuffer();
-
-    private String parseConsoleText(CrtpPacket packet) {
-        byte[] payload = packet.getPayload();
-        String result = "";
-        String trimmedText = new String(payload).trim();
-        if (contains0A(payload)) {
-            consoleBuffer.append(trimmedText);
-            result = consoleBuffer.toString();
-            consoleBuffer = new StringBuffer();
-        } else {
-            consoleBuffer.append(trimmedText);
-        }
-        return result;
-    }
-
-    private boolean contains0A(byte[] payload) {
-        for (byte b : payload) {
-            if (b == 10) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean containsOnly00(byte[] payload) {
-        for (byte b : payload) {
-            if (b != 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public void disconnect() {
