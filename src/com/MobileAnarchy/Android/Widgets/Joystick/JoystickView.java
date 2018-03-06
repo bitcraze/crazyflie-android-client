@@ -65,7 +65,7 @@ public class JoystickView extends View {
     private int circleCenterX, circleCenterY;
 
     // Size of the view in view coordinates
-    private int dimX; // , dimY;
+    private int dimX, dimY;
 
     // Cartesian coordinates of last touch point - joystick center is (0,0)
     private int cartX, cartY;
@@ -188,7 +188,7 @@ public class JoystickView extends View {
         size = Math.round(size*prefRatio);
 
         dimX = size;
-        /* dimY = d; */
+        dimY = size;
 
         if (!isLeft && (width > size)){
             //add x offset to right joystick when size is smaller than width
@@ -196,12 +196,15 @@ public class JoystickView extends View {
             setTouchOffsetX(width-size);
         } else {
             circleCenterX = size / 2;
+            setTouchOffsetX(0);
         }
         if (height > size) {
-            //add y offset to joystick when size is smaller than width
+            //add y offset to joystick when size is smaller than height
             circleCenterY = (height-size) + (size / 2);
+            setTouchOffsetY(height-size);
         } else {
             circleCenterY = size / 2;
+            setTouchOffsetY(0);
         }
 
         bgRadius = dimX / 2 - innerPadding;
@@ -303,7 +306,8 @@ public class JoystickView extends View {
         case MotionEvent.ACTION_DOWN: {
             if (pointerId == INVALID_POINTER_ID) {
                 int x = (int) ev.getX();
-                if (x >= offsetX && x < offsetX + dimX) {
+                int y = (int) ev.getY();
+                if (x >= offsetX && x < offsetX + dimX && y >= offsetY && y < offsetY + dimY) {
                     setPointerId(ev.getPointerId(0));
                     // Log.d(TAG, "ACTION_DOWN: " + getPointerId());
                     return true;
@@ -316,7 +320,8 @@ public class JoystickView extends View {
                 final int pointerIndex = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
                 final int pointerId = ev.getPointerId(pointerIndex);
                 int x = (int) ev.getX(pointerIndex);
-                if (x >= offsetX && x < offsetX + dimX) {
+                int y = (int) ev.getY(pointerIndex);
+                if (x >= offsetX && x < offsetX + dimX && y >= offsetY && y < offsetY + dimY) {
                     // Log.d(TAG, "ACTION_POINTER_DOWN: " + pointerId);
                     setPointerId(pointerId);
                     return true;
@@ -439,6 +444,10 @@ public class JoystickView extends View {
 
     private void setTouchOffsetX(int x) {
         offsetX = x;
+    }
+
+    private void setTouchOffsetY(int y) {
+        offsetY = y;
     }
 
     public boolean isLeft() {
