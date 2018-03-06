@@ -9,13 +9,10 @@ import java.util.Map;
 import se.bitcraze.crazyflie.lib.BleLink;
 import se.bitcraze.crazyflie.lib.crazyflie.ConnectionAdapter;
 import se.bitcraze.crazyflie.lib.crazyflie.Crazyflie;
-import se.bitcraze.crazyflie.lib.crazyflie.DataListener;
 import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
-import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
-import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
 import se.bitcraze.crazyflie.lib.log.Logg;
@@ -184,7 +181,6 @@ public class MainPresenter {
         mDriver = null;
         try {
             mDriver = new RadioDriver(new UsbLinkAndroid(mainActivity));
-            mCrazyflie.setConnectionData(new ConnectionData(radioChannel, radioDatarate));
         } catch (IllegalArgumentException e) {
             Log.d(LOG_TAG, e.getMessage());
             mainActivity.showToastie(e.getMessage());
@@ -192,7 +188,7 @@ public class MainPresenter {
             Log.e(LOG_TAG, e.getMessage());
             mainActivity.showToastie(e.getMessage());
         }
-        connect(mCacheDir);
+        connect(mCacheDir, new ConnectionData(radioChannel, radioDatarate));
     }
 
     public void connectBle(boolean writeWithResponse, File mCacheDir) {
@@ -201,16 +197,18 @@ public class MainPresenter {
         disconnect();
         mDriver = null;
         mDriver = new BleLink(mainActivity, writeWithResponse);
-        connect(mCacheDir);
+        connect(mCacheDir, null);
     }
 
-    private void connect(File mCacheDir) {
+    private void connect(File mCacheDir, ConnectionData connectionData) {
         if (mDriver != null) {
             // add listener for connection status
             mDriver.addConnectionListener(crazyflieConnectionAdapter);
 
             mCrazyflie = new Crazyflie(mDriver, mCacheDir);
-
+            if (mDriver instanceof RadioDriver) {
+                mCrazyflie.setConnectionData(connectionData);
+            }
             // connect
             mCrazyflie.connect();
 
