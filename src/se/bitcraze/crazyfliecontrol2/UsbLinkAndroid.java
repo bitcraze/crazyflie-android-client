@@ -214,7 +214,7 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
             return 0.0f;
         }
         byte[] rawDescs = mConnection.getRawDescriptors();
-        return Float.parseFloat(Integer.toHexString(rawDescs[13]) + "." + Integer.toHexString(rawDescs[12]));
+        return Float.parseFloat(Integer.toHexString(rawDescs[13] & 0x0ff) + "." + Integer.toHexString(rawDescs[12] & 0x0ff));
     }
 
     /* (non-Javadoc)

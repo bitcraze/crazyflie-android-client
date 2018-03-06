@@ -344,9 +344,11 @@ public class Crazyradio {
                     //long transfer timeout (1000) is important!
                     mUsbInterface.sendControlTransfer(0x40, SCAN_CHANNELS, 0, 125, packet);
                     final int nfound = mUsbInterface.sendControlTransfer(0xc0, SCAN_CHANNELS, 0, 0, rdata);
-                    for (int i = 0; i < nfound; i++) {
-                        result.add(new ConnectionData(rdata[i], datarate));
-                        mLogger.debug("Found channel: " + rdata[i] + " Data rate: " + datarate);
+                    if (nfound != 64) {
+                        for (int i = 0; i < nfound; i++) {
+                            result.add(new ConnectionData(rdata[i], datarate));
+                            mLogger.debug("Found channel: " + rdata[i] + " Data rate: " + datarate);
+                        }
                     }
                 }
             }
@@ -408,9 +410,11 @@ public class Crazyradio {
         final byte[] rdata = new byte[64];
         mUsbInterface.sendControlTransfer(0x40, SCAN_CHANNELS, start, stop, NULL_PACKET);
         final int nfound = mUsbInterface.sendControlTransfer(0xc0, SCAN_CHANNELS, 0, 0, rdata);
-        for (int i = 0; i < nfound; i++) {
-            result.add((int) rdata[i]);
-            mLogger.debug("Found channel: %s", rdata[i]);
+        if (nfound != 64) {
+            for (int i = 0; i < nfound; i++) {
+                result.add((int) rdata[i]);
+                mLogger.debug("Found channel: " + rdata[i]);
+            }
         }
         return result;
     }

@@ -612,7 +612,7 @@ public class PreferencesActivity extends PreferenceActivity {
                         boolean useSlowScan = false;
                         //Use slow scan, when Crazyradio firmware version is 0.52 or 0.53
                         float firmwareVersion = usbLinkAndroid.getFirmwareVersion();
-                        if(0.52f == firmwareVersion || 0.53f == firmwareVersion){
+                        if(firmwareVersion < 0.5){
                             useSlowScan = true;
                         }
                         return crlink.scanChannels(useSlowScan);
