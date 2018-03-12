@@ -55,8 +55,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 
-import se.bitcraze.crazyflie.lib.crazyflie.ConnectionListener;
-import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 
@@ -185,6 +183,7 @@ public class BleLink extends CrtpDriver {
 		    mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
             CrtpPacket packet = unpack(characteristic.getValue());
             if (packet != null) {
+                mLogger.debug("Received value for characteristic: {}, length: {}", packet.toString(), packet.toByteArray().length);
                 try {
                     mInQueue.put(packet);
                 } catch (InterruptedException ie) {
@@ -337,8 +336,6 @@ public class BleLink extends CrtpDriver {
     private int tempLength = -1;
 
     private CrtpPacket unpack (byte[] packet) {
-        mLogger.debug("Received value for characteristic: {}, length: {}", packet.toString(), packet.length);
-
         ControlByte header = new ControlByte(packet);
 
         if (header.isStart()) {

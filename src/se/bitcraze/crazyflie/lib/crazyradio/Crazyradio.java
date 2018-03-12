@@ -110,11 +110,7 @@ public class Crazyradio {
 
         this.mVersion = mUsbInterface.getFirmwareVersion();
 
-        if (this.mVersion < 0.3) {
-            this.mLogger.error("This driver requires Crazyradio firmware V0.3+");
-        }
-
-        if (this.mVersion < 0.3) {
+        if (this.mVersion < 0.4) {
             this.mLogger.warn("You should update to Crazyradio firmware V0.4+");
         }
 
@@ -127,7 +123,7 @@ public class Crazyradio {
         this.mArc = -1;
         if (mVersion >= 0.4) {
             setContinuousCarrier(false);
-//            // self.set_address((0xE7,) * 5)
+            // self.set_address((0xE7,) * 5)
             setAddress(new byte[] {(byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7, (byte) 0xE7});
             setPower(P_0DBM);
             setArc(3);
@@ -148,7 +144,7 @@ public class Crazyradio {
     /**
      * Set the radio channel to be used.
      *
-     * @param channel the new channel. Must be in range 0-125.
+     * @param channel new channel. Must be in range 0-125.
      */
     public void setChannel(int channel) {
         if (channel < 0 || channel > 125) {
@@ -161,7 +157,7 @@ public class Crazyradio {
      * Set the radio address to be used.
      * The same address must be configured in the receiver for the communication to work.
      *
-     * @param address the new address with a length of 5 byte.
+     * @param address new address with a length of 5 byte.
      * @throws IllegalArgumentException if the length of the address doesn't equal 5 bytes
      */
     public void setAddress(byte[] address) {
@@ -174,7 +170,7 @@ public class Crazyradio {
     /**
      * Set the radio data rate to be used.
      *
-     * @param rate new data rate. Possible values are in range 0-2.
+     * @param datarate new data rate. Possible values are in range 0-2.
      */
     public void setDatarate(int datarate) {
         if (datarate < 0 || datarate > 2) {
@@ -186,7 +182,7 @@ public class Crazyradio {
     /**
      * Set the radio power to be used
      *
-     * @param power
+     * @param power new radio power
      */
     public void setPower(int power) {
         //TODO: add argument check
@@ -198,7 +194,7 @@ public class Crazyradio {
      *
      * Set how often the radio will retry a transfer if the ACK has not been received.
      *
-     * @param arc the number of retries.
+     * @param arc number of retries.
      * @throws IllegalArgumentException if the number of retries is not in range 0-15.
      */
     public void setArc(int arc) {
@@ -308,9 +304,8 @@ public class Crazyradio {
     /**
      * Scan for available channels.
      *
-     * @return array containing the found channels and datarates.
-     * @throws IOException
-     * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
+     * @return array containing the found channels and data rates.
+     * @throws IOException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
 
     public ConnectionData[] scanChannels() throws IOException {
@@ -322,8 +317,7 @@ public class Crazyradio {
      *
      * @param useSlowScan
      * @return array containing the found channels and datarates.
-     * @throws IOException
-     * @throws IllegalStateException if the Crazyradio is not attached (the connection is <code>null</code>).
+     * @throws IOException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
     public ConnectionData[] scanChannels(boolean useSlowScan) throws IOException {
         List<ConnectionData> result = new ArrayList<ConnectionData>();
@@ -424,7 +418,7 @@ public class Crazyradio {
      * The ack contains information about the packet transmission
      * and a data payload if the ack packet contained any
      *
-     * @param dataOut
+     * @param dataOut bytes to send
      */
     public RadioAck sendPacket(byte[] dataOut) {
         RadioAck ackIn = null;
