@@ -110,7 +110,7 @@ public class Target {
         return mData;
     }
 
-    public int getAvailableFlash() {
+    private int getAvailableFlash() {
         return ((this.mFlashPages - this.mStartPage) * this.mPageSize / 1024);
     }
 

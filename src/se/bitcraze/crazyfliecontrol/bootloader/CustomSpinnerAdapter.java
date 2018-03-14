@@ -63,7 +63,7 @@ public class CustomSpinnerAdapter extends ArrayAdapter<FirmwareRelease> {
     }
 
     // this function is called for each row (Called data.size() times)
-    public View getCustomView(int position, View convertView, ViewGroup parent) {
+    private View getCustomView(int position, View convertView, ViewGroup parent) {
         View row = inflater.inflate(R.layout.spinner_rows, parent, false);
         FirmwareRelease firmwareRelease = mFirmwareReleases.get(position);
         if (mFirmwareReleases.isEmpty() || firmwareRelease == null) {

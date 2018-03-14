@@ -67,10 +67,12 @@ import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 public class FirmwareDownloader {
 
     private static final String LOG_TAG = "FirmwareDownloader";
+
+    private static final String RELEASES_JSON = "cf_releases.json";
+    private static final String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
+
     private Context mContext;
     private final File mBootloaderDir;
-    public final static String RELEASES_JSON = "cf_releases.json";
-    public final static String RELEASE_URL = "https://api.github.com/repos/bitcraze/crazyflie-release/releases";
     private List<FirmwareRelease> mFirmwareReleases = new ArrayList<FirmwareRelease>();
     private long mDownloadReference = -42;
     private DownloadManager mManager;
@@ -220,7 +222,7 @@ public class FirmwareDownloader {
         return firmwareFile.exists() && firmwareFile.length() > 0;
     }
 
-    public void downloadFile (String url, String fileName, String tagName) {
+    private void downloadFile (String url, String fileName, String tagName) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setDescription("Some description");
         request.setTitle(fileName);
@@ -273,7 +275,7 @@ public class FirmwareDownloader {
         return builder.toString();
     }
 
-    public List<FirmwareRelease> parseJson(String input) throws JSONException {
+    private List<FirmwareRelease> parseJson(String input) throws JSONException {
 
         List<FirmwareRelease> firmwareReleases = new ArrayList<FirmwareRelease>();
 
@@ -351,7 +353,7 @@ public class FirmwareDownloader {
 
       };
 
-    public String getReasonString(int reason) {
+    private String getReasonString(int reason) {
         String reasonText = "";
         switch(reason){
             case DownloadManager.ERROR_CANNOT_RESUME:
@@ -426,13 +428,13 @@ public class FirmwareDownloader {
       this.mDownloadListeners.remove(dl);
     }
 
-    public void notifyDownloadFinished() {
+    private void notifyDownloadFinished() {
       for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
           downloadListener.downloadFinished();
       }
     }
 
-    public void notifyDownloadProblem(String msg) {
+    private void notifyDownloadProblem(String msg) {
       for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
           downloadListener.downloadProblem(msg);
       }

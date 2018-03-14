@@ -63,8 +63,8 @@ public class Cf1Config {
         return bb.array();
     }
 
-    // public for testing
-    public int checksum256(byte[] array) {
+    // package private for testing
+    /* package private */ int checksum256(byte[] array) {
         // return reduce(lambda x, y: x + y, map(ord, st)) % 256
         int result = array[0];
         for (int i = 1; i < array.length; i++) {

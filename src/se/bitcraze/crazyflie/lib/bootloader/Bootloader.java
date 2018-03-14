@@ -75,18 +75,17 @@ public class Bootloader {
     private static final String MANIFEST_FILENAME = "manifest.json";
     private Cloader mCload;
     private boolean mCancelled = false;
-    private List<BootloaderListener> mBootloaderListeners;
+    private List<BootloaderListener> mBootloaderListeners = Collections.synchronizedList(new LinkedList<BootloaderListener>());
 
     /**
      * Init the communication class by starting to communicate with the
      * link given. clink is the link address used after resetting to the
      * bootloader.
      *
-     * The device is actually considered in firmware mode.
+     * The device is actually considered to be in firmware mode.
      */
     public Bootloader(CrtpDriver driver) {
         this.mCload = new Cloader(driver);
-        this.mBootloaderListeners = Collections.synchronizedList(new LinkedList<BootloaderListener>());
         mMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -203,7 +202,7 @@ public class Bootloader {
         return flash(file, "");
     }
 
-    public boolean flash(File file, String... targetNames) throws IOException {
+    private boolean flash(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
         if (filesToFlash.isEmpty()) {
             mLogger.error("Found no files to flash.");
@@ -219,8 +218,8 @@ public class Bootloader {
         return true;
     }
 
-    //package private for tests
-    List<FlashTarget> getFlashTargets(File file, String... targetNames) throws IOException {
+    // package private for tests
+    /* package private */ List<FlashTarget> getFlashTargets(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = new ArrayList<FlashTarget>();
 
         if (!file.exists()) {
@@ -300,7 +299,7 @@ public class Bootloader {
         return filesToFlash;
     }
 
-    public void unzip(File zipFile) {
+    private void unzip(File zipFile) {
         mLogger.debug("Trying to unzip " + zipFile + "...");
         InputStream fis = null;
         ZipInputStream zis = null;
@@ -356,14 +355,14 @@ public class Bootloader {
         }
     }
 
-    public static String getFileNameWithoutExtension (File file) {
+    private static String getFileNameWithoutExtension (File file) {
         return file.getName().substring(0, file.getName().length()-4);
     }
 
     /**
      * Basic check if a file is a Zip file
      *
-     * @param file
+     * @param file potential zip file
      * @return true if file is a Zip file, false otherwise
      */
     //TODO: how can this be improved?
@@ -393,7 +392,7 @@ public class Bootloader {
     /**
      * Reset to firmware depending on protocol version
      *
-     * @return
+     * @return true if successful, false otherwise
      */
     public boolean resetToFirmware() {
         int targetType = -1;
@@ -512,6 +511,8 @@ public class Bootloader {
     }
 
 
+    /* Bootloader listener */
+
     public void addBootloaderListener(BootloaderListener bl) {
         this.mBootloaderListeners.add(bl);
     }
@@ -520,19 +521,19 @@ public class Bootloader {
         this.mBootloaderListeners.remove(bl);
     }
 
-    public void notifyUpdateProgress(int progress, int max) {
+    private void notifyUpdateProgress(int progress, int max) {
         for (BootloaderListener bootloaderListener : mBootloaderListeners) {
             bootloaderListener.updateProgress(progress, max);
         }
     }
 
-    public void notifyUpdateStatus(String status) {
+    private void notifyUpdateStatus(String status) {
         for (BootloaderListener bootloaderListener : mBootloaderListeners) {
             bootloaderListener.updateStatus(status);
         }
     }
 
-    public void notifyUpdateError(String error) {
+    private void notifyUpdateError(String error) {
         for (BootloaderListener bootloaderListener : mBootloaderListeners) {
             bootloaderListener.updateError(error);
         }
@@ -548,7 +549,7 @@ public class Bootloader {
 
     }
 
-    public class FlashTarget {
+    private class FlashTarget {
 
         private Target mTarget;
         private byte[] mData = new byte[0];
@@ -585,7 +586,7 @@ public class Bootloader {
 
     }
 
-    public static Manifest readManifest (File file) throws IOException {
+    private static Manifest readManifest (File file) throws IOException {
         String errorMessage = "";
         try {
             return mMapper.readValue(file, Manifest.class);
