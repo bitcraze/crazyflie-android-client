@@ -44,6 +44,7 @@ public class MainPresenter {
     private int mCpuFlash = 0;
 
     private Thread mSendJoystickDataThread;
+    private ConsoleListener mConsoleListener;
 
     public MainPresenter(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -213,9 +214,9 @@ public class MainPresenter {
             mCrazyflie.connect();
 
             // add console listener
-            ConsoleListener consoleListener = new ConsoleListener();
-            consoleListener.setMainActivity(mainActivity);
-            mCrazyflie.addDataListener(consoleListener);
+            mConsoleListener = new ConsoleListener();
+            mConsoleListener.setMainActivity(mainActivity);
+            mCrazyflie.addDataListener(mConsoleListener);
         } else {
             mainActivity.showToastie("Cannot connect: Crazyradio not attached and Bluetooth LE not available");
         }
@@ -224,6 +225,7 @@ public class MainPresenter {
     public void disconnect() {
         Log.d(LOG_TAG, "disconnect()");
         if (mCrazyflie != null) {
+            mCrazyflie.removeDataListener(mConsoleListener);
             mCrazyflie.disconnect();
             mCrazyflie = null;
         }

@@ -80,12 +80,12 @@ public class BleLink extends CrtpDriver {
 	private static final String CF_DEVICE_NAME = "Crazyflie";
 	private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
 
-    private static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
+    private static final String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
-	private static UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
-    private static UUID CRTP = UUID.fromString("00000202-1C7F-4F9E-947B-43B7C00A9A08");
-    private static UUID CRTPUP = UUID.fromString("00000203-1C7F-4F9E-947B-43B7C00A9A08");
-    private static UUID CRTPDOWN = UUID.fromString("00000204-1C7F-4F9E-947B-43B7C00A9A08");
+	private static final UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
+    private static final UUID CRTP = UUID.fromString("00000202-1C7F-4F9E-947B-43B7C00A9A08");
+    private static final UUID CRTPUP = UUID.fromString("00000203-1C7F-4F9E-947B-43B7C00A9A08");
+    private static final UUID CRTPDOWN = UUID.fromString("00000204-1C7F-4F9E-947B-43B7C00A9A08");
 
 	private final static int REQUEST_ENABLE_BT = 1;
 	protected boolean mWritten = true;
@@ -323,7 +323,7 @@ public class BleLink extends CrtpDriver {
     @Override
     public void sendPacket(CrtpPacket packet) {
         // FIXME: Skipping half of the commander packets to avoid queuing up packets on slow BLE
-        if ((mWriteWithAnswer == false) && ((ctr++)%2 == 0)) {
+        if (!mWriteWithAnswer && ((ctr++)%2 == 0)) {
             return;
         }
         if (packet.getPayload().length <= 20) {
