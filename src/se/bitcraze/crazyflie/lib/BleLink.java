@@ -75,6 +75,7 @@ public class BleLink extends CrtpDriver {
 	private BluetoothGattCharacteristic mCrtpUpChar;
 	private BluetoothGattCharacteristic mCrtpDownChar;
 	private Timer mScannTimer;
+    private Timer mRssiTimer;
 
 	private static final String CF_DEVICE_NAME = "Crazyflie";
 	private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
@@ -112,6 +113,8 @@ public class BleLink extends CrtpDriver {
                 mLogger.debug("onConnectionStateChange: STATE_CONNECTED");
                 gatt.discoverServices();
                 mGatt = gatt;
+                mRssiTimer = new Timer();
+                mRssiTimer.schedule(rssiTask, 1000, 1000);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mLogger.debug("onConnectionStateChange: STATE_DISCONNECTED");
                 // This is necessary to handle a disconnect on the copter side
@@ -190,8 +193,36 @@ public class BleLink extends CrtpDriver {
                     //
                 }
             }
-		}
+        }
+
+        @Override
+        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                mLogger.debug(String.format("BLE ReadRSSI [%d]", rssi));
+                int percentage = 2*(rssi+90); // based on guesstimate
+                notifyLinkQualityUpdated(limit(percentage));
+            }
+        }
 	};
+
+    /**
+     * Limit range of int between 0 and 100
+     *
+     * @param value number
+     * @return number between 0 and 100
+     */
+    private int limit(int value) {
+        return Math.max(0, Math.min(value, 100));
+    }
+
+    private TimerTask rssiTask = new TimerTask() {
+        @Override
+        public void run() {
+            if (mGatt != null) {
+                mGatt.readRemoteRssi();
+            }
+        }
+    };
 
 	private LeScanCallback mLeScanCallback = new LeScanCallback() {
 		@Override
@@ -271,6 +302,10 @@ public class BleLink extends CrtpDriver {
                     if (mScannTimer != null) {
                         mScannTimer.cancel();
                         mScannTimer = null;
+                    }
+                    if (mRssiTimer != null) {
+                        mRssiTimer.cancel();
+                        mRssiTimer = null;
                     }
                     state = State.IDLE;
                     notifyDisconnected();
