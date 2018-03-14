@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.bitcraze.crazyflie.lib.Utilities;
-import se.bitcraze.crazyflie.lib.crazyflie.ConnectionListener;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.usb.CrazyUsbInterface;
@@ -50,15 +49,16 @@ import se.bitcraze.crazyflie.lib.usb.CrazyUsbInterface;
  */
 public class RadioDriver extends CrtpDriver {
 
-    final static Logger mLogger = LoggerFactory.getLogger("RadioDriver");
+    private final static Logger mLogger = LoggerFactory.getLogger("RadioDriver");
 
     private Crazyradio mCradio;
     private Thread mRadioDriverThread;
 
     private CrazyUsbInterface mUsbInterface;
 
-    private final BlockingQueue<CrtpPacket> mInQueue;
-    private final BlockingQueue<CrtpPacket> mOutQueue;
+    private final BlockingQueue<CrtpPacket> mOutQueue = new LinkedBlockingQueue<CrtpPacket>();
+    //TODO: Limit size of out queue to avoid "ReadBack" effect?
+    private final BlockingQueue<CrtpPacket> mInQueue = new LinkedBlockingQueue<CrtpPacket>();
 
     private ConnectionData mConnectionData;
     
@@ -68,8 +68,6 @@ public class RadioDriver extends CrtpDriver {
     public RadioDriver(CrazyUsbInterface usbInterface) {
         this.mUsbInterface = usbInterface;
         this.mCradio = null;
-        this.mInQueue = new LinkedBlockingQueue<CrtpPacket>();
-        this.mOutQueue = new LinkedBlockingQueue<CrtpPacket>(); //TODO: Limit size of out queue to avoid "ReadBack" effect?
         this.mRadioDriverThread = null;
     }
 
@@ -122,7 +120,7 @@ public class RadioDriver extends CrtpDriver {
     /**
      * Sets the connection data (channel and data rate)
      * 
-     * @param connectionData
+     * @param connectionData channel and data rate
      */
     public void setConnectionData(ConnectionData connectionData) {
         this.mConnectionData = connectionData;
@@ -280,7 +278,7 @@ public class RadioDriver extends CrtpDriver {
             //if self.link.cradio.send_packet((0xff,)).ack:
             RadioAck ack = mCradio.sendPacket(new byte[] {(byte) 0xFF});
             if (ack != null) {
-                mLogger.info("Bootloader set to radio address " + Utilities.getHexString(newAddress));;
+                mLogger.info("Bootloader set to radio address " + Utilities.getHexString(newAddress));
                 startSendReceiveThread();
                 return true;
             }
@@ -392,8 +390,7 @@ public class RadioDriver extends CrtpDriver {
                     }
 
                     // get the next packet to send after relaxation (wait 10ms)
-                    CrtpPacket outPacket = null;
-                    outPacket = mOutQueue.poll((long) waitTime, TimeUnit.SECONDS);
+                    CrtpPacket outPacket = mOutQueue.poll((long) waitTime, TimeUnit.SECONDS);
 
                     if (outPacket != null) {
                         dataOut = outPacket.toByteArray();

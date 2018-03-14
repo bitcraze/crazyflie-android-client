@@ -50,14 +50,14 @@ public interface ConnectionListener {
     /**
      * Callback when initial connection fails (i.e no Crazyflie at the specified address)
      *
-     * @param msg
+     * @param msg error message
      */
     public void connectionFailed(String msg);
 
     /**
      * Callback when disconnected after a connection has been made (i.e Crazyflie moves out of range)
      *
-     * @param msg
+     * @param msg error message
      */
     public void connectionLost(String msg);
 
@@ -69,7 +69,7 @@ public interface ConnectionListener {
     /**
      * Called when the link driver updates the link quality measurement
      *
-     * @param percent
+     * @param percent link quality in percent
      */
     public void linkQualityUpdated(int percent);
 

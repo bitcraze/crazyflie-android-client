@@ -89,10 +89,7 @@ public class Crazyradio {
         this.mUsbInterface = usbInterface;
         try {
             this.mUsbInterface.initDevice(CRADIO_VID, CRADIO_PID);
-        } catch (SecurityException e) {
-            mLogger.error(e.getMessage());
-            return;
-        } catch (IOException e) {
+        } catch (SecurityException | IOException e) {
             mLogger.error(e.getMessage());
             return;
         }
@@ -255,7 +252,7 @@ public class Crazyradio {
         sendVendorSetup(SET_CONT_CARRIER, (active ? 1 : 0), 0, null);
     }
 
-    public boolean hasFwScan() {
+    private boolean hasFwScan() {
         /*
           #return self.version >= 0.5
           return mUsbInterface.getFirmwareVersion() > 0.5;
@@ -315,7 +312,7 @@ public class Crazyradio {
     /**
      * Scan for available channels.
      *
-     * @param useSlowScan
+     * @param useSlowScan if true, then the slow scan is used
      * @return array containing the found channels and datarates.
      * @throws IOException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
@@ -356,8 +353,8 @@ public class Crazyradio {
     /**
      * Slow manual scan
      *
-     * @param datarate
-     * @throws IOException
+     * @param datarate the data rate that should be used during the scan
+     * @throws IOException if the Crazyradio is not attached (the connection is <code>null</code>).
      */
     private List<ConnectionData> scanChannelsSlow(int datarate) throws IOException {
         mLogger.debug("Slow manual scan...");

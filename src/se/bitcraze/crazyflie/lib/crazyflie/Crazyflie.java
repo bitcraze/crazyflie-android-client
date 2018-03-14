@@ -49,7 +49,7 @@ import se.bitcraze.crazyflie.lib.toc.TocFetchFinishedListener;
 
 public class Crazyflie {
 
-    final Logger mLogger = LoggerFactory.getLogger("Crazyflie");
+    private final Logger mLogger = LoggerFactory.getLogger("Crazyflie");
 
     private CrtpDriver mDriver;
     private Thread mIncomingPacketHandlerThread;
@@ -70,11 +70,11 @@ public class Crazyflie {
     /**
      * State of the connection procedure
      */
-    public enum State {
+    private enum State {
         DISCONNECTED,
         INITIALIZED,
         CONNECTED,
-        SETUP_FINISHED;
+        SETUP_FINISHED
     }
 
     /**
@@ -110,13 +110,9 @@ public class Crazyflie {
                 ((RadioDriver) mDriver).setConnectionData(mConnectionData);
             }
             mDriver.connect();
-        } catch (IOException ioe) {
+        } catch (IOException | IllegalArgumentException ioe) {
             mLogger.debug(ioe.getMessage());
 //            notifyConnectionFailed("Connection failed: " + ioe.getMessage());
-            disconnect();
-        } catch (IllegalArgumentException iae) {
-            mLogger.debug(iae.getMessage());
-//            notifyConnectionFailed("Connection failed: " + iae.getMessage());
             disconnect();
         }
 
@@ -166,7 +162,7 @@ public class Crazyflie {
     /**
      * Send a packet through the driver interface
      *
-     * @param packet
+     * @param packet packet to send to the Crazyflie
      */
     // def send_packet(self, pk, expected_reply=(), resend=False):
     public void sendPacket(CrtpPacket packet){
@@ -188,7 +184,7 @@ public class Crazyflie {
      * Callback called for every packet received to check if we are
      * waiting for an packet like this. If so, then remove it from the queue.
      *
-     * @param packet
+     * @param packet received packet
      */
     private void checkReceivedPackets(CrtpPacket packet) {
         // compare received packet with expectedReplies in resend queue
@@ -237,7 +233,7 @@ public class Crazyflie {
      * Called when first packet arrives from Crazyflie.
      * This is used to determine if we are connected to something that is answering.
      *
-     * @param packet
+     * @param packet initial packet
      */
     private void checkForInitialPacketCallback(CrtpPacket packet) {
         // mLogger.info("checkForInitialPacketCallback...");
@@ -325,7 +321,7 @@ public class Crazyflie {
     /**
      * Add a data listener for data that comes on a specific port
      *
-     * @param dataListener
+     * @param dataListener datalistener that should be added
      */
     public void addDataListener(DataListener dataListener) {
         mLogger.debug("Adding data listener for port [" + dataListener.getPort() + "]");
@@ -335,7 +331,7 @@ public class Crazyflie {
     /**
      * Remove a data listener for data that comes on a specific port
      *
-     * @param dataListener
+     * @param dataListener datalistener that should be removed
      */
     public void removeDataListener(DataListener dataListener) {
         mLogger.debug("Removing data listener for port [" + dataListener.getPort() + "]");
@@ -345,7 +341,9 @@ public class Crazyflie {
     //public void removeDataListener(CrtpPort); ?
 
     /**
-     * @param packet
+     * Notify data listeners that a packet was received
+     *
+     * @param packet received packet
      */
     private void notifyDataReceived(CrtpPacket packet) {
         boolean found = false;
