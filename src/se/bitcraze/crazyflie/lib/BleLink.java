@@ -27,6 +27,7 @@
 
 package se.bitcraze.crazyflie.lib;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -42,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -51,6 +51,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -67,6 +72,7 @@ public class BleLink extends CrtpDriver {
 	private static final int rssiThreshold = -100;
 
 	private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothLeScanner mBluetoothLeScanner;
 	private BluetoothDevice mDevice;
 	private BluetoothGattCharacteristic mLedChar;
 	private List<BluetoothGattCharacteristic> mLedsChars;
@@ -118,7 +124,7 @@ public class BleLink extends CrtpDriver {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mLogger.debug("onConnectionStateChange: STATE_DISCONNECTED");
                 // This is necessary to handle a disconnect on the copter side
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mBluetoothLeScanner.stopScan(mScanCallback);
                 mConnected = false;
                 state = State.IDLE;
                 // it should actually be notifyConnectionLost, but there is
@@ -126,7 +132,7 @@ public class BleLink extends CrtpDriver {
                 notifyDisconnected();
             } else {
                 mLogger.debug("onConnectionStateChange: else: " + newState);
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                mBluetoothLeScanner.stopScan(mScanCallback);
                 mConnected = false;
                 state = State.IDLE;
                 notifyConnectionLost("BLE connection lost");
@@ -224,30 +230,34 @@ public class BleLink extends CrtpDriver {
         }
     };
 
-	private LeScanCallback mLeScanCallback = new LeScanCallback() {
-		@Override
-		public void onLeScan(BluetoothDevice device, int rssi, byte[] anounce) {
-			if (device != null && device.getName() != null) {
-			    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            if (result != null) {
+                BluetoothDevice device = result.getDevice();
+                int rssi = result.getRssi();
+                if (device != null && device.getName() != null) {
+                    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
-				if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
-					mBluetoothAdapter.stopLeScan(this);
-					if (mScannTimer != null) {
-						mScannTimer.cancel();
-						mScannTimer = null;
-					}
-					state = State.CONNECTING;
-					mDevice = device;
-					mContext.runOnUiThread(new Runnable() {
-						@Override
-                        public void run() {
-							mDevice.connectGatt(mContext, false, mGattCallback);
-						}
-					});
-				}
-			}
-		}
-	};
+                    if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
+                        mBluetoothLeScanner.stopScan(this);
+                        if (mScannTimer != null) {
+                            mScannTimer.cancel();
+                            mScannTimer = null;
+                        }
+                        state = State.CONNECTING;
+                        mDevice = device;
+                        mContext.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mDevice.connectGatt(mContext, false, mGattCallback);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    };
 
 	@Override
 	public void connect() {
@@ -264,8 +274,14 @@ public class BleLink extends CrtpDriver {
 		    throw new IllegalArgumentException("Bluetooth needs to be started");
 		}
 
-		mBluetoothAdapter.stopLeScan(mLeScanCallback);
-		mBluetoothAdapter.startLeScan(mLeScanCallback);
+        mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+        mBluetoothLeScanner.stopScan(mScanCallback);
+
+        // Filtered scan
+        List<ScanFilter> deviceFilterList = new ArrayList<>();
+        ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
+        deviceFilterList.add(cfFilter);
+		mBluetoothLeScanner.startScan(deviceFilterList, new ScanSettings.Builder().build(), mScanCallback);
 		if (mScannTimer != null) {
 			mScannTimer.cancel();
 		}
@@ -273,7 +289,7 @@ public class BleLink extends CrtpDriver {
 		mScannTimer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				mBluetoothAdapter.stopLeScan(mLeScanCallback);
+				mBluetoothLeScanner.stopScan(mScanCallback);
 				state = State.IDLE;
 				notifyConnectionFailed("BLE connection timeout");
 			}
@@ -298,7 +314,7 @@ public class BleLink extends CrtpDriver {
                         }
                     }, 100);
                     mConnected = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    mBluetoothLeScanner.stopScan(mScanCallback);
                     if (mScannTimer != null) {
                         mScannTimer.cancel();
                         mScannTimer = null;
