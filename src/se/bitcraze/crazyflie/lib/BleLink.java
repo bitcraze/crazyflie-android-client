@@ -27,7 +27,6 @@
 
 package se.bitcraze.crazyflie.lib;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -278,10 +277,8 @@ public class BleLink extends CrtpDriver {
         mBluetoothLeScanner.stopScan(mScanCallback);
 
         // Filtered scan
-        List<ScanFilter> deviceFilterList = new ArrayList<>();
         ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
-        deviceFilterList.add(cfFilter);
-		mBluetoothLeScanner.startScan(deviceFilterList, new ScanSettings.Builder().build(), mScanCallback);
+        mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback);
 		if (mScannTimer != null) {
 			mScannTimer.cancel();
 		}
