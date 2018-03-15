@@ -43,7 +43,7 @@
     <!-- Flight control settings -->
     <string name="preferences_flightcontrol_title">Flight control settings</string>
     <string name="preferences_mode">Mode</string>
-    <string name="preferences_mode_defaultValue">3</string>
+    <string name="preferences_mode_defaultValue">2</string>
     <string name="preferences_deadzone">Deadzone</string>
     <string name="preferences_deadzone_defaultValue">0.1</string>
     <string name="preferences_rolltrim">Roll trim</string>
