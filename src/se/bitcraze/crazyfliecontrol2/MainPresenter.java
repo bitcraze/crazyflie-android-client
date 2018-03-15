@@ -66,8 +66,8 @@ public class MainPresenter {
             mainActivity.showToastie("Connected");
             if (mCrazyflie != null && mCrazyflie.getDriver() instanceof BleLink) {
                 mainActivity.setConnectionButtonConnectedBle();
-                // TODO: Remove this once BleLink supports Param and Logg subsystems
-                startSendJoystickDataThread();
+                // FIXME: Hack to circumvent BLE reconnect problem
+                mCrazyflie.startConnectionSetup_BLE();
             } else {
                 mainActivity.setConnectionButtonConnected();
             }

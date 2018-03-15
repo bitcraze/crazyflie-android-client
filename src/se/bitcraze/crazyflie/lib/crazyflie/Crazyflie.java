@@ -182,7 +182,7 @@ public class Crazyflie {
 
     /**
      * Callback called for every packet received to check if we are
-     * waiting for an packet like this. If so, then remove it from the queue.
+     * waiting for a packet like this. If so, then remove it from the queue.
      *
      * @param packet received packet
      */
@@ -250,6 +250,16 @@ public class Crazyflie {
         // => IncomingPacketHandler
     }
 
+    /**
+     * Hack to circumvent BLE reconnect issue
+     */
+    public void startConnectionSetup_BLE() {
+        if (this.mState == State.INITIALIZED) {
+            this.mState = State.CONNECTED;
+            startConnectionSetup();
+        }
+    }
+
     public CrtpDriver getDriver(){
         return mDriver;
     }
@@ -261,8 +271,9 @@ public class Crazyflie {
     private void startConnectionSetup() {
         if (mConnectionData != null) {
             mLogger.info("We are connected [{}], requesting connection setup...", mConnectionData.toString());
+        } else {
+            mLogger.info("We are connected [BLE], requesting connection setup...");
         }
-        mLogger.info("We are connected [BLE], requesting connection setup...");
 
         mParam = new Param(this);
         //must be defined first to be usable in Log TocFetchFinishedListener
