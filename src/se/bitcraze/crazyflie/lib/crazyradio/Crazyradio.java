@@ -306,7 +306,7 @@ public class Crazyradio {
      */
 
     public ConnectionData[] scanChannels() throws IOException {
-        return scanChannels(false);
+        return scanChannels(true);
     }
 
     /**
