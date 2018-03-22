@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -429,15 +430,21 @@ public class FirmwareDownloader {
     }
 
     private void notifyDownloadFinished() {
-      for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
-          downloadListener.downloadFinished();
-      }
+        synchronized(mDownloadListeners) {
+            Iterator<FirmwareDownloadListener> i = mDownloadListeners.iterator();
+            while (i.hasNext()) {
+                i.next().downloadFinished();
+            }
+        }
     }
 
     private void notifyDownloadProblem(String msg) {
-      for (FirmwareDownloadListener downloadListener : mDownloadListeners) {
-          downloadListener.downloadProblem(msg);
-      }
+        synchronized(mDownloadListeners) {
+            Iterator<FirmwareDownloadListener> i = mDownloadListeners.iterator();
+            while (i.hasNext()) {
+                i.next().downloadProblem(msg);
+            }
+        }
     }
 
     public interface FirmwareDownloadListener {

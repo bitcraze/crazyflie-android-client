@@ -335,6 +335,10 @@ public class Crazyflie {
      * @param dataListener datalistener that should be added
      */
     public void addDataListener(DataListener dataListener) {
+        if (dataListener == null) {
+            mLogger.debug("addDataListener: data listener is null");
+            return;
+        }
         mLogger.debug("Adding data listener for port [" + dataListener.getPort() + "]");
         this.mDataListeners.add(dataListener);
     }
@@ -345,6 +349,10 @@ public class Crazyflie {
      * @param dataListener datalistener that should be removed
      */
     public void removeDataListener(DataListener dataListener) {
+        if (dataListener == null) {
+            mLogger.debug("removeDataListener: data listener is null");
+            return;
+        }
         mLogger.debug("Removing data listener for port [" + dataListener.getPort() + "]");
         this.mDataListeners.remove(dataListener);
     }
