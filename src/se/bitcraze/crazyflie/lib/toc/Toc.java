@@ -81,8 +81,7 @@ public class Toc {
      */
     public void addElement(TocElement tocElement) {
         if (tocElement.getGroup().isEmpty()) {
-            mLogger.warn("TocElement has no group!");
-            return;
+            throw new IllegalStateException("TocElement has no group!");
         }
         mTocElementMap.put(tocElement.getCompleteName(), tocElement);
     }

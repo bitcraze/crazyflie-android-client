@@ -23,6 +23,7 @@ import se.bitcraze.crazyflie.lib.toc.VariableType;
 import se.bitcraze.crazyfliecontrol.console.ConsoleListener;
 import se.bitcraze.crazyfliecontrol.controller.AbstractController;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;
+import se.bitcraze.crazyfliecontrol.controller.IController;
 
 public class MainPresenter {
 
@@ -182,17 +183,22 @@ public class MainPresenter {
             @Override
             public void run() {
                 while (mainActivity != null && mCrazyflie != null) {
-                    float roll = mainActivity.getController().getRoll();
-                    float pitch = mainActivity.getController().getPitch();
-                    float yaw = mainActivity.getController().getYaw();
-                    float thrustAbsolute = mainActivity.getController().getThrustAbsolute();
+                    IController controller = mainActivity.getController();
+                    if (controller == null) {
+                        Log.d(LOG_TAG, "SendJoystickDataThread: controller is null.");
+                        break;
+                    }
+                    float roll = controller.getRoll();
+                    float pitch = controller.getPitch();
+                    float yaw = controller.getYaw();
+                    float thrustAbsolute = controller.getThrustAbsolute();
                     boolean xmode = mainActivity.getControls().isXmode();
                     if (heightHold) {
-                        float targetHeight = mainActivity.getController().getTargetHeight();
+                        float targetHeight = controller.getTargetHeight();
                         mCrazyflie.sendPacket(new ZDistancePacket(roll, pitch, yaw, targetHeight));
                     } else {
                         mCrazyflie.sendPacket(new CommanderPacket(roll, pitch, yaw, (char) thrustAbsolute, xmode));
-                    }                    
+                    }
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException e) {
