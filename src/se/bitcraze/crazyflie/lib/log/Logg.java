@@ -75,6 +75,8 @@ public class Logg {
 
     private static Map<Integer, String> mErrCodes = new HashMap<Integer, String>();
 
+    private final Header loggHeader = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
+
     /*
      * These codes can be decoded using os.stderror, but
      * some of the text messages will look very strange
@@ -224,11 +226,7 @@ public class Logg {
         this.mTocCache = tocCache;
         // self._refresh_callback = refresh_done_callback
         this.mTocFetchFinishedListener = listener;
-
-        Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-        CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[]{CMD_RESET_LOGGING});
-        packet.setExpectedReply(new byte[]{CMD_RESET_LOGGING});
-        this.mCrazyflie.sendPacket(packet);
+        sendLoggPacket(new byte[] {CMD_RESET_LOGGING}, new byte[]{CMD_RESET_LOGGING});
     }
 
     private LogConfig findLogConfig (int id) {
@@ -271,11 +269,7 @@ public class Logg {
 
                             // TODO: call start(LogConfig) instead?
                             // TODO: double check with start method (add & start vs just add)
-                            Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-                            CrtpPacket newPacket = new CrtpPacket(header.getByte(), new byte[]{CMD_START_LOGGING, (byte) id, (byte) logConfig.getPeriod()});
-                            packet.setExpectedReply(new byte[]{CMD_START_LOGGING, (byte) id});
-                            this.mCrazyflie.sendPacket(newPacket);
-
+                            sendLoggPacket(new byte[] {CMD_START_LOGGING, (byte) id, (byte) logConfig.getPeriod()}, new byte[]{CMD_START_LOGGING, (byte) id});
                             logConfig.setAdded(true);
                             notifyLogAdded(logConfig);
                         } else {
@@ -367,7 +361,7 @@ public class Logg {
             // TODO: fix payload offset
             int id = payload[0];
             LogConfig logConfig = findLogConfig(id);
-            
+
             if (logConfig != null) {
                 Map<String, Number> logDataMap = new HashMap<String, Number>();
                 int timestamp = parseLogData(payload, logConfig, logDataMap);
@@ -459,11 +453,7 @@ public class Logg {
         }
 
         if (noOfCheckedLogVariables > 0) {
-            // Create packet
-            Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-            CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
-            packet.setExpectedReply(new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfig.getId()});
-            this.mCrazyflie.sendPacket(packet);
+            sendLoggPacket(bb.array(), new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfig.getId()});
             mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfCheckedLogVariables + " log variables.");
         } else {
             mLogger.error("No log variables added to log config, skipped creating log config " + logConfig.getName());
@@ -528,12 +518,7 @@ public class Logg {
             } else {
                 mLogger.debug("Log config already registered, starting logging for ID=" + logConfig.getId());
             }
-
-            Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-            // pk.data = (CMD_START_LOGGING, self.id, self.period)
-            CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[] {CMD_START_LOGGING, (byte) logConfig.getId(), (byte) logConfig.getPeriod()});
-            packet.setExpectedReply(new byte[]{CMD_START_LOGGING, (byte) logConfig.getId()});
-            mCrazyflie.sendPacket(packet);
+            sendLoggPacket(new byte[] {CMD_START_LOGGING, (byte) logConfig.getId(), (byte) logConfig.getPeriod()}, new byte[]{CMD_START_LOGGING, (byte) logConfig.getId()});
         }
     }
 
@@ -548,10 +533,7 @@ public class Logg {
                 mLogger.warn("Stopping log config, but no log config registered");
             } else {
                 mLogger.debug("Sending stop logging for ID=" + logConfig.getId());
-                Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-                CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[] {CMD_STOP_LOGGING, (byte) logConfig.getId()});
-                packet.setExpectedReply(new byte[]{CMD_STOP_LOGGING, (byte) logConfig.getId()});
-                mCrazyflie.sendPacket(packet);
+                sendLoggPacket(new byte[] {CMD_STOP_LOGGING, (byte) logConfig.getId()}, new byte[]{CMD_STOP_LOGGING, (byte) logConfig.getId()});
             }
         }
     }
@@ -567,10 +549,7 @@ public class Logg {
                 mLogger.warn("Delete log config, but no log config registered");
             } else {
                 mLogger.debug("Sending delete logging for ID=" + logConfig.getId());
-                Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
-                CrtpPacket packet = new CrtpPacket(header.getByte(), new byte[] {CMD_DELETE_LOGCONFIG, (byte) logConfig.getId()});
-                packet.setExpectedReply(new byte[]{CMD_DELETE_LOGCONFIG, (byte) logConfig.getId()});
-                mCrazyflie.sendPacket(packet);
+                sendLoggPacket(new byte[] {CMD_DELETE_LOGCONFIG, (byte) logConfig.getId()}, new byte[]{CMD_DELETE_LOGCONFIG, (byte) logConfig.getId()});
             }
         }
         //hacky workarounds
@@ -580,6 +559,12 @@ public class Logg {
 
     public List<LogConfig> getLogConfigs() {
         return mLogConfigs;
+    }
+
+    private void sendLoggPacket(byte[] data, byte[] expectedReply) {
+        CrtpPacket packet = new CrtpPacket(loggHeader.getByte(), data);
+        packet.setExpectedReply(expectedReply);
+        mCrazyflie.sendPacket(packet);
     }
 
     /* Log listener methods*/
