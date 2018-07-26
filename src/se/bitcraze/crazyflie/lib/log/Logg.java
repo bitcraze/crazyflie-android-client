@@ -94,6 +94,9 @@ public class Logg {
 
 
     public Logg(Crazyflie crazyflie) {
+        if (crazyflie == null) {
+            throw new IllegalArgumentException("crazyflie can not be null");
+        }
         this.mCrazyflie = crazyflie;
 
         /*
@@ -375,7 +378,7 @@ public class Logg {
         }
     }
 
-    /*packge orivate */ static int parseLogData(byte[] payload, LogConfig logConfig, Map<String, Number> logDataMap) {
+    /* package private */ static int parseLogData(byte[] payload, LogConfig logConfig, Map<String, Number> logDataMap) {
         //get timestamp
         int timestamp = parseTimestamp(payload[1], payload[2], payload[3]);
         // logdata = packet.data[4:]
@@ -391,7 +394,7 @@ public class Logg {
 
     // timestamps = struct.unpack("<BBB", packet.data[1:4])
     // timestamp = (timestamps[0] | timestamps[1] << 8 | timestamps[2] << 16)
-    private static int parseTimestamp(byte data1, byte data2, byte data3) {
+    /* package private */ static int parseTimestamp(byte data1, byte data2, byte data3) {
         //allocate 4 bytes for an int
         ByteBuffer buffer = ByteBuffer.allocate(4).order(CrtpPacket.BYTE_ORDER);
         buffer.put(data1);
@@ -431,68 +434,84 @@ public class Logg {
         bb.put((byte) CMD_CREATE_LOGCONFIG);
         bb.put((byte) logConfigId);
 
-        if (logConfig.getLogVariables().isEmpty()) {
-            mLogger.warn("LogConfig " + logConfig.getName() + " is empty!");
-            return;
+        List<LogVariable> logVariables = logConfig.getLogVariables();
+        if (logVariables.isEmpty()) {
+            throw new IllegalStateException("LogConfig " + logConfig.getName() + " is empty!");
         }
-        int noOfLogVariables = 0;
-        for (LogVariable variable : logConfig.getLogVariables()) {
-            VariableType variableType = variable.getVariableType();
-            
+        if (logVariables.size() >= (bb.capacity()-2)/2) {
+            throw new IllegalStateException("Maximum number of LogVariables per packet has been reached (" + logVariables.size() + ").");
+        }
+        if (mToc == null) {
+            throw new IllegalStateException("TOC is null.");
+        }
+
+        int noOfCheckedLogVariables = 0;
+        for (LogVariable variable : logVariables) {
             if(!variable.isTocVariable()) { // Memory location
-                //create LogTocElement to get the variableTypeId
-                TocElement memLogTocElement = new TocElement();
-                memLogTocElement.setCtype(variableType);
-                int variableTypeId = mToc.getVariableTypeIdLog(variableType);
-                
-                // logger.debug("Logging to raw memory %d, 0x%04X", var.get_storage_and_fetch_byte(), var.address)
-                mLogger.debug("Logging to raw memory " + variableType.name() + ", address: " + variable.getAddress());
-                // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
-                // pk.data += struct.pack('<I', var.address)
-                bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
-                noOfLogVariables++;
+                createMemoryLocationElement(bb, variable);
+                noOfCheckedLogVariables++;
             } else { // Item in TOC
-                String name = variable.getName();
-                if (mToc == null) {
-                    mLogger.error("TOC is null.");
-                    return;
-                }
-                int tocElementId = mToc.getElementId(name);
-                if (tocElementId == -1) {
-                    mLogger.error("Toc element " + name + " not found in TOC.");
-                    // TODO: create UI error message?
-                    continue;
-                }
-                
-                TocElement logTocElement = mToc.getElementByCompleteName(name);
-                if (logTocElement != null) {
-                    int variableTypeId = mToc.getVariableTypeIdLog(variableType);
-                    if (variableTypeId == -1) {
-                        mLogger.error("No variableType found for TOC element " + logTocElement.getCompleteName() + ".");
-                        //TODO: notifyLogError(logConfig);?
-                        //TODO: return instead?
-                        continue;
-                    }
-                    // logger.debug("Adding %s with id=%d and type=0x%02X", var.name, self.cf.log.toc.get_element_id(var.name), var.get_storage_and_fetch_byte())
-                    // mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
-                    // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
-                    // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
-                    bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
-                    noOfLogVariables++;
+                boolean successful = createTocElement(bb, variable);
+                if (successful) {
+                    noOfCheckedLogVariables++;
                 }
             }
         }
 
-        if (noOfLogVariables > 0) {
+        if (noOfCheckedLogVariables > 0) {
             // Create packet
             Header header = new Header(CHAN_SETTINGS, CrtpPort.LOGGING);
             CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
-            packet.setExpectedReply(new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfigId});
+            packet.setExpectedReply(new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfig.getId()});
             this.mCrazyflie.sendPacket(packet);
-            mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfLogVariables + " log variables.");
+            mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfCheckedLogVariables + " log variables.");
         } else {
             mLogger.error("No log variables added to log config, skipped creating log config " + logConfig.getName());
         }
+    }
+
+    private void createMemoryLocationElement(ByteBuffer bb, LogVariable variable) {
+        //create LogTocElement to get the variableTypeId
+        VariableType variableType = variable.getVariableType();
+        TocElement memLogTocElement = new TocElement();
+        memLogTocElement.setCtype(variableType);
+        int variableTypeId = mToc.getVariableTypeIdLog(variableType);
+
+        // logger.debug("Logging to raw memory %d, 0x%04X", var.get_storage_and_fetch_byte(), var.address)
+        mLogger.debug("Logging to raw memory " + variableType.name() + ", address: " + variable.getAddress());
+        // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
+        // pk.data += struct.pack('<I', var.address)
+        bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
+    }
+
+    private boolean createTocElement(ByteBuffer bb, LogVariable variable) {
+        VariableType variableType = variable.getVariableType();
+        String name = variable.getName();
+
+        // get TOC element ID
+        int tocElementId = mToc.getElementId(name);
+        if (tocElementId == -1) {
+            mLogger.error("Toc element " + name + " not found in TOC.");
+            // TODO: create UI error message?
+            return false;
+        }
+
+        TocElement logTocElement = mToc.getElementByCompleteName(name);
+        if (logTocElement != null) {
+            int variableTypeId = mToc.getVariableTypeIdLog(variableType);
+            if (variableTypeId == -1) {
+                mLogger.error("No variableType found for TOC element " + logTocElement.getCompleteName() + ".");
+                //TODO: notifyLogError(logConfig);?
+                return false;
+            }
+            // logger.debug("Adding %s with id=%d and type=0x%02X", var.name, self.cf.log.toc.get_element_id(var.name), var.get_storage_and_fetch_byte())
+            // mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
+            // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
+            // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
+            bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
+            return true;
+        }
+        return false;
     }
 
     /**

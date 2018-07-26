@@ -118,7 +118,7 @@ public class TocFetcher {
         return this.mNoOfItems;
     }
 
-    private void newPacketReceived(CrtpPacket packet) {
+    /* package private */ void newPacketReceived(CrtpPacket packet) {
         if (packet.getHeader().getChannel() != TOC_CHANNEL) {
             return;
         }
