@@ -27,6 +27,8 @@
 
 package se.bitcraze.crazyflie.lib.toc;
 
+import android.util.Log;
+
 import java.nio.charset.Charset;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,6 +40,8 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
  *
  */
 public class TocElement implements Comparable<TocElement> {
+
+    private static final String LOG_TAG = "Crazyflie-TocElement";
 
     public static final int RW_ACCESS = 1;
     public static final int RO_ACCESS = 0;
@@ -138,6 +142,10 @@ public class TocElement implements Comparable<TocElement> {
         System.arraycopy(payload, offset, trimmedPayload, 0, trimmedPayload.length);
         String temp = new String(trimmedPayload, Charset.forName("US-ASCII"));
         String[] split = temp.split("\0");
+        if (split.length != 2) {
+            Log.d(LOG_TAG, "Group and Name could not be assigned: " + temp);
+            return;
+        }
         setGroup(split[0]);
         setName(split[1]);
     }
@@ -198,7 +206,8 @@ public class TocElement implements Comparable<TocElement> {
     }
 
     public int compareTo(TocElement te) {
-        int identCmp = Integer.compare(this.getIdent(), te.getIdent());
+        // int identCmp = Integer.compare(this.getIdent(), te.getIdent()); // only supported in API level 19+
+        int identCmp = Integer.valueOf(this.getIdent()).compareTo(Integer.valueOf(te.getIdent()));
         return (identCmp != 0 ? identCmp : this.getCompleteName().compareTo(te.getCompleteName()));
     }
 
