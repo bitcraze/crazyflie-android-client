@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.annotation.SuppressLint;
+import android.support.annotation.RequiresApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -57,6 +58,7 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
@@ -123,7 +125,7 @@ public class BleLink extends CrtpDriver {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 mLogger.debug("onConnectionStateChange: STATE_DISCONNECTED");
                 // This is necessary to handle a disconnect on the copter side
-                mBluetoothLeScanner.stopScan(mScanCallback);
+                stopScan();
                 mConnected = false;
                 state = State.IDLE;
                 // it should actually be notifyConnectionLost, but there is
@@ -131,7 +133,7 @@ public class BleLink extends CrtpDriver {
                 notifyDisconnected();
             } else {
                 mLogger.debug("onConnectionStateChange: else: " + newState);
-                mBluetoothLeScanner.stopScan(mScanCallback);
+                stopScan();
                 mConnected = false;
                 state = State.IDLE;
                 notifyConnectionLost("BLE connection lost");
@@ -229,7 +231,8 @@ public class BleLink extends CrtpDriver {
         }
     };
 
-    private ScanCallback mScanCallback = new ScanCallback() {
+    @RequiresApi(21)
+    private ScanCallback mScanCallback21 = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             if (result != null) {
@@ -239,7 +242,7 @@ public class BleLink extends CrtpDriver {
                     mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
                     if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
-                        mBluetoothLeScanner.stopScan(this);
+                        stopScan();
                         if (mScannTimer != null) {
                             mScannTimer.cancel();
                             mScannTimer = null;
@@ -258,6 +261,65 @@ public class BleLink extends CrtpDriver {
         }
     };
 
+    @RequiresApi(18)
+    private BluetoothAdapter.LeScanCallback mScanCallback18 = new BluetoothAdapter.LeScanCallback() {
+
+        @Override
+        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+            if (device != null) {
+                if (device != null && device.getName() != null) {
+                    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+
+                    if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
+                        stopScan();
+                        if (mScannTimer != null) {
+                            mScannTimer.cancel();
+                            mScannTimer = null;
+                        }
+                        state = State.CONNECTING;
+                        mDevice = device;
+                        mContext.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mDevice.connectGatt(mContext, false, mGattCallback);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    };
+
+    private void scan () {
+        // Filtered scan
+        ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback21);
+        } else {
+            mBluetoothAdapter.startLeScan(mScanCallback18);
+        }
+        if (mScannTimer != null) {
+            mScannTimer.cancel();
+        }
+        mScannTimer = new Timer();
+        mScannTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                stopScan();
+                state = State.IDLE;
+                notifyConnectionFailed("BLE connection timeout");
+            }
+        }, 5000);
+    }
+
+    private void stopScan() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBluetoothLeScanner.stopScan(mScanCallback21);
+        } else {
+            mBluetoothAdapter.stopLeScan(mScanCallback18);
+        }
+    }
+
 	@Override
 	public void connect() {
 		if (state != State.IDLE) {
@@ -274,27 +336,11 @@ public class BleLink extends CrtpDriver {
 		}
 
         mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-        mBluetoothLeScanner.stopScan(mScanCallback);
-
-        // Filtered scan
-        ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
-        mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback);
-		if (mScannTimer != null) {
-			mScannTimer.cancel();
-		}
-		mScannTimer = new Timer();
-		mScannTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				mBluetoothLeScanner.stopScan(mScanCallback);
-				state = State.IDLE;
-				notifyConnectionFailed("BLE connection timeout");
-			}
-		}, 5000);
-
-		state = State.CONNECTING;
-		notifyConnectionRequested();
-	}
+        stopScan();
+        scan();
+        state = State.CONNECTING;
+        notifyConnectionRequested();
+    }
 
     @Override
     public void disconnect() {
@@ -311,7 +357,7 @@ public class BleLink extends CrtpDriver {
                         }
                     }, 100);
                     mConnected = false;
-                    mBluetoothLeScanner.stopScan(mScanCallback);
+                    stopScan();
                     if (mScannTimer != null) {
                         mScannTimer.cancel();
                         mScannTimer = null;
