@@ -27,9 +27,10 @@
 
 package se.bitcraze.crazyflie.lib.toc;
 
-import android.util.Log;
-
 import java.nio.charset.Charset;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -41,7 +42,7 @@ import se.bitcraze.crazyflie.lib.crtp.CrtpPort;
  */
 public class TocElement implements Comparable<TocElement> {
 
-    private static final String LOG_TAG = "Crazyflie-TocElement";
+    final Logger mLogger = LoggerFactory.getLogger("TocElement");
 
     public static final int RW_ACCESS = 1;
     public static final int RO_ACCESS = 0;
@@ -143,7 +144,7 @@ public class TocElement implements Comparable<TocElement> {
         String temp = new String(trimmedPayload, Charset.forName("US-ASCII"));
         String[] split = temp.split("\0");
         if (split.length != 2) {
-            Log.d(LOG_TAG, "Group and Name could not be assigned: " + temp);
+            mLogger.debug("Group and Name could not be assigned: " + temp);
             return;
         }
         setGroup(split[0]);
