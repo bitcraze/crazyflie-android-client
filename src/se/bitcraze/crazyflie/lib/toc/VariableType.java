@@ -47,11 +47,11 @@ public enum VariableType {
     DOUBLE (8);
 
     int mSize;
-    
+
     VariableType(int size) {
         this.mSize = size;
     }
-    
+
     final Logger mLogger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     /**
@@ -61,48 +61,38 @@ public enum VariableType {
      * @return the parsed variable
      */
     public Number parse(ByteBuffer buffer) {
-        if (buffer.capacity() < 4) {
-            return -1;
+        if (buffer.capacity() < this.getSize()) {
+            throw new IllegalStateException("Size of buffer (" + buffer.capacity() + ") must match the size of VariableType " + this.name() + " (" + this.getSize() +")");
         }
-        ByteBuffer tempBuffer = ByteBuffer.allocate(8).order(CrtpPacket.BYTE_ORDER);
-        //TODO: simplify
-        tempBuffer.put(buffer.get());
-        tempBuffer.put(buffer.get());
-        tempBuffer.put(buffer.get());
-        tempBuffer.put(buffer.get());
-        if(this == INT64_T || this == DOUBLE) {
-            if (buffer.capacity() < 8) {
-                return -1;
-            }
-            tempBuffer.put(buffer.get());
-            tempBuffer.put(buffer.get());
-            tempBuffer.put(buffer.get());
-            tempBuffer.put(buffer.get());
+        if (buffer.remaining() < this.getSize()) {
+            throw new IllegalStateException("Size of remaining buffer elements (" + buffer.remaining() + ") must match the size of VariableType " + this.name() + " (" + this.getSize() +")");
         }
-        tempBuffer.rewind();
+        buffer.order(CrtpPacket.BYTE_ORDER);
         switch (this) {
             case UINT8_T:
-                return ((short) tempBuffer.get()) & 0xff;
+                return (buffer.get()) & 0xff;
             case UINT16_T:
-                return ((int) tempBuffer.getShort()) & 0xffff;
+                return (buffer.getShort()) & 0xffff;
             case UINT32_T:
-                return ((long) tempBuffer.getInt()) & 0xffffffffL;
+                return (buffer.getInt()) & 0xffffffffL;
             case UINT64_T:
+                // TODO: throw exception
                 mLogger.warn("UINT64_T not yet implemented");
                 return -1;
             case INT8_T:
-                return tempBuffer.get();
+                return buffer.get();
             case INT16_T:
-                return tempBuffer.getShort();
+                return buffer.getShort();
             case INT32_T:
-                return tempBuffer.getInt();
+                return buffer.getInt();
             case INT64_T:
-                return tempBuffer.getLong();
+                return buffer.getLong();
             case FLOAT:
-                return tempBuffer.getFloat();
+                return buffer.getFloat();
             case DOUBLE:
-                return tempBuffer.getDouble();
+                return buffer.getDouble();
             default:
+                // TODO: throw exception
                 mLogger.warn("Parsing " + this.name() + " is not yet implemented");
                 break;
         }
@@ -126,13 +116,14 @@ public enum VariableType {
                 tempBuffer4.putShort((short) (value.byteValue() & 0xff));
                 break;
             case UINT16_T:
-                tempBuffer4.putInt((int) (value.shortValue() & 0xffff));
+                tempBuffer4.putInt(value.shortValue() & 0xffff);
                 break;
             case UINT32_T:
-                tempBuffer4.putInt((int) (((long) value.intValue()) & 0xffffffffL));
+                tempBuffer4.putInt((int) ((value.intValue()) & 0xffffffffL));
                 //tempBuffer.putLong((long) (value.intValue() & 0xffffffffL)); //only works if ByteBuffer is 8 bytes long
                 break;
             case UINT64_T:
+                // TODO: throw exception
                 mLogger.warn("UINT64_T not yet implemented");
                 break;
             case INT8_T:
@@ -156,6 +147,7 @@ public enum VariableType {
                 tempBuffer8.rewind();
                 return tempBuffer8.array();
             default:
+                // TODO: throw exception
                 mLogger.warn("Parsing " + this.name() + " is not yet implemented");
                 break;
         }

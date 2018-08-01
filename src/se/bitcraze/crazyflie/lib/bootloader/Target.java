@@ -110,7 +110,8 @@ public class Target {
         return mData;
     }
 
-    private int getAvailableFlash() {
+    // Method is used by tests!
+    public int getAvailableFlash() {
         return ((this.mFlashPages - this.mStartPage) * this.mPageSize / 1024);
     }
 

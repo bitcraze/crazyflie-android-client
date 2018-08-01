@@ -390,11 +390,7 @@ public class Logg {
     // timestamp = (timestamps[0] | timestamps[1] << 8 | timestamps[2] << 16)
     /* package private */ static int parseTimestamp(byte data1, byte data2, byte data3) {
         //allocate 4 bytes for an int
-        ByteBuffer buffer = ByteBuffer.allocate(4).order(CrtpPacket.BYTE_ORDER);
-        buffer.put(data1);
-        buffer.put(data2);
-        buffer.put(data3);
-        buffer.rewind();
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[]{data1, data2, data3, 0}).order(CrtpPacket.BYTE_ORDER);
         return buffer.getInt();
     }
 
@@ -402,12 +398,12 @@ public class Logg {
     /* Methods from LogConfig class */
 
     // Commands used when accessing the Log configurations
-    private final static int CMD_CREATE_LOGCONFIG = 0;
-    private final static int CMD_APPEND_LOGCONFIG = 1;
-    private final static int CMD_DELETE_LOGCONFIG = 2;
-    private final static int CMD_START_LOGGING = 3;
-    private final static int CMD_STOP_LOGGING = 4;
-    private final static int CMD_RESET_LOGGING = 5;
+    public final static int CMD_CREATE_LOGCONFIG = 0;
+    public final static int CMD_APPEND_LOGCONFIG = 1;
+    public final static int CMD_DELETE_LOGCONFIG = 2;
+    public final static int CMD_START_LOGGING = 3;
+    public final static int CMD_STOP_LOGGING = 4;
+    public final static int CMD_RESET_LOGGING = 5;
 
 
     // Channels used for the logging port
@@ -432,9 +428,12 @@ public class Logg {
         if (logVariables.isEmpty()) {
             throw new IllegalStateException("LogConfig " + logConfig.getName() + " is empty!");
         }
+        // currently the number of LogVariables per LogConfig is limited by the size of one packet: 31 bytes - 2 bytes (header)
+        // TODO: it should be possible to add more LogVariables in additional packets
         if (logVariables.size() >= (bb.capacity()-2)/2) {
             throw new IllegalStateException("Maximum number of LogVariables per packet has been reached (" + logVariables.size() + ").");
         }
+        checkTotalSizeOfVariables(logVariables);
         if (mToc == null) {
             throw new IllegalStateException("TOC is null.");
         }
@@ -457,6 +456,22 @@ public class Logg {
             mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfCheckedLogVariables + " log variables.");
         } else {
             mLogger.error("No log variables added to log config, skipped creating log config " + logConfig.getName());
+        }
+    }
+
+    private void checkTotalSizeOfVariables(List<LogVariable> logVariables) {
+        int logVariableSize = 0;
+        for (LogVariable logVariable : logVariables) {
+            if (logVariable == null) {
+                throw new IllegalStateException("LogVariable is null.");
+            }
+            if (logVariable.getVariableType() == null) {
+                throw new IllegalStateException("LogVariable " + logVariable.getName() + " has no VariableType.");
+            }
+            logVariableSize += logVariable.getVariableType().getSize();
+        }
+        if (logVariableSize > 27) {
+            throw new IllegalStateException("Total size of LogVariables per packet has been reached (" + logVariables.size() + ").");
         }
     }
 

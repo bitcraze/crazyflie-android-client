@@ -202,7 +202,8 @@ public class Bootloader {
         return flash(file, "");
     }
 
-    private boolean flash(File file, String... targetNames) throws IOException {
+    // Method is used by ECT Bootloader!
+    public boolean flash(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
         if (filesToFlash.isEmpty()) {
             mLogger.error("Found no files to flash.");
@@ -549,7 +550,7 @@ public class Bootloader {
 
     }
 
-    private class FlashTarget {
+    /* package private */ class FlashTarget {
 
         private Target mTarget;
         private byte[] mData = new byte[0];
@@ -586,7 +587,7 @@ public class Bootloader {
 
     }
 
-    private static Manifest readManifest (File file) throws IOException {
+    public static Manifest readManifest (File file) throws IOException {
         String errorMessage = "";
         try {
             return mMapper.readValue(file, Manifest.class);

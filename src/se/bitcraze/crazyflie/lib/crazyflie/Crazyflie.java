@@ -70,11 +70,16 @@ public class Crazyflie {
     /**
      * State of the connection procedure
      */
-    private enum State {
+    public enum State {
         DISCONNECTED,
         INITIALIZED,
         CONNECTED,
         SETUP_FINISHED
+    }
+
+    /* used in examples */
+    public State getState() {
+        return mState;
     }
 
     /**
