@@ -103,6 +103,8 @@ public class BleLink extends CrtpDriver {
 	protected enum State {IDLE, CONNECTING, CONNECTED};
 	protected State state = State.IDLE;
 
+    private ScanCallback mScanCallback21;
+
     private final BlockingQueue<CrtpPacket> mInQueue;
 
 	public BleLink(Activity ctx, boolean writeWithAnswer) {
@@ -231,36 +233,6 @@ public class BleLink extends CrtpDriver {
         }
     };
 
-    @RequiresApi(21)
-    private ScanCallback mScanCallback21 = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            if (result != null) {
-                BluetoothDevice device = result.getDevice();
-                int rssi = result.getRssi();
-                if (device != null && device.getName() != null) {
-                    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
-
-                    if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
-                        stopScan();
-                        if (mScannTimer != null) {
-                            mScannTimer.cancel();
-                            mScannTimer = null;
-                        }
-                        state = State.CONNECTING;
-                        mDevice = device;
-                        mContext.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mDevice.connectGatt(mContext, false, mGattCallback);
-                            }
-                        });
-                    }
-                }
-            }
-        }
-    };
-
     @RequiresApi(18)
     private BluetoothAdapter.LeScanCallback mScanCallback18 = new BluetoothAdapter.LeScanCallback() {
 
@@ -292,8 +264,8 @@ public class BleLink extends CrtpDriver {
 
     private void scan () {
         // Filtered scan
-        ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
             mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback21);
         } else {
             mBluetoothAdapter.startLeScan(mScanCallback18);
@@ -335,7 +307,39 @@ public class BleLink extends CrtpDriver {
 		    throw new IllegalArgumentException("Bluetooth needs to be started");
 		}
 
-        mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            if (mScanCallback21 == null) {
+                mScanCallback21 = new ScanCallback() {
+                    @Override
+                    public void onScanResult(int callbackType, ScanResult result) {
+                        if (result != null) {
+                            BluetoothDevice device = result.getDevice();
+                            int rssi = result.getRssi();
+                            if (device != null && device.getName() != null) {
+                                mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+
+                                if (device.getName().equals(CF_DEVICE_NAME) && rssi > rssiThreshold) {
+                                    stopScan();
+                                    if (mScannTimer != null) {
+                                        mScannTimer.cancel();
+                                        mScannTimer = null;
+                                    }
+                                    state = State.CONNECTING;
+                                    mDevice = device;
+                                    mContext.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mDevice.connectGatt(mContext, false, mGattCallback);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+        }
         stopScan();
         scan();
         state = State.CONNECTING;
