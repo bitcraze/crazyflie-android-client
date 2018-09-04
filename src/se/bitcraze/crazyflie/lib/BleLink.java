@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.RequiresApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -60,60 +59,60 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
-
+import android.support.annotation.RequiresApi;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
 import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 
 @SuppressLint("NewApi")
 public class BleLink extends CrtpDriver {
 
-    final Logger mLogger = LoggerFactory.getLogger("BLELink");
+    private final Logger mLogger = LoggerFactory.getLogger("BLELink");
 
-	// Set to -40 to connect only to close-by Crazyflie
-	private static final int rssiThreshold = -100;
+    // Set to -40 to connect only to close-by Crazyflie
+    private static final int rssiThreshold = -100;
 
-	private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mBluetoothLeScanner;
-	private BluetoothDevice mDevice;
-	private BluetoothGattCharacteristic mLedChar;
-	private List<BluetoothGattCharacteristic> mLedsChars;
-	private BluetoothGatt mGatt;
-	private BluetoothGattCharacteristic mCrtpChar;
-	private BluetoothGattCharacteristic mCrtpUpChar;
-	private BluetoothGattCharacteristic mCrtpDownChar;
-	private Timer mScannTimer;
+    private BluetoothDevice mDevice;
+    private BluetoothGattCharacteristic mLedChar;
+    private List<BluetoothGattCharacteristic> mLedsChars;
+    private BluetoothGatt mGatt;
+    private BluetoothGattCharacteristic mCrtpChar;
+    private BluetoothGattCharacteristic mCrtpUpChar;
+    private BluetoothGattCharacteristic mCrtpDownChar;
+    private Timer mScannTimer;
     private Timer mRssiTimer;
 
-	private static final String CF_DEVICE_NAME = "Crazyflie";
-	private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
+    private static final String CF_DEVICE_NAME = "Crazyflie";
+    private static final String CF_LOADER_DEVICE_NAME = "Crazyflie Loader";
 
     private static final String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
-	private static final UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
+    private static final UUID CF_SERVICE = UUID.fromString("00000201-1C7F-4F9E-947B-43B7C00A9A08");
     private static final UUID CRTP = UUID.fromString("00000202-1C7F-4F9E-947B-43B7C00A9A08");
     private static final UUID CRTPUP = UUID.fromString("00000203-1C7F-4F9E-947B-43B7C00A9A08");
     private static final UUID CRTPDOWN = UUID.fromString("00000204-1C7F-4F9E-947B-43B7C00A9A08");
 
-	private final static int REQUEST_ENABLE_BT = 1;
-	protected boolean mWritten = true;
-	private Activity mContext;
-	private boolean mWriteWithAnswer;
-	protected boolean mConnected;
+    private final static int REQUEST_ENABLE_BT = 1;
+    protected boolean mWritten = true;
+    private Activity mContext;
+    private boolean mWriteWithAnswer;
+    protected boolean mConnected;
 
-	protected enum State {IDLE, CONNECTING, CONNECTED};
-	protected State state = State.IDLE;
+    protected enum State {IDLE, CONNECTING, CONNECTED};
+    protected State state = State.IDLE;
 
     private ScanCallback mScanCallback21;
 
     private final BlockingQueue<CrtpPacket> mInQueue;
 
-	public BleLink(Activity ctx, boolean writeWithAnswer) {
-		mContext = ctx;
-		mWriteWithAnswer = writeWithAnswer;
+    public BleLink(Activity ctx, boolean writeWithAnswer) {
+        mContext = ctx;
+        mWriteWithAnswer = writeWithAnswer;
         this.mInQueue = new LinkedBlockingQueue<CrtpPacket>();
-	}
+    }
 
-	private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+    private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -142,57 +141,57 @@ public class BleLink extends CrtpDriver {
             }
         }
 
-		@Override
-		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-			super.onServicesDiscovered(gatt, status);
-			if (status != BluetoothGatt.GATT_SUCCESS) {
-				gatt.disconnect();
-			} else {
-				BluetoothGattService cfService = gatt.getService(CF_SERVICE);
-				mCrtpChar = cfService.getCharacteristic(CRTP);
-				mCrtpUpChar = cfService.getCharacteristic(CRTPUP);
-				mCrtpDownChar = cfService.getCharacteristic(CRTPDOWN);
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            super.onServicesDiscovered(gatt, status);
+            if (status != BluetoothGatt.GATT_SUCCESS) {
+                gatt.disconnect();
+            } else {
+                BluetoothGattService cfService = gatt.getService(CF_SERVICE);
+                mCrtpChar = cfService.getCharacteristic(CRTP);
+                mCrtpUpChar = cfService.getCharacteristic(CRTPUP);
+                mCrtpDownChar = cfService.getCharacteristic(CRTPDOWN);
 
-				gatt.setCharacteristicNotification(mCrtpDownChar, true);
+                gatt.setCharacteristicNotification(mCrtpDownChar, true);
 
                 BluetoothGattDescriptor descriptor = mCrtpDownChar.getDescriptor(UUID.fromString(CLIENT_CHARACTERISTIC_CONFIG));
-				descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-				gatt.writeDescriptor(descriptor);
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                gatt.writeDescriptor(descriptor);
 
-				mLogger.debug( "Connected!");
+                mLogger.debug( "Connected!");
 
-				mConnected = true;
-				mWritten = false;
+                mConnected = true;
+                mWritten = false;
 
-				state = State.CONNECTED;
-				notifyConnected();
-			}
-		}
-
-		@Override
-		public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-			super.onCharacteristicWrite(gatt, characteristic, status);
-			//mLogger.debug("On write called for char: " + characteristic.getUuid().toString());
-			mWritten  = true;
-		}
-
-		@Override
-		public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-			super.onDescriptorWrite(gatt, descriptor, status);
-			mLogger.debug("On write called for descriptor: " + descriptor.getUuid().toString());
-			mWritten = true;
-		}
-
-		@Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-			super.onCharacteristicRead(gatt, characteristic, status);
-			mLogger.debug("On read call for characteristic: " + characteristic.getUuid().toString());
+                state = State.CONNECTED;
+                notifyConnected();
+            }
         }
 
-		@Override
-		public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-			//super.onCharacteristicChanged(gatt, characteristic);
-		    mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            //mLogger.debug("On write called for char: " + characteristic.getUuid().toString());
+            mWritten  = true;
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorWrite(gatt, descriptor, status);
+            mLogger.debug("On write called for descriptor: " + descriptor.getUuid().toString());
+            mWritten = true;
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+            mLogger.debug("On read call for characteristic: " + characteristic.getUuid().toString());
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            //super.onCharacteristicChanged(gatt, characteristic);
+            mLogger.debug("On changed call for characteristic: " + characteristic.getUuid().toString());
             CrtpPacket packet = unpack(characteristic.getValue());
             if (packet != null) {
                 mLogger.debug("Received value for characteristic: {}, length: {}", packet.toString(), packet.toByteArray().length);
@@ -212,7 +211,7 @@ public class BleLink extends CrtpDriver {
                 notifyLinkQualityUpdated(limit(percentage));
             }
         }
-	};
+    };
 
     /**
      * Limit range of int between 0 and 100
@@ -238,25 +237,23 @@ public class BleLink extends CrtpDriver {
 
         @Override
         public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-            if (device != null) {
-                if (device != null && device.getName() != null) {
-                    mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+            if (device != null && device.getName() != null) {
+                mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
-                    if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
-                        stopScan();
-                        if (mScannTimer != null) {
-                            mScannTimer.cancel();
-                            mScannTimer = null;
-                        }
-                        state = State.CONNECTING;
-                        mDevice = device;
-                        mContext.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mDevice.connectGatt(mContext, false, mGattCallback);
-                            }
-                        });
+                if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
+                    stopScan();
+                    if (mScannTimer != null) {
+                        mScannTimer.cancel();
+                        mScannTimer = null;
                     }
+                    state = State.CONNECTING;
+                    mDevice = device;
+                    mContext.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDevice.connectGatt(mContext, false, mGattCallback);
+                        }
+                    });
                 }
             }
         }
@@ -292,20 +289,20 @@ public class BleLink extends CrtpDriver {
         }
     }
 
-	@Override
-	public void connect() {
-		if (state != State.IDLE) {
-			throw new IllegalArgumentException("Connection already started");
-		}
+    @Override
+    public void connect() {
+        if (state != State.IDLE) {
+            throw new IllegalArgumentException("Connection already started");
+        }
 
-		final BluetoothManager bluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-		mBluetoothAdapter = bluetoothManager.getAdapter();
+        final BluetoothManager bluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
 
-		if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-		    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-		    mContext.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-		    throw new IllegalArgumentException("Bluetooth needs to be started");
-		}
+        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            mContext.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            throw new IllegalArgumentException("Bluetooth needs to be started");
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
