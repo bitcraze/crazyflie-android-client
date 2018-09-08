@@ -30,21 +30,17 @@ package se.bitcraze.crazyfliecontrol.bootloader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,10 +54,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
 import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 
@@ -227,11 +225,9 @@ public class FirmwareDownloader {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setDescription("Some description");
         request.setTitle(fileName);
-        // in order for this if to run, you must use the android 3.2 to compile your app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            request.allowScanningByMediaScanner();
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-        }
+        // in order for this if to run, you must use android 3.2 (API 11) to compile your app
+        request.allowScanningByMediaScanner();
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
         request.setDestinationInExternalFilesDir(mContext, null, BootloaderActivity.BOOTLOADER_DIR + "/" + tagName + "/" + fileName);
 
         // get download service and enqueue file
@@ -247,31 +243,38 @@ public class FirmwareDownloader {
     private String downloadUrl(String myUrl) throws IOException {
         BufferedReader reader = null;
         StringBuilder builder = new StringBuilder();
-        HttpClient client = new DefaultHttpClient();
-        HttpGet httpGet = new HttpGet(myUrl);
+        URL url = new URL(myUrl);
+
+        // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
         try {
-            HttpResponse response = client.execute(httpGet);
-            StatusLine statusLine = response.getStatusLine();
-            int statusCode = statusLine.getStatusCode();
+            HttpsURLConnection.setDefaultSSLSocketFactory(new TLSSocketFactory());
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
-            if (statusCode == 200) {
-                HttpEntity entity = response.getEntity();
-                InputStream content = entity.getContent();
-                reader = new BufferedReader(new InputStreamReader(content, "UTF-8"));
+        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
 
+        try {
+            String responseMsg = urlConnection.getResponseMessage();
+            int responseCode = urlConnection.getResponseCode();
+
+            if (responseCode == 200) {
+                reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     builder.append(line);
                 }
             } else {
-                Log.d(LOG_TAG, "The response is: " + response);
-                return "The response is: " + response;
+                Log.d(LOG_TAG, "The response is: " + responseMsg);
+                return "The response is: " + responseMsg;
             }
         } finally {
-            // Makes sure that the InputStream is closed after the app is finished using it.
             if (reader != null) {
                 reader.close();
             }
+            urlConnection.disconnect();
         }
         return builder.toString();
     }
