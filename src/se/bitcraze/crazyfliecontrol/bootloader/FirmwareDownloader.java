@@ -36,9 +36,6 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -46,17 +43,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -75,12 +66,10 @@ public class FirmwareDownloader {
     private List<FirmwareRelease> mFirmwareReleases = new ArrayList<FirmwareRelease>();
     private long mDownloadReference = -42;
     private DownloadManager mManager;
-
-    private List<FirmwareDownloadListener> mDownloadListeners;
+    private AsyncTask mDownloadTask;
 
     public FirmwareDownloader(Context context) {
         this.mContext = context;
-        this.mDownloadListeners = Collections.synchronizedList(new LinkedList<FirmwareDownloadListener>());
         this.mBootloaderDir = new File(mContext.getExternalFilesDir(null), BootloaderActivity.BOOTLOADER_DIR);
     }
 
@@ -111,7 +100,7 @@ public class FirmwareDownloader {
      *
      * @return true if network is available, false otherwise
      */
-    private boolean isNetworkAvailable() {
+    public boolean isNetworkAvailable() {
         ConnectivityManager connMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
@@ -189,27 +178,6 @@ public class FirmwareDownloader {
         out.close();
     }
 
-    public void downloadFirmware(FirmwareRelease selectedFirmwareRelease) {
-        if (selectedFirmwareRelease != null) {
-
-            if (isFileAlreadyDownloaded(selectedFirmwareRelease.getTagName() + "/" + selectedFirmwareRelease.getAssetName())) {
-                notifyDownloadFinished();
-                return;
-            }
-
-            String browserDownloadUrl = selectedFirmwareRelease.getBrowserDownloadUrl();
-            if (isNetworkAvailable()) {
-                downloadFile(browserDownloadUrl, selectedFirmwareRelease.getAssetName(), selectedFirmwareRelease.getTagName());
-            } else {
-                Log.d(LOG_TAG, "Network connection not available.");
-                ((BootloaderActivity) mContext).appendConsoleError("No network connection available.\nPlease check your connectivity.");
-            }
-        } else {
-            ((BootloaderActivity) mContext).appendConsoleError("Selected firmware does not have assets.");
-            return;
-        }
-    }
-
     /**
      * Base path is CrazyflieControl directory
      *
@@ -219,25 +187,6 @@ public class FirmwareDownloader {
     public boolean isFileAlreadyDownloaded(String path) {
         File firmwareFile = new File(mBootloaderDir, path);
         return firmwareFile.exists() && firmwareFile.length() > 0;
-    }
-
-    private void downloadFile (String url, String fileName, String tagName) {
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-        request.setDescription("Some description");
-        request.setTitle(fileName);
-        // in order for this if to run, you must use android 3.2 (API 11) to compile your app
-        request.allowScanningByMediaScanner();
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-        request.setDestinationInExternalFilesDir(mContext, null, BootloaderActivity.BOOTLOADER_DIR + "/" + tagName + "/" + fileName);
-
-        // get download service and enqueue file
-        mManager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        if (mManager != null) {
-            mDownloadReference = mManager.enqueue(request);
-        } else {
-            Log.d(LOG_TAG, "DownloadManager could not be acquired.");
-            ((BootloaderActivity) mContext).appendConsoleError("DownloadManager could not be acquired.\nPlease check the application's permissions.");
-        }
     }
 
     private String downloadUrl(String myUrl) throws IOException {
@@ -312,150 +261,6 @@ public class FirmwareDownloader {
             }
         }
         return firmwareReleases;
-    }
-
-    public BroadcastReceiver onComplete = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            //check if the broadcast message is for our Enqueued download
-            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            if(mDownloadReference == referenceId){
-                String action = intent.getAction();
-                if (action.equals(DownloadManager.ACTION_DOWNLOAD_COMPLETE) ){
-                    Bundle extras = intent.getExtras();
-                    DownloadManager.Query q = new DownloadManager.Query();
-                    q.setFilterById(extras.getLong(DownloadManager.EXTRA_DOWNLOAD_ID));
-                    if (mManager != null) {
-                        Cursor c = mManager.query(q);
-
-                        if (c.moveToFirst()) {
-                            int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
-                            if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                                String filePath = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
-                                String filename = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
-                                Toast.makeText(mContext, "Download successful: " + filename, Toast.LENGTH_SHORT).show();
-                                notifyDownloadFinished();
-                            } else if (status == DownloadManager.STATUS_FAILED) {
-                                int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
-                                Toast.makeText(mContext, "Download failed: " + getReasonString(reason), Toast.LENGTH_SHORT).show();
-                                notifyDownloadProblem(getReasonString(reason));
-                            } else {
-                                Log.w(LOG_TAG, "Status is neither SUCCESSFUL nor FAILED.");
-                            }
-                        }
-                        c.close();
-                    } else {
-                        Log.w(LOG_TAG, "DownloadManager is NULL.");
-                        notifyDownloadProblem("DownloadManager is NULL.");
-                    }
-                }
-            } else {
-                Log.d(LOG_TAG, "Ignoring unrelated download " + referenceId);
-            }
-        }
-
-      };
-
-    private String getReasonString(int reason) {
-        String reasonText = "";
-        switch(reason){
-            case DownloadManager.ERROR_CANNOT_RESUME:
-                reasonText = "ERROR_CANNOT_RESUME";
-                break;
-            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                reasonText = "ERROR_DEVICE_NOT_FOUND";
-                break;
-            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                reasonText = "ERROR_FILE_ALREADY_EXISTS";
-                break;
-            case DownloadManager.ERROR_FILE_ERROR:
-                reasonText = "ERROR_FILE_ERROR";
-                break;
-            case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                reasonText = "ERROR_HTTP_DATA_ERROR";
-                break;
-            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                reasonText = "ERROR_INSUFFICIENT_SPACE";
-                break;
-            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                reasonText = "ERROR_TOO_MANY_REDIRECTS";
-                break;
-            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                reasonText = "ERROR_UNHANDLED_HTTP_CODE";
-                break;
-            case DownloadManager.ERROR_UNKNOWN:
-                reasonText = "ERROR_UNKNOWN";
-                break;
-            case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
-                reasonText = "PAUSED_QUEUED_FOR_WIFI";
-                break;
-            case DownloadManager.PAUSED_UNKNOWN:
-                reasonText = "PAUSED_UNKNOWN";
-                break;
-            case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
-                reasonText = "PAUSED_WAITING_FOR_NETWORK";
-                break;
-            case DownloadManager.PAUSED_WAITING_TO_RETRY:
-                reasonText = "PAUSED_WAITING_TO_RETRY";
-                break;
-            case 404:
-                reasonText = "404 - NOT FOUND";
-                break;
-            case 403:
-                reasonText = "403 - FORBIDDEN";
-                break;
-            case 401:
-                reasonText = "401 - UNAUTHORIZED";
-                break;
-            case 500:
-                reasonText = "500 - INTERNAL SERVER ERROR";
-                break;
-            case 503:
-                reasonText = "503 - SERVICE UNAVAILABLE";
-                break;
-            default:
-                reasonText = "" + reason;
-                break;
-        }
-        return reasonText;
-    }
-
-
-    /* Download listener */
-
-    public void addDownloadListener(FirmwareDownloadListener dl) {
-      this.mDownloadListeners.add(dl);
-    }
-
-    public void removeDownloadListener(FirmwareDownloadListener dl) {
-      this.mDownloadListeners.remove(dl);
-    }
-
-    private void notifyDownloadFinished() {
-        synchronized(mDownloadListeners) {
-            Iterator<FirmwareDownloadListener> i = mDownloadListeners.iterator();
-            while (i.hasNext()) {
-                i.next().downloadFinished();
-            }
-        }
-    }
-
-    private void notifyDownloadProblem(String msg) {
-        synchronized(mDownloadListeners) {
-            Iterator<FirmwareDownloadListener> i = mDownloadListeners.iterator();
-            while (i.hasNext()) {
-                i.next().downloadProblem(msg);
-            }
-        }
-    }
-
-    public interface FirmwareDownloadListener {
-
-      public void downloadFinished();
-
-      public void downloadProblem(String msg);
-
     }
 
 }

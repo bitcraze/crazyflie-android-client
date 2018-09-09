@@ -28,7 +28,13 @@
 package se.bitcraze.crazyfliecontrol.bootloader;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,24 +44,21 @@ import se.bitcraze.crazyflie.lib.bootloader.Bootloader;
 import se.bitcraze.crazyflie.lib.bootloader.Bootloader.BootloaderListener;
 import se.bitcraze.crazyflie.lib.bootloader.FirmwareRelease;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
-import se.bitcraze.crazyfliecontrol.bootloader.FirmwareDownloader.FirmwareDownloadListener;
 import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyfliecontrol2.R;
 import se.bitcraze.crazyfliecontrol2.UsbLinkAndroid;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -70,6 +73,8 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class BootloaderActivity extends Activity {
 
@@ -106,15 +111,11 @@ public class BootloaderActivity extends Activity {
         initializeFirmwareSpinner();
 
         mFirmwareDownloader = new FirmwareDownloader(this);
-
-        this.registerReceiver(mFirmwareDownloader.onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.unregisterReceiver(mFirmwareDownloader.onComplete);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -235,20 +236,6 @@ public class BootloaderActivity extends Activity {
         });
     }
 
-    private FirmwareDownloadListener mDownloadListener = new FirmwareDownloadListener () {
-        public void downloadFinished() {
-            //flash firmware once firmware is downloaded
-            appendConsole("Firmware downloaded.");
-            startBootloader();
-        }
-
-        public void downloadProblem(String msg) {
-            //flash firmware once firmware is downloaded
-            appendConsole("Firmware download failed: " + msg);
-            stopFlashProcess(false);
-        }
-    };
-
     public void startFlashProcess(final View view) {
         // disable button and spinner
         mFlashFirmwareButton.setEnabled(false);
@@ -261,8 +248,139 @@ public class BootloaderActivity extends Activity {
         // download firmware file
         appendConsole("Downloading firmware...");
 
-        mFirmwareDownloader.addDownloadListener(mDownloadListener);
-        mFirmwareDownloader.downloadFirmware(this.mSelectedFirmwareRelease);
+        DownloadTask mDownloadTask = new DownloadTask();
+        mDownloadTask.execute(this.mSelectedFirmwareRelease);
+    }
+
+    private class DownloadTask extends AsyncTask<FirmwareRelease, Integer, String> {
+
+        private PowerManager.WakeLock mWakeLock;
+        private boolean mAlreadyDownloaded = false;
+
+        private String downloadFile (String urlString, String fileName, String tagName) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpsURLConnection connection = null;
+
+            // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
+            try {
+                HttpsURLConnection.setDefaultSSLSocketFactory(new TLSSocketFactory());
+            } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                URL url = new URL(urlString);
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.connect();
+
+                // expect HTTP 200 OK, so we don't mistakenly save error report instead of the file
+                if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + connection.getResponseCode() + " " + connection.getResponseMessage();
+                }
+
+                // this will be useful to display download percentage. it might be -1: server did not report the length
+                int fileLength = connection.getContentLength();
+
+                // download the file
+                File outputFile = new File(BootloaderActivity.this.getExternalFilesDir(null) + "/" + BootloaderActivity.BOOTLOADER_DIR + "/" + tagName + "/", fileName);
+                outputFile.getParentFile().mkdirs();
+                input = connection.getInputStream();
+                output = new FileOutputStream(outputFile);
+
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    // allow canceling
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    total += count;
+                    // publishing the progress....
+                    if (fileLength > 0) { // only if total length is known
+                        publishProgress((int) (total * 100 / fileLength));
+                    }
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null) {
+                        output.close();
+                    }
+                    if (input != null) {
+                        input.close();
+                    }
+                } catch (IOException ignored) {
+
+                }
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected String doInBackground(FirmwareRelease... sFirmwareRelease) {
+            mSelectedFirmwareRelease = sFirmwareRelease[0];
+
+            if (mSelectedFirmwareRelease != null) {
+                if (mFirmwareDownloader.isFileAlreadyDownloaded(mSelectedFirmwareRelease.getTagName() + "/" + mSelectedFirmwareRelease.getAssetName())) {
+                    mAlreadyDownloaded = true;
+                    return null;
+                }
+                String browserDownloadUrl = mSelectedFirmwareRelease.getBrowserDownloadUrl();
+                if (mFirmwareDownloader.isNetworkAvailable()) {
+                    return downloadFile(browserDownloadUrl, mSelectedFirmwareRelease.getAssetName(), mSelectedFirmwareRelease.getTagName());
+                } else {
+                    Log.d(LOG_TAG, "Network connection not available.");
+                    return "No network connection available.\nPlease check your connectivity.";
+                }
+            } else {
+                return "Selected firmware does not have assets.";
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // take CPU lock to prevent CPU from going off if the user presses the power button during download
+            PowerManager pm = (PowerManager) BootloaderActivity.this.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
+            mWakeLock.acquire();
+            mProgressBar.setProgress(0);
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+            // if we get here, length is known, now set indeterminate to false
+            mProgressBar.setIndeterminate(false);
+            mProgressBar.setMax(100);
+            mProgressBar.setProgress(progress[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+            if (result != null) {
+                //flash firmware once firmware is downloaded
+                appendConsole("Firmware download failed: " + result);
+                stopFlashProcess(false);
+            } else {
+                //flash firmware once firmware is downloaded
+                if (mAlreadyDownloaded) {
+                    appendConsole("Firmware file already downloaded.");
+                } else {
+                    appendConsole("Firmware downloaded.");
+                }
+                startBootloader();
+            }
+        }
     }
 
     private void startBootloader() {
@@ -436,7 +554,6 @@ public class BootloaderActivity extends Activity {
         if (mBootloader != null) {
             mBootloader.close();
         }
-        mFirmwareDownloader.removeDownloadListener(mDownloadListener);
         //re-enable widgets
         mFlashFirmwareButton.setEnabled(true);
         mReleaseNotesButton.setEnabled(true);
@@ -446,11 +563,4 @@ public class BootloaderActivity extends Activity {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    /**
-     * @param context used to check the device version and DownloadManager information
-     * @return true if the download manager is available
-     */
-    public static boolean isDownloadManagerAvailable(Context context) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD;
-    }
 }
