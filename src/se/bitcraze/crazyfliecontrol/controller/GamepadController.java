@@ -33,6 +33,8 @@ import se.bitcraze.crazyfliecontrol2.MainActivity;
 import se.bitcraze.crazyfliecontrol2.R;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -45,6 +47,7 @@ import android.widget.Toast;
  */
 public class GamepadController extends AbstractController {
 
+    private static final String LOG_TAG = "GamepadController";
     private SharedPreferences mPreferences;
 
     //Gamepad axis/buttons
@@ -95,24 +98,31 @@ public class GamepadController extends AbstractController {
     }
 
     public String getControllerName(){
-    	return "gamepad controller";
+        return "gamepad controller";
     }
 
     public void dealWithMotionEvent(MotionEvent event){
         //Log.i(LOG_TAG, "Input device: " + event.getDevice().getName());
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,
         this is necessary for analog R1 (Brake) or analog R2 (Gas) shoulder buttons on PS3 controller*/
-        mRightAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
-        mLeftAnalogYAxisInvertFactor = (event.getDevice().getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
+        if (event != null) {
+            if (event.getDevice() != null) {
+                InputDevice device = event.getDevice();
+                mRightAnalogYAxisInvertFactor = (device.getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
+                mLeftAnalogYAxisInvertFactor = (device.getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
+            } else {
+                Log.w(LOG_TAG, "event.getDevice() == null! => event.getClass(): " + event.getClass());
+            }
 
-        // default axis are set to work with PS3 controller
-        mControls.setRightAnalogX((float) event.getAxisValue(mRightAnalogXAxis));
-        mControls.setRightAnalogY((float) (event.getAxisValue(mRightAnalogYAxis)) * mRightAnalogYAxisInvertFactor);
-        mControls.setLeftAnalogX((float) event.getAxisValue(mLeftAnalogXAxis));
-        mControls.setLeftAnalogY((float) (event.getAxisValue(mLeftAnalogYAxis)) * mLeftAnalogYAxisInvertFactor);
+            // default axis are set to work with PS3 controller
+            mControls.setRightAnalogX((float) event.getAxisValue(mRightAnalogXAxis));
+            mControls.setRightAnalogY((float) (event.getAxisValue(mRightAnalogYAxis)) * mRightAnalogYAxisInvertFactor);
+            mControls.setLeftAnalogX((float) event.getAxisValue(mLeftAnalogXAxis));
+            mControls.setLeftAnalogY((float) (event.getAxisValue(mLeftAnalogYAxis)) * mLeftAnalogYAxisInvertFactor);
 
-        mSplit_axis_yaw_right = (float) event.getAxisValue(mSplitAxisYawRightAxis);
-        mSplit_axis_yaw_left = (float) event.getAxisValue(mSplitAxisYawLeftAxis);
+            mSplit_axis_yaw_right = (float) event.getAxisValue(mSplitAxisYawRightAxis);
+            mSplit_axis_yaw_left = (float) event.getAxisValue(mSplitAxisYawLeftAxis);
+        }
     }
 
     public void dealWithKeyEvent(KeyEvent event){
