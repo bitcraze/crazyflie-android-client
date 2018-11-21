@@ -314,7 +314,7 @@ public class BleLink extends CrtpDriver {
                             BluetoothDevice device = result.getDevice();
                             int rssi = result.getRssi();
                             if (device != null && device.getName() != null) {
-                                mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
+                                // mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
                                 if (device.getName().equals(CF_DEVICE_NAME) && rssi > rssiThreshold) {
                                     stopScan();
@@ -484,7 +484,11 @@ public class BleLink extends CrtpDriver {
                     mWritten = true;
                 }
                 characteristic.setValue(ba);
-                mGatt.writeCharacteristic(characteristic);
+                if (mGatt != null) {
+                    mGatt.writeCharacteristic(characteristic);
+                } else {
+                    mLogger.debug("mGatt is null!!");
+                }
             }
         }
     }
