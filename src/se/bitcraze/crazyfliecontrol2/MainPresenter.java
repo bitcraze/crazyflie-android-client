@@ -17,6 +17,7 @@ import se.bitcraze.crazyflie.lib.crtp.ZDistancePacket;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
 import se.bitcraze.crazyflie.lib.log.Logg;
+import se.bitcraze.crazyflie.lib.param.Param;
 import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
@@ -35,7 +36,7 @@ public class MainPresenter {
     private CrtpDriver mDriver;
 
     private Logg mLogg;
-    private LogConfig mLogConfigStandard = new LogConfig("Standard", 1000);
+    private LogConfig mDefaultLogConfig = null;
 
     private Toc mLogToc;
     private Toc mParamToc;
@@ -80,20 +81,26 @@ public class MainPresenter {
 
         @Override
         public void setupFinished() {
-            final Toc paramToc = mCrazyflie.getParam().getToc();
-            final Toc logToc = mCrazyflie.getLogg().getToc();
-            if (paramToc != null) {
-                mParamToc = paramToc;
-                mainActivity.showToastie("Parameters TOC fetch finished: " + paramToc.getTocSize());
-                checkForBuzzerDeck();
-                checkForNoOfRingEffects();
-                checkForZRanger();
+            Param param = mCrazyflie.getParam();
+            if (param != null) {
+                final Toc paramToc = param.getToc();
+                if (paramToc != null) {
+                    mParamToc = paramToc;
+                    mainActivity.showToastie("Parameters TOC fetch finished: " + paramToc.getTocSize());
+                    checkForBuzzerDeck();
+                    checkForNoOfRingEffects();
+                    checkForZRanger();
+                }
             }
-            if (logToc != null) {
-                mLogToc = logToc;
-                mainActivity.showToastie("Log TOC fetch finished: " + logToc.getTocSize());
-                createLogConfigs();
-                startLogConfigs();
+            mLogg = mCrazyflie.getLogg();
+            if (mLogg != null) {
+                final Toc logToc = mLogg.getToc();
+                if (logToc != null) {
+                    mLogToc = logToc;
+                    mainActivity.showToastie("Log TOC fetch finished: " + logToc.getTocSize());
+                    mDefaultLogConfig = createDefaultLogConfig();
+                    startLogConfigs(mDefaultLogConfig);
+                }
             }
             startSendJoystickDataThread();
         }
@@ -116,7 +123,7 @@ public class MainPresenter {
             mainActivity.showToastie("Disconnected");
             mainActivity.setConnectionButtonDisconnected();
             mainActivity.disableButtonsAndResetBatteryLevel();
-            stopLogConfigs();
+            stopLogConfigs(mDefaultLogConfig);
         }
 
         @Override
@@ -341,35 +348,35 @@ public class MainPresenter {
 
     };
 
-    private void createLogConfigs() {
-        mLogConfigStandard.addVariable("pm.vbat", VariableType.FLOAT);
-        mLogg = mCrazyflie.getLogg();
+    private LogConfig createDefaultLogConfig() {
+        LogConfig logConfigStandard = new LogConfig("Standard", 1000);
+        logConfigStandard.addVariable("pm.vbat", VariableType.FLOAT);
+        return logConfigStandard;
+    }
 
+    /**
+     * Start basic logging config
+     */
+    private void startLogConfigs(LogConfig logConfig) {
         if (mLogg != null) {
-            mLogg.addConfig(mLogConfigStandard);
             mLogg.addLogListener(standardLogAdapter);
+            mLogg.addConfig(logConfig);
+            mLogg.start(logConfig);
         } else {
             Log.e(LOG_TAG, "Logg was null!!");
         }
     }
 
     /**
-     * Start basic logging config
-     */
-    private void startLogConfigs() {
-        if (mLogg != null) {
-            mLogg.start(mLogConfigStandard);
-        }
-    }
-
-    /**
      * Stop basic logging config
      */
-    private void stopLogConfigs() {
+    private void stopLogConfigs(LogConfig logConfig) {
         if (mLogg != null) {
-            mLogg.stop(mLogConfigStandard);
-            mLogg.delete(mLogConfigStandard);
+            mLogg.stop(logConfig);
+            mLogg.delete(logConfig);
             mLogg.removeLogListener(standardLogAdapter);
+        }else {
+            Log.e(LOG_TAG, "Logg was null!!");
         }
     }
 }

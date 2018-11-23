@@ -158,6 +158,11 @@ public class Logg {
          * type (i.e we want the stored as type for fetching as well) then
          * resolve this now and add the variable type.
          */
+
+        if (logConfig == null) {
+            throw new IllegalStateException("LogConfig is null!");
+        }
+
         for(LogVariable logVariable : logConfig.getLogVariables()) {
             if (logVariable.getVariableType() == null) {
                 String name = logVariable.getName();
@@ -418,6 +423,9 @@ public class Logg {
      * Save the log configuration in the Crazyflie
      */
     public void create(LogConfig logConfig) {
+        if (logConfig == null) {
+            throw new IllegalStateException("LogConfig is null!");
+        }
         int logConfigId = logConfig.getId();
 
         ByteBuffer bb = ByteBuffer.allocate(31);
@@ -471,7 +479,7 @@ public class Logg {
             logVariableSize += logVariable.getVariableType().getSize();
         }
         if (logVariableSize > 27) {
-            throw new IllegalStateException("Total size of LogVariables per packet has been reached (" + logVariables.size() + ").");
+            throw new IllegalStateException("Total size of LogVariables per packet has been reached (Number of variables: " + logVariables.size() + ", Total size:" + logVariableSize + ").");
         }
     }
 
@@ -523,6 +531,9 @@ public class Logg {
      * Start the logging for this entry
      */
     public void start(LogConfig logConfig) {
+        if (logConfig == null) {
+            throw new IllegalStateException("LogConfig is null!");
+        }
         //if (self.cf.link is not None):
         // TODO:
         // if (mCrazyflie.getDriver() != null && mCrazyflie.getDriver().isConnected()) {
@@ -541,6 +552,9 @@ public class Logg {
      * Stop the logging for this entry
      */
     public void stop(LogConfig logConfig) {
+        if (logConfig == null) {
+            throw new IllegalStateException("LogConfig is null!");
+        }
         // TODO:
         // if (mCrazyflie.getDriver() != null && mCrazyflie.getDriver().isConnected()) {
         if (mCrazyflie.getDriver() != null) {
@@ -557,6 +571,9 @@ public class Logg {
      * Delete this entry in the Crazyflie
      */
     public void delete(LogConfig logConfig) {
+        if (logConfig == null) {
+            throw new IllegalStateException("LogConfig is null!");
+        }
         // TODO:
         // if (mCrazyflie.getDriver() != null && mCrazyflie.getDriver().isConnected()) {
         if (mCrazyflie.getDriver() != null) {
@@ -622,6 +639,5 @@ public class Logg {
             ll.logDataReceived(logConfig, data, timestamp);
         }
     }
-
 
 }
