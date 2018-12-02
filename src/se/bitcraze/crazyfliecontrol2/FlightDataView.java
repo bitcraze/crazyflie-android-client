@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -40,6 +41,8 @@ import android.widget.TextView;
  *
  */
 public class FlightDataView extends LinearLayout {
+
+    private static final String LOG_TAG = "FlightDataView";
 
     private TextView mTextView_pitch;
     private TextView mTextView_roll;
@@ -81,9 +84,14 @@ public class FlightDataView extends LinearLayout {
     }
 
     public static double round(double unrounded) {
-        BigDecimal bd = new BigDecimal(unrounded);
-        BigDecimal rounded = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
-        return rounded.doubleValue();
+        try {
+            BigDecimal bd = new BigDecimal(unrounded);
+            BigDecimal rounded = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+            return rounded.doubleValue();
+        } catch (NumberFormatException nfe) {
+            Log.e(LOG_TAG, "unrounded: " + unrounded + ", NumberFormatException: " + nfe);
+            return Double.NaN;
+        }
     }
 
 }
