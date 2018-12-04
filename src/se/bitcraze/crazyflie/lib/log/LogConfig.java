@@ -81,37 +81,46 @@ public class LogConfig {
     }
 
     /**
-     * Add a log variable to the log configuration
+     * Add a log variable to the log configuration (if it does not exist already)
      *
      * @param name Complete name of the variable in the form group.name
-     * @param type
+     * @param type Type of the variable
      */
     public void addVariable(String name, VariableType type){
-        logVariables.add(new LogVariable(name, type));
+        LogVariable newLogVariable = new LogVariable(name, type);
+        if (!logVariables.contains(newLogVariable)) {
+            logVariables.add(newLogVariable);
+        }
     }
 
     /**
-     * Add a log variable to the log configuration
+     * Add a log variable to the log configuration (if it does not exist already)
      *
      * @param name Complete name of the variable in the form group.name
      */
     public void addVariable(String name){
-        logVariables.add(new LogVariable(name));
+        LogVariable newLogVariable = new LogVariable(name);
+        if (!logVariables.contains(newLogVariable)) {
+            logVariables.add(newLogVariable);
+        }
     }
 
     /**
-     * Add a raw memory position to the log configuration
+     * Add a raw memory position to the log configuration (if it does not exist already)
      *
      * @param name Arbitrary name of the variable
-     * @param type
+     * @param type Type of the variable
      * @param address The address of the data
      */
     public void addMemory(String name, VariableType type, int address) {
-        logVariables.add(new LogVariable(name, type, LogVariable.MEM_TYPE, address));
+        LogVariable newLogVariable = new LogVariable(name, type, LogVariable.MEM_TYPE, address);
+        if (!logVariables.contains(newLogVariable)) {
+            logVariables.add(newLogVariable);
+        }
     }
 
     /**
-     * Returns log variable of the log configuration
+     * Returns all log variables of the log configuration as list
      *
      * @return list of log variables
      */

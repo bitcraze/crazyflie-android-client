@@ -94,8 +94,50 @@ public class LogVariable {
         return this.mType == LogVariable.TOC_TYPE;
     }
 
+    @Override
     public String toString() {
         return "LogVariable : name: " + this.mName + ", variableType: " + this.mVariableType;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + mAddress;
+        result = prime * result + ((mName == null) ? 0 : mName.hashCode());
+        result = prime * result + mType;
+        result = prime * result + ((mVariableType == null) ? 0 : mVariableType.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        LogVariable other = (LogVariable) obj;
+        if (mAddress != other.mAddress) {
+            return false;
+        }
+        if (mName == null) {
+            if (other.mName != null) {
+                return false;
+            }
+        } else if (!mName.equals(other.mName)) {
+            return false;
+        }
+        if (mType != other.mType) {
+            return false;
+        }
+        if (mVariableType != other.mVariableType) {
+            return false;
+        }
+        return true;
+    }
 }
