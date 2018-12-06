@@ -206,7 +206,7 @@ public class BleLink extends CrtpDriver {
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                mLogger.debug(String.format("BLE ReadRSSI [%d]", rssi));
+                //mLogger.debug(String.format("BLE ReadRSSI [%d]", rssi));
                 int percentage = 2*(rssi+90); // based on guesstimate
                 notifyLinkQualityUpdated(limit(percentage));
             }
