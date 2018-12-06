@@ -355,28 +355,36 @@ public class MainPresenter {
     }
 
     /**
-     * Start basic logging config
+     * Start logging config
      */
     private void startLogConfigs(LogConfig logConfig) {
-        if (mLogg != null) {
-            mLogg.addLogListener(standardLogAdapter);
-            mLogg.addConfig(logConfig);
-            mLogg.start(logConfig);
-        } else {
-            Log.e(LOG_TAG, "Logg was null!!");
+        if (mLogg == null) {
+            Log.e(LOG_TAG, "startLogConfigs: mLogg was null!!");
+            return;
         }
+        if (logConfig == null) {
+            Log.e(LOG_TAG, "startLogConfigs: Logg was null!!");
+            return;
+        }
+        mLogg.addLogListener(standardLogAdapter);
+        mLogg.addConfig(logConfig);
+        mLogg.start(logConfig);
     }
 
     /**
-     * Stop basic logging config
+     * Stop logging config
      */
     private void stopLogConfigs(LogConfig logConfig) {
-        if (mLogg != null) {
-            mLogg.stop(logConfig);
-            mLogg.delete(logConfig);
-            mLogg.removeLogListener(standardLogAdapter);
-        }else {
-            Log.e(LOG_TAG, "Logg was null!!");
+        if (mLogg == null) {
+            Log.e(LOG_TAG, "stopLogConfigs: mLogg was null!!");
+            return;
         }
+        if (logConfig == null) {
+            Log.e(LOG_TAG, "stopLogConfigs: Logg was null!!");
+            return;
+        }
+        mLogg.stop(logConfig);
+        mLogg.delete(logConfig);
+        mLogg.removeLogListener(standardLogAdapter);
     }
 }

@@ -160,7 +160,7 @@ public class Logg {
          */
 
         if (logConfig == null) {
-            throw new IllegalStateException("LogConfig is null!");
+            throw new IllegalArgumentException("LogConfig is null!");
         }
 
         for(LogVariable logVariable : logConfig.getLogVariables()) {
@@ -424,7 +424,7 @@ public class Logg {
      */
     public void create(LogConfig logConfig) {
         if (logConfig == null) {
-            throw new IllegalStateException("LogConfig is null!");
+            throw new IllegalArgumentException("LogConfig is null!");
         }
         int logConfigId = logConfig.getId();
 
@@ -532,7 +532,7 @@ public class Logg {
      */
     public void start(LogConfig logConfig) {
         if (logConfig == null) {
-            throw new IllegalStateException("LogConfig is null!");
+            throw new IllegalArgumentException("LogConfig is null!");
         }
         //if (self.cf.link is not None):
         // TODO:
@@ -553,7 +553,7 @@ public class Logg {
      */
     public void stop(LogConfig logConfig) {
         if (logConfig == null) {
-            throw new IllegalStateException("LogConfig is null!");
+            throw new IllegalArgumentException("LogConfig is null!");
         }
         // TODO:
         // if (mCrazyflie.getDriver() != null && mCrazyflie.getDriver().isConnected()) {
@@ -572,7 +572,7 @@ public class Logg {
      */
     public void delete(LogConfig logConfig) {
         if (logConfig == null) {
-            throw new IllegalStateException("LogConfig is null!");
+            throw new IllegalArgumentException("LogConfig is null!");
         }
         // TODO:
         // if (mCrazyflie.getDriver() != null && mCrazyflie.getDriver().isConnected()) {
