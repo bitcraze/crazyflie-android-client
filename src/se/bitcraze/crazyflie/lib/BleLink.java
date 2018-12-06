@@ -282,10 +282,14 @@ public class BleLink extends CrtpDriver {
     }
 
     private void stopScan() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mBluetoothLeScanner.stopScan(mScanCallback21);
-        } else {
-            mBluetoothAdapter.stopLeScan(mScanCallback18);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mBluetoothLeScanner.stopScan(mScanCallback21);
+            } else {
+                mBluetoothAdapter.stopLeScan(mScanCallback18);
+            }
+        } catch (IllegalStateException ise) {
+            mLogger.error("StopScan: IllegalStateException: " + ise.getMessage());
         }
     }
 
