@@ -479,6 +479,10 @@ public class BleLink extends CrtpDriver {
         }
 
         public void run() {
+            if (characteristic == null) {
+                mLogger.debug("characteristic is null!!");
+                return;
+            }
             if(mConnected && mWritten) {
                 if (mWriteWithAnswer) {
                     characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
