@@ -274,11 +274,13 @@ public class Crazyflie {
      * Start the connection setup by refreshing the TOCs
      */
     private void startConnectionSetup() {
+        String connection = "";
         if (mConnectionData != null) {
-            mLogger.info("We are connected [{}], requesting connection setup...", mConnectionData.toString());
+            connection = mConnectionData.toString();
         } else {
-            mLogger.info("We are connected [BLE], requesting connection setup...");
+            connection = "BLE";
         }
+        mLogger.info("We are connected [{}], requesting connection setup...", connection);
 
         mParam = new Param(this);
         //must be defined first to be usable in Log TocFetchFinishedListener
