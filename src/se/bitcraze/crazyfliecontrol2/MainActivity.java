@@ -38,20 +38,26 @@ import se.bitcraze.crazyfliecontrol.controller.GyroscopeController;
 import se.bitcraze.crazyfliecontrol.controller.IController;
 import se.bitcraze.crazyfliecontrol.controller.TouchController;
 import se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity;
+
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
@@ -60,6 +66,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.InputDevice;
@@ -79,6 +88,7 @@ import com.MobileAnarchy.Android.Widgets.Joystick.JoystickView;
 public class MainActivity extends Activity {
 
     private static final String LOG_TAG = "CrazyflieControl";
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 42;
 
     private JoystickView mJoystickViewLeft;
     private JoystickView mJoystickViewRight;
@@ -239,19 +249,9 @@ public class MainActivity extends Activity {
                     } else {
                         // TODO: FIXME
                         if(isCrazyradioAvailable(MainActivity.this)) {
-                            // TODO: can this be placed somewhere else?
-                            int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
-                            int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
-                            mPresenter.connectCrazyradio(radioChannel, radioDatarate, mCacheDir);
+                            connectCrazyradio();
                         } else {
-                            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
-                                boolean writeWithResponse = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false);
-                                Log.d(LOG_TAG, "Using bluetooth write with response - " + writeWithResponse);
-                                mPresenter.connectBle(writeWithResponse, mCacheDir);
-                            } else {
-                                // TODO: improve error message
-                                Log.e(LOG_TAG, "No BLE support available.");
-                            }
+                            connectBlePreChecks();
                         }
                     }
                 } catch (IllegalStateException e) {
@@ -269,6 +269,102 @@ public class MainActivity extends Activity {
               startActivity(intent);
             }
         });
+    }
+
+    private void connectCrazyradio() {
+        int radioChannel = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_CHANNEL, mRadioChannelDefaultValue));
+        int radioDatarate = Integer.parseInt(mPreferences.getString(PreferencesActivity.KEY_PREF_RADIO_DATARATE, mRadioDatarateDefaultValue));
+        mPresenter.connectCrazyradio(radioChannel, radioDatarate, mCacheDir);
+    }
+
+    private void connectBlePreChecks() {
+        // Check if Bluetooth LE is supported by the Android version
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            Log.e(LOG_TAG, Build.VERSION.SDK_INT + "does not support Bluetooth LE.");
+            Toast.makeText(this, Build.VERSION.SDK_INT + "does not support Bluetooth LE. Please use a Crazyradio to connect to the Crazyflie instead.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Check if Bluetooth LE is supported by the hardware
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Log.e(LOG_TAG, "Device does not support Bluetooth LE.");
+            Toast.makeText(this,  "Device does not support Bluetooth LE. Please use a Crazyradio to connect to the Crazyflie instead.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Since Android version 6, ACCESS_COARSE_LOCATION is required for Bluetooth scanning
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.e(LOG_TAG, "Android version >= 6 requires ACCESS_COARSE_LOCATION permissions for Bluetooth scanning.");
+            requestPermissions(Manifest.permission.ACCESS_COARSE_LOCATION, MY_PERMISSIONS_REQUEST_LOCATION);
+        } else {
+            connectBle();
+        }
+    }
+
+    private void connectBle() {
+        boolean writeWithResponse = mPreferences.getBoolean(PreferencesActivity.KEY_PREF_BLATENCY_BOOL, false);
+        Log.d(LOG_TAG, "Using bluetooth write with response - " + writeWithResponse);
+        mPresenter.connectBle(writeWithResponse, mCacheDir);
+    }
+
+    private void checkLocationSettings() {
+        LocationManager service = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean isEnabled = service.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (!isEnabled) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Location Access");
+            builder.setMessage("The app needs location access for Bluetooth scanning. Please enable it in the settings menu.");
+            builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+            builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Log.d(LOG_TAG, "Location access request has been denied.");
+                }
+            });
+            builder.show();
+        } else {
+            connectBle();
+        }
+
+    }
+
+    private void requestPermissions(String permission, int request) {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted. Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
+                // Show an explanation to the user *asynchronously* -- don't block this thread waiting for the user's response!
+                // After the user sees the explanation, try again to request the permission.
+                Log.d(LOG_TAG, "ACCESS_COARSE_LOCATION permission request has been denied.");
+                //Toast.makeText(this,  "Android version >= 6 requires ACCESS_COARSE_LOCATION permissions for Bluetooth scanning.", Toast.LENGTH_LONG).show();
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, request);
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, request);
+            }
+        } else {
+            // Permission has already been granted
+            checkLocationSettings();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the contacts-related task you need to do.
+                    checkLocationSettings();
+                } else {
+                    // permission denied, boo! Disable the functionality that depends on this permission.
+                    Log.d(LOG_TAG, "ACCESS_COARSE_LOCATION permission request has been denied.");
+                    Toast.makeText(this,  "Android version >= 6 requires ACCESS_COARSE_LOCATION permissions for Bluetooth scanning.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     @Override
