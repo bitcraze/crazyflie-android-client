@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import se.bitcraze.crazyflie.lib.BleLink;
 import se.bitcraze.crazyflie.lib.crazyflie.ConnectionAdapter;
 import se.bitcraze.crazyflie.lib.crazyflie.Crazyflie;
 import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
@@ -21,6 +20,7 @@ import se.bitcraze.crazyflie.lib.param.Param;
 import se.bitcraze.crazyflie.lib.param.ParamListener;
 import se.bitcraze.crazyflie.lib.toc.Toc;
 import se.bitcraze.crazyflie.lib.toc.VariableType;
+import se.bitcraze.crazyfliecontrol.ble.BleLink;
 import se.bitcraze.crazyfliecontrol.console.ConsoleListener;
 import se.bitcraze.crazyfliecontrol.controller.AbstractController;
 import se.bitcraze.crazyfliecontrol.controller.GamepadController;

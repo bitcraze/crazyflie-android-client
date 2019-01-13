@@ -25,7 +25,7 @@
  *
  */
 
-package se.bitcraze.crazyflie.lib;
+package se.bitcraze.crazyfliecontrol.ble;
 
 import java.util.Arrays;
 import java.util.List;
