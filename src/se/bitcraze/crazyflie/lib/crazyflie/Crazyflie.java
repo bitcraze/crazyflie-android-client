@@ -216,6 +216,7 @@ public class Crazyflie {
     private class ResendQueueHandler implements Runnable {
 
         public void run() {
+            mLogger.debug("ResendQueueHandlerThread was started.");
             while(true) {
                 if (!mResendQueue.isEmpty()) {
                     CrtpPacket resendPacket = mResendQueue.poll();
