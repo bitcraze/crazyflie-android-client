@@ -172,6 +172,10 @@ public class Crazyflie {
     // def send_packet(self, pk, expected_reply=(), resend=False):
     public void sendPacket(CrtpPacket packet){
         if (mDriver.isConnected()) {
+            if (packet == null) {
+                mLogger.warn("Packet is null.");
+                return;
+            }
             mDriver.sendPacket(packet);
 
             if (packet.getExpectedReply() != null && packet.getExpectedReply().length > 0) {

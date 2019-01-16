@@ -12,6 +12,7 @@ import se.bitcraze.crazyflie.lib.crazyradio.ConnectionData;
 import se.bitcraze.crazyflie.lib.crazyradio.RadioDriver;
 import se.bitcraze.crazyflie.lib.crtp.CommanderPacket;
 import se.bitcraze.crazyflie.lib.crtp.CrtpDriver;
+import se.bitcraze.crazyflie.lib.crtp.CrtpPacket;
 import se.bitcraze.crazyflie.lib.crtp.ZDistancePacket;
 import se.bitcraze.crazyflie.lib.log.LogAdapter;
 import se.bitcraze.crazyflie.lib.log.LogConfig;
@@ -182,6 +183,12 @@ public class MainPresenter {
         mCrazyflie.getParam().requestParamUpdate("ring.neffect");
     }
 
+    private void sendPacket(CrtpPacket packet) {
+        if (mCrazyflie != null) {
+            mCrazyflie.sendPacket(packet);
+        }
+    }
+
     /**
      * Start thread to periodically send commands containing the user input
      */
@@ -202,9 +209,9 @@ public class MainPresenter {
                     boolean xmode = mainActivity.getControls().isXmode();
                     if (heightHold) {
                         float targetHeight = controller.getTargetHeight();
-                        mCrazyflie.sendPacket(new ZDistancePacket(roll, pitch, yaw, targetHeight));
+                        sendPacket(new ZDistancePacket(roll, pitch, yaw, targetHeight));
                     } else {
-                        mCrazyflie.sendPacket(new CommanderPacket(roll, pitch, yaw, (char) thrustAbsolute, xmode));
+                        sendPacket(new CommanderPacket(roll, pitch, yaw, (char) thrustAbsolute, xmode));
                     }
                     try {
                         Thread.sleep(20);
@@ -267,14 +274,16 @@ public class MainPresenter {
 
     public void disconnect() {
         Log.d(LOG_TAG, "disconnect()");
+        // kill sendJoystickDataThread first to avoid NPE
+        if (mSendJoystickDataThread != null) {
+            mSendJoystickDataThread.interrupt();
+            mSendJoystickDataThread = null;
+        }
+
         if (mCrazyflie != null) {
             mCrazyflie.removeDataListener(mConsoleListener);
             mCrazyflie.disconnect();
             mCrazyflie = null;
-        }
-        if (mSendJoystickDataThread != null) {
-            mSendJoystickDataThread.interrupt();
-            mSendJoystickDataThread = null;
         }
 
         if (mDriver != null) {
