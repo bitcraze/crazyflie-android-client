@@ -167,7 +167,7 @@ public class TocFetcher {
         this.mCrc = payloadBuffer.getInt();
         mToc.setCrc(mCrc);
 
-        mLogger.debug("[this.mPort]: Got TOC CRC, "+ this.mNoOfItems + " items and CRC=" + String.format("0x%08X", this.mCrc) + ".");
+        mLogger.debug("[{}]: Got TOC CRC, {} items and CRC={}", new Object[] {this.mPort, this.mNoOfItems, String.format("0x%08X", this.mCrc)});
 
         //Try to find toc in cache
         Toc cacheData = (mTocCache != null) ? mTocCache.fetch(mCrc, mPort) : null;
