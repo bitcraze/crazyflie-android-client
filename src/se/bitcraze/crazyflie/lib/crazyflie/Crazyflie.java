@@ -224,8 +224,10 @@ public class Crazyflie {
             while(true) {
                 if (!mResendQueue.isEmpty()) {
                     CrtpPacket resendPacket = mResendQueue.poll();
-                    mLogger.debug("RESEND: {} ID: {}", resendPacket, resendPacket.getPayload()[0]);
-                    sendPacket(resendPacket);
+                    if (resendPacket != null) {
+                        mLogger.debug("RESEND: {} ID: {}", resendPacket, resendPacket.getPayload()[0]);
+                        sendPacket(resendPacket);
+                    }
                 }
                 try {
                     Thread.sleep(500);
