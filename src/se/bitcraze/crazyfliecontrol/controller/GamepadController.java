@@ -106,8 +106,8 @@ public class GamepadController extends AbstractController {
         /*if axis has a range of 1 (0 -> 1) instead of 2 (-1 -> 0) do not invert axis value,
         this is necessary for analog R1 (Brake) or analog R2 (Gas) shoulder buttons on PS3 controller*/
         if (event != null) {
-            if (event.getDevice() != null) {
-                InputDevice device = event.getDevice();
+            InputDevice device = event.getDevice();
+            if (device != null) {
                 mRightAnalogYAxisInvertFactor = (device.getMotionRange(mRightAnalogYAxis).getRange() == 1) ? 1 : -1;
                 mLeftAnalogYAxisInvertFactor = (device.getMotionRange(mLeftAnalogYAxis).getRange() == 1) ? 1 : -1;
             } else {
@@ -122,10 +122,15 @@ public class GamepadController extends AbstractController {
 
             mSplit_axis_yaw_right = (float) event.getAxisValue(mSplitAxisYawRightAxis);
             mSplit_axis_yaw_left = (float) event.getAxisValue(mSplitAxisYawLeftAxis);
+        } else {
+            Log.w(LOG_TAG, "event == null!");
         }
     }
 
     public void dealWithKeyEvent(KeyEvent event){
+        if (event == null) {
+            return;
+        }
         switch (event.getAction()) {
         case KeyEvent.ACTION_DOWN:
             if (event.getKeyCode() == mEmergencyBtn){
