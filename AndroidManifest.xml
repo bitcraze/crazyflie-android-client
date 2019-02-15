@@ -30,7 +30,8 @@
         <activity
             android:name="se.bitcraze.crazyfliecontrol2.MainActivity"
             android:label="@string/title_activity_main"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:screenOrientation="sensorLandscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,14 +47,16 @@
         </activity>
         <activity
             android:name="se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity"
-            android:theme="@android:style/Theme.Holo.Light" >
+            android:theme="@android:style/Theme.Holo.Light"
+            android:screenOrientation="sensorLandscape" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="se.bitcraze.crazyfliecontrol2.MainActivity" />
         </activity>
         <activity
             android:name="se.bitcraze.crazyfliecontrol.bootloader.BootloaderActivity"
-            android:theme="@android:style/Theme.Holo.Light" >
+            android:theme="@android:style/Theme.Holo.Light"
+            android:screenOrientation="sensorLandscape"
             android:label="@string/title_activity_bootloader"
             android:parentActivityName="se.bitcraze.crazyfliecontrol.prefs.PreferencesActivity" >
             <meta-data
