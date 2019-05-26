@@ -211,6 +211,7 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
      */
     public float getFirmwareVersion() {
         if (mConnection == null) {
+            Log.e(LOG_TAG, "getFirmwareVersion: mConnection is null!");
             return 0.0f;
         }
         byte[] rawDescs = mConnection.getRawDescriptors();
@@ -221,6 +222,10 @@ public class UsbLinkAndroid implements CrazyUsbInterface{
      * @see se.bitcraze.crazyflielib.IUsbLink#getSerialNumber()
      */
     public String getSerialNumber() {
+        if (mConnection == null) {
+            Log.e(LOG_TAG, "getSerialNumber: mConnection is null!");
+            return "UNKNOWN";
+        }
         return mConnection.getSerial();
     }
 

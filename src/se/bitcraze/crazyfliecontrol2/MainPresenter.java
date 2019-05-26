@@ -264,9 +264,11 @@ public class MainPresenter {
             mCrazyflie.connect();
 
             // add console listener
-            mConsoleListener = new ConsoleListener();
-            mConsoleListener.setMainActivity(mainActivity);
-            mCrazyflie.addDataListener(mConsoleListener);
+            if (mCrazyflie != null) {
+                mConsoleListener = new ConsoleListener();
+                mConsoleListener.setMainActivity(mainActivity);
+                mCrazyflie.addDataListener(mConsoleListener);
+            }
         } else {
             mainActivity.showToastie("Cannot connect: Crazyradio not attached and Bluetooth LE not available");
         }
