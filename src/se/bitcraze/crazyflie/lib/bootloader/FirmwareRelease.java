@@ -104,10 +104,12 @@ public class FirmwareRelease implements Comparable<FirmwareRelease> {
         String lcAssetName = mAssetName.toLowerCase(Locale.US);
         if (lcAssetName.startsWith("cf1") || lcAssetName.startsWith("crazyflie1")) {
             return "CF1";
-        } else if (lcAssetName.startsWith("cf2") || lcAssetName.startsWith("crazyflie2") || lcAssetName.startsWith("cflie2")) {
+        } else if (lcAssetName.startsWith("cf2") || lcAssetName.startsWith("crazyflie2") || lcAssetName.startsWith("cflie2") || lcAssetName.startsWith("firmware-cf2")) {
             return "CF2";
         } else if (lcAssetName.startsWith("crazyflie-")) {
             return "CF1 & CF2";
+        } else if (lcAssetName.startsWith("firmware-tag")) {
+            return "TAG";
         } else {
             return "Unknown";
         }
