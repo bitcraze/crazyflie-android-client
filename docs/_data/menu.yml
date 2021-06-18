@@ -1,0 +1,10 @@
+- page_id: home
+- title: Installling
+  subs:
+    - {page_id: install}
+- title: User Guides
+  subs:
+    - {page_id: user-instructions}
+- title: Development
+  subs:
+    - {page_id: android-development}
