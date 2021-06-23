@@ -44,7 +44,7 @@ If you have problems installing the ADT environment or setting up the emulator y
   - Connect your PC to the Android device via USB or Wifi
   - "Run as Android application" (this deploys and installs the APK to your Android device)
   - Use a USB On-the-go (OTG) cable (aka. USB Host cable) to connect your Android device to the Crazyradio dongle
-  - Run the Crazyflie app (see also [Crazyflie Android client user guide](../user-instructions.md))
+  - Run the Crazyflie app (see also [Crazyflie Android client user guide](/docs/userguides/user-instructions.md))
 
 More info about USB drivers, developer options and debugging setup can be found here:
   * http://developer.android.com/tools/device.html#setting-up

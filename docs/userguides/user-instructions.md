@@ -47,7 +47,7 @@ Alternative setup without a USB Y-cable:
 ![cf android app with controller](/docs/images/cf_android_app_with_controller.jpg)
 
 ### Connect a PS3 Controller (over Bluetooth) 
-  * Some Android devices made by Sony, like the Xperia Z1, support the PS3 controller natively ([forum post](http://forum.bitcraze.se/viewtopic.php?f=11&t=920)
+  * Some Android devices made by Sony, like the Xperia Z1, support the PS3 controller natively ([forum post](http://forum.bitcraze.io/viewtopic.php?f=11&t=920)
   * Otherwise your Android device must be rooted
   * You also need to install the Sixaxis Controller app (paid)
     * [Sixaxis Controller App](https://play.google.com/store/apps/details?id=com.dancingpixelstudios.sixaxiscontroller&hl=en)
@@ -76,7 +76,7 @@ Alternative setup without a USB Y-cable:
 | :::     | Galaxy S4 | 4.3   | supported? | not supported |
 | :::     | :::       | 4.4.2 | supported | supported |
 | :::     | Nexus 10 | 4.4 (Cyanogenmod) | supported | supported (a bit laggy) |
-| Sony | Tablet S | ? | [crazyradio not recognized](http://forum.bitcraze.se/viewtopic.php?f=6&t=362) | ? |
+| Sony | Tablet S | ? | [crazyradio not recognized](http://forum.bitcraze.io/viewtopic.php?f=6&t=362) | ? |
 | :::  | Z3 | 4.4.4 | supported | supported |
 | :::  | Z2 Tablet | 5.0.2 | supported | supported |
 | Verizon | Ellipsis 7 | 4.2 | ? | not supported |
