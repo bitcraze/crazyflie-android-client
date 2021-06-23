@@ -15,7 +15,7 @@ page_id: user-instructions
   - Use the on-screen controls to fly the Crazyflie
     * **WARNING: Be careful with the on-screen controls, they are harder to use than a gamepad.**
 
-## Connecting to the Crazyflie 2.0 via Bluetooth LE 
+## Connecting to the Crazyflie 2.0 via Bluetooth LE
 
   * Your Android device must support Bluetooth LE (Low Energy) 4.0 and run Android 4.4+ (eg. Nexus 4, Nexus 5, Samsung Galaxy S4)
   * Make sure that you have **not** paired your phone with the Crazyflie 2.0 via your phone's general Bluetooth settings, otherwise the app will not be able to connect properly (connection will claim to be successful, but controls won't work)
@@ -26,7 +26,7 @@ page_id: user-instructions
 
 Instead of using the on-screen controls, you can also connect an external controller like a PS3 Controller (or compatible):
 
-### Connect a PS3 Controller (over USB) 
+### Connect a PS3 Controller (over USB)
 
 In addition to the USB OTG cable, you'll also need:
   * USB Y-Cable
@@ -46,7 +46,7 @@ Alternative setup without a USB Y-cable:
 
 ![cf android app with controller](/docs/images/cf_android_app_with_controller.jpg)
 
-### Connect a PS3 Controller (over Bluetooth) 
+### Connect a PS3 Controller (over Bluetooth)
   * Some Android devices made by Sony, like the Xperia Z1, support the PS3 controller natively ([forum post](http://forum.bitcraze.io/viewtopic.php?f=11&t=920)
   * Otherwise your Android device must be rooted
   * You also need to install the Sixaxis Controller app (paid)
@@ -55,12 +55,12 @@ Alternative setup without a USB Y-cable:
   * You might have to press the "PS" button to activate the PS3 Controller
   * **Please note:** You cannot connect to the crazyflie 2.x while you are connected to the PS3 controller via Bluetooth. (This actually works both with BLE and Crazyradio on certain Sony Xperia phones (e.g. Z2,Z3). Only with Crazyradio on Nexus 5, more testing needs to be done though)
 
-## Android device compatibility 
+## Android device compatibility
 
 | Manufacturer | Name | Android version | Crazyradio over USB OTG | Bluetooth LE |
 | --- | --- | --- | --- | --- |
 | Asus | Nexus 7 (2012) | 4.3 | supported | ? |
-| HP | Touchpad | 4.0.4 (Cyanogenmod 9) | [Crazyradio not recognized](http://forum.bitcraze.se/viewtopic.php?f=6&t=362) | not supported |
+| HP | Touchpad | 4.0.4 (Cyanogenmod 9) | [Crazyradio not recognized](http://forum.bitcraze.io/viewtopic.php?f=6&t=362) | not supported |
 | HTC | Desire | 2.1 | Unsupported Android version | not supported |
 | ::: | One M7 | 4.x? | supported? | supported |
 | ::: | One M8 | 4.4.2? | supported? | supported |
@@ -81,7 +81,7 @@ Alternative setup without a USB Y-cable:
 | :::  | Z2 Tablet | 5.0.2 | supported | supported |
 | Verizon | Ellipsis 7 | 4.2 | ? | not supported |
 
-## Known issues 
+## Known issues
   * Flight data from the Crazyflie is not displayed
   * Larger screen size of tablets is not used efficiently
   * No reliable connection quality indicator
@@ -89,6 +89,6 @@ Alternative setup without a USB Y-cable:
 
 More can be found here: https://github.com/bitcraze/crazyflie-android-client/issues
 
-## Reporting bugs 
+## Reporting bugs
 
 Bugs and feature requests should be added as GitHub issues: https://github.com/bitcraze/crazyflie-android-client/issues

@@ -51,7 +51,7 @@ public class Crazyradio {
     public final static int CRADIO_PID = 0x7777; //Product ID
 
     // Dongle configuration requests
-    // See http://wiki.bitcraze.se/projects:crazyradio:protocol for documentation
+    // See https://www.bitcraze.io/documentation/repository/crazyradio-firmware/master/functional-areas/usb_radio_protocol/ for documentation
     private final static int SET_RADIO_CHANNEL = 0x01;
     private final static int SET_RADIO_ADDRESS = 0x02;
     private final static int SET_DATA_RATE = 0x03;
