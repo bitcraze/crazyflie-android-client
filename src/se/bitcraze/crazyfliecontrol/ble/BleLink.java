@@ -414,7 +414,7 @@ public class BleLink extends CrtpDriver {
         // controlbyte + payload (rest)
         byte[] secondPacket = new byte[20];
         secondPacket[0] = new ControlByte(false, pid, 0).toByte();
-        System.arraycopy(packet.getPayload(),19, secondPacket, 1, packet.getPayload().length-19);
+        System.arraycopy(packet.getPayload(),18 , secondPacket, 1, packet.getPayload().length-19);
         // send second packet
         mContext.runOnUiThread(new SendBlePacket(secondPacket, mCrtpUpChar));
         pid = (pid+1)%4;
