@@ -13,4 +13,4 @@ More information:
 
 ## Contributions
 
-Please check the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md).
+Please check the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md). Also to the [contribute page](https://www.bitcraze.io/contribute/) on our website to learn more.
