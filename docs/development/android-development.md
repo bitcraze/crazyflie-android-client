@@ -3,16 +3,15 @@ title: Android client development
 page_id: android-development
 ---
 
-# Setting up an development environment for the Crazyflie Android client 
 This guide will help you getting started with setting up a development environment for the Crazyflie Android client, running the app from source code and contributing code.
 
-## Installation 
+## Installation
 
-### Requirements 
+### Requirements
   * An Android device running version 4.0 or higher (the code might be changed to run on lower versions, but this has not been tested yet)
   * USB On-the-go (OTG) cable (aka. USB Host cable) to connect the Android device to the Crazyradio dongle
 
-### Installing the Android Development Tools (ADT) 
+### Installing the Android Development Tools (ADT)
   - Download the most recent Android Development Tools from http://developer.android.com/sdk/index.html
     * get the latest ADT Bundle (eg. adt-bundle-windows-x86-20130917.zip for Win32)
   - Extract the zip file and start Eclipse (adt-bundle-windows-x86-20130917/eclipse/eclipse.exe)
@@ -27,7 +26,7 @@ If you have problems installing the ADT environment or setting up the emulator y
   * http://developer.android.com/tools/devices/index.html
   * http://developer.android.com/tools/device.html
 
-### Getting the Crazyflie Android client source code 
+### Getting the Crazyflie Android client source code
   - Install a Git client for your operating system
     * Windows client from http://msysgit.github.io
     * Linux client, e.g. on Debian based systems with "sudo apt-get install git"
@@ -37,7 +36,7 @@ If you have problems installing the ADT environment or setting up the emulator y
   - With the EGit plug-in you can checkout the Crazyflie Android client source code from https://github.com/bitcraze/crazyflie-android-client.git
     * or on the commandline: ```git clone https://github.com/bitcraze/crazyflie-android-client.git```
 
-### Running the Android client from source code 
+### Running the Android client from source code
   - On Windows: install USB drivers for your Android device (http://developer.android.com/tools/extras/oem-usb.html)
   - Enable USB debugging on your Android device (Settings > Developer options)
     * You might need to enable the developer options first!
@@ -49,13 +48,13 @@ If you have problems installing the ADT environment or setting up the emulator y
 More info about USB drivers, developer options and debugging setup can be found here:
   * http://developer.android.com/tools/device.html#setting-up
 
-## Reporting bugs or requesting features 
+## Reporting bugs or requesting features
 Bugs and feature requests should be added as GitHub issues: https://github.com/bitcraze/crazyflie-android-client/issues
 
-## Contributing your code 
+## Contributing your code
 If you consider contributing code, then you should create a [github](https://github.com) account, fork the [crazyflie-android-client](https://github.com/bitcraze/crazyflie-android-client) and send a [pull request](https://github.com/bitcraze/crazyflie-android-client/pulls)
 
-### Coding standard 
+### Coding standard
 Due to a lack of time and laziness the code is still messy, but in general the coding style should follow the [Android Code Style Guidelines for Contributors](http://source.android.com/source/code-style.html).
 
   * [Use spaces for indentation](http://source.android.com/source/code-style.html#use-spaces-for-indentation)
