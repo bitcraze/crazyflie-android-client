@@ -50,7 +50,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -67,8 +66,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.InputDevice;
@@ -89,6 +88,9 @@ public class MainActivity extends Activity {
 
     private static final String LOG_TAG = "CrazyflieControl";
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 42;
+    private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH = 43;
+    private static final int MY_PERMISSIONS_REQUEST_BLUETOOTH_CONNECT = 44;
+
 
     private JoystickView mJoystickViewLeft;
     private JoystickView mJoystickViewRight;
@@ -290,8 +292,13 @@ public class MainActivity extends Activity {
             Toast.makeText(this,  "Device does not support Bluetooth LE. Please use a Crazyradio to connect to the Crazyflie instead.", Toast.LENGTH_LONG).show();
             return;
         }
+        // Since API 31, BLUETOOTH_SCAN permision is required, Location is not anymore
+        if (Build.VERSION.SDK_INT >= 31) {
+            Log.e(LOG_TAG, "Andrdoid verstion >=31 requires BLUETOOTH_SCAN permission for Bluetooth scanning");
+            requestBluetoothScanPermission();
+        }
         // Since Android version 6, ACCESS_COARSE_LOCATION is required for Bluetooth scanning
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Log.e(LOG_TAG, "Android version >= 6 requires ACCESS_COARSE_LOCATION permissions for Bluetooth scanning.");
             requestPermissions(Manifest.permission.ACCESS_COARSE_LOCATION, MY_PERMISSIONS_REQUEST_LOCATION);
         } else {
@@ -364,6 +371,62 @@ public class MainActivity extends Activity {
                     Toast.makeText(this,  "Android version >= 6 requires ACCESS_COARSE_LOCATION permissions for Bluetooth scanning.", Toast.LENGTH_LONG).show();
                 }
             }
+            case MY_PERMISSIONS_REQUEST_BLUETOOTH: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the contacts-related task you need to do.
+                    requestBluetoothConnectPermission();
+                } else {
+                    // permission denied, boo! Disable the functionality that depends on this permission.
+                    Log.d(LOG_TAG, "BLUETOOTH_SCAN permission request has been denied.");
+                    Toast.makeText(this,  "Android version >= 31 requires BLUETOOTH_SCAN permissions for Bluetooth scanning.", Toast.LENGTH_LONG).show();
+                }
+            }
+            case MY_PERMISSIONS_REQUEST_BLUETOOTH_CONNECT: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the contacts-related task you need to do.
+                    checkLocationSettings();
+                } else {
+                    // permission denied, boo! Disable the functionality that depends on this permission.
+                    Log.d(LOG_TAG, "BLUETOOTH_CONNECT permission request has been denied.");
+                    Toast.makeText(this,  "Android version >= 31 requires BLUETOOTH_CONNECT permissions for Bluetooth scanning.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    private void requestBluetoothScanPermission() {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_SCAN ) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted. Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.BLUETOOTH_SCAN)) {
+                // Show an explanation to the user *asynchronously* -- don't block this thread waiting for the user's response!
+                // After the user sees the explanation, try again to request the permission.
+                Log.d(LOG_TAG, "BLUETOOTH_SCAN permission request has been denied.");
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_SCAN}, MY_PERMISSIONS_REQUEST_BLUETOOTH);
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_SCAN}, MY_PERMISSIONS_REQUEST_BLUETOOTH);
+            }
+        } else {
+            // Permission has already been granted
+            requestBluetoothConnectPermission();
+        }
+    }
+
+    private void requestBluetoothConnectPermission() {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT ) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted. Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT)) {
+                // Show an explanation to the user *asynchronously* -- don't block this thread waiting for the user's response!
+                // After the user sees the explanation, try again to request the permission.
+                Log.d(LOG_TAG, "BLUETOOTH_SCAN permission request has been denied.");
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, MY_PERMISSIONS_REQUEST_BLUETOOTH_CONNECT);
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, MY_PERMISSIONS_REQUEST_BLUETOOTH_CONNECT);
+            }
+        } else {
+            // Permission has already been granted
+            checkLocationSettings();
         }
     }
 

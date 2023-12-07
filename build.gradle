@@ -4,7 +4,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.3'
+        classpath 'com.android.tools.build:gradle:8.1.1'
     }
 }
 allprojects {
@@ -17,10 +17,11 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdk 33
 
     useLibrary 'org.apache.http.legacy'
+
+    namespace "se.bitcraze.crazyfliecontrol2"
 
     buildTypes {
         debug {
@@ -61,12 +62,16 @@ android {
     }
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 28
+        targetSdkVersion 33
+    }
+    buildFeatures {
+        renderScript true
+        aidl true
     }
 }
 
 dependencies {
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'org.slf4j:slf4j-android:1.6.1-RC1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.6.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
