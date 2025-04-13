@@ -260,11 +260,9 @@ public class BleLink extends CrtpDriver {
     };
 
     private void scan () {
-        // Filtered scan
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //FIXME
-            ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
-            mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback21);
+            mBluetoothLeScanner.startScan(Arrays.asList(), new ScanSettings.Builder().build(), mScanCallback21);
         } else {
             mBluetoothAdapter.startLeScan(mScanCallback18);
         }
