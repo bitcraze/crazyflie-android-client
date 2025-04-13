@@ -62,7 +62,7 @@ android {
     }
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 33
+        targetSdkVersion 34
     }
     buildFeatures {
         renderScript true
