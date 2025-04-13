@@ -240,7 +240,7 @@ public class BleLink extends CrtpDriver {
             if (device != null && device.getName() != null) {
                 mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
-                if (device.getName().equals(CF_DEVICE_NAME) && rssi>rssiThreshold) {
+                if (device.getName().startsWith(CF_DEVICE_NAME) && !device.getName().equals(CF_LOADER_DEVICE_NAME) && rssi > rssiThreshold) {
                     stopScan();
                     if (mScannTimer != null) {
                         mScannTimer.cancel();
@@ -260,10 +260,9 @@ public class BleLink extends CrtpDriver {
     };
 
     private void scan () {
-        // Filtered scan
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ScanFilter cfFilter = new ScanFilter.Builder().setDeviceName(CF_DEVICE_NAME).build();
-            mBluetoothLeScanner.startScan(Arrays.asList(cfFilter), new ScanSettings.Builder().build(), mScanCallback21);
+            //FIXME
+            mBluetoothLeScanner.startScan(Arrays.asList(), new ScanSettings.Builder().build(), mScanCallback21);
         } else {
             mBluetoothAdapter.startLeScan(mScanCallback18);
         }
@@ -320,7 +319,7 @@ public class BleLink extends CrtpDriver {
                             if (device != null && device.getName() != null) {
                                 // mLogger.debug("Scanned device \"" + device.getName() + "\" RSSI: " + rssi);
 
-                                if (device.getName().equals(CF_DEVICE_NAME) && rssi > rssiThreshold) {
+                                if (device.getName().startsWith(CF_DEVICE_NAME) && !device.getName().equals(CF_LOADER_DEVICE_NAME) && rssi > rssiThreshold) {
                                     stopScan();
                                     if (mScannTimer != null) {
                                         mScannTimer.cancel();
