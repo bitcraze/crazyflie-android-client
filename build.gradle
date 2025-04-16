@@ -49,6 +49,7 @@ android {
                     assets.srcDirs = ['assets']
                 }
             }
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -61,7 +62,7 @@ android {
         exclude 'META-INF/NOTICE'
     }
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 26
         targetSdkVersion 34
     }
     buildFeatures {

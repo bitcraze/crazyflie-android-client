@@ -124,6 +124,7 @@ public class MainActivity extends Activity {
     private TextView mTextView_linkQuality;
     private MainPresenter mPresenter;
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,7 +172,8 @@ public class MainActivity extends Activity {
         filter.addAction(this.getPackageName()+".USB_PERMISSION");
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
+        registerReceiver(mUsbReceiver, filter, RECEIVER_EXPORTED);
+
 
         initializeSounds();
 
