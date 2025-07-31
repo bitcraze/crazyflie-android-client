@@ -1,16 +1,18 @@
-# Crazyflie Android client
+# Crazyflie Android Client
 
-The Crazyflie Android client can be used to control the Crazyflie micro quadcopter from an Android device.
-Connection is established using either the Crazyradio USB dongle or over Bluetooth LE (Crazyflie 2.0 only).
+This app lets you control a **Crazyflie 2.0 or 2.1** from an Android device via **Bluetooth Low Energy (BLE)**.  
+**Note:** The app does **not** support the **Crazyflie 2.1 Brushless**.
 
-The Crazyflie Android client app is available in the Google Play store:
+You can also connect using the Crazyradio USB dongle via USB OTG, depending on your device.
+
+Available on Google Play:  
 https://play.google.com/store/apps/details?id=se.bitcraze.crazyfliecontrol2
 
-More information:
+## Documentation
 
- - [Crazyflie Android client user guide](/docs/userguides/user-instructions.md)
- - [Crazyflie Android client development guide](/docs/development/android-development.md)
+- [User guide](/docs/userguides/user-instructions.md)  
+- [Development guide](/docs/development/android-development.md)
 
-## Contributions
+## Contribute
 
-Please check the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md). Also to the [contribute page](https://www.bitcraze.io/contribute/) on our website to learn more.
+Please check the [CONTRIBUTING.md](CONTRIBUTING.md) guide or visit our [contribute page](https://www.bitcraze.io/contribute/).
