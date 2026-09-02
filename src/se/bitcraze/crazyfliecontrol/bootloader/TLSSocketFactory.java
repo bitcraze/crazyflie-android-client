@@ -67,10 +67,40 @@ public class TLSSocketFactory extends SSLSocketFactory {
         return enableTLSOnSocket(internalSSLSocketFactory.createSocket(address, port, localAddress, localPort));
     }
 
-    private Socket enableTLSOnSocket(Socket socket) {
+    private Socket enableTLSOnSocket(Socket socket) throws IOException {
         if(socket != null && (socket instanceof SSLSocket)) {
-            ((SSLSocket) socket).setEnabledProtocols(new String[] {"TLSv1.1", "TLSv1.2"});
+            SSLSocket sslSocket = (SSLSocket) socket;
+            sslSocket.setEnabledProtocols(filterEnabledProtocols(sslSocket.getEnabledProtocols()));
         }
         return socket;
+    }
+
+    private String[] filterEnabledProtocols(String[] enabledProtocols) throws IOException {
+        int secureProtocolCount = 0;
+        for (String protocol : enabledProtocols) {
+            if (protocol != null && !isLegacyProtocol(protocol)) {
+                secureProtocolCount++;
+            }
+        }
+
+        if (secureProtocolCount == 0) {
+            throw new IOException("No secure TLS protocols are enabled");
+        }
+
+        String[] secureProtocols = new String[secureProtocolCount];
+        int secureProtocolIndex = 0;
+        for (String protocol : enabledProtocols) {
+            if (protocol != null && !isLegacyProtocol(protocol)) {
+                secureProtocols[secureProtocolIndex++] = protocol;
+            }
+        }
+        return secureProtocols;
+    }
+
+    private boolean isLegacyProtocol(String protocol) {
+        return protocol.startsWith("SSL")
+                || "TLSv1".equals(protocol)
+                || "TLSv1.0".equals(protocol)
+                || "TLSv1.1".equals(protocol);
     }
 }

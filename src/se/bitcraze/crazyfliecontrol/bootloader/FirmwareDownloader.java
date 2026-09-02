@@ -193,17 +193,16 @@ public class FirmwareDownloader {
         BufferedReader reader = null;
         StringBuilder builder = new StringBuilder();
         URL url = new URL(myUrl);
+        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
 
         // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
         try {
-            HttpsURLConnection.setDefaultSSLSocketFactory(new TLSSocketFactory());
+            urlConnection.setSSLSocketFactory(new TLSSocketFactory());
         } catch (KeyManagementException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
-        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
 
         try {
             String responseMsg = urlConnection.getResponseMessage();
