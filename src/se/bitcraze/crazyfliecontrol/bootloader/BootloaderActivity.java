@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -261,21 +259,10 @@ public class BootloaderActivity extends Activity {
             InputStream input = null;
             OutputStream output = null;
             HttpsURLConnection connection = null;
-            TLSSocketFactory tlsSocketFactory = null;
-
-            // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
-            try {
-                tlsSocketFactory = new TLSSocketFactory();
-            } catch (KeyManagementException | NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
 
             try {
                 URL url = new URL(urlString);
                 connection = (HttpsURLConnection) url.openConnection();
-                if (tlsSocketFactory != null) {
-                    connection.setSSLSocketFactory(tlsSocketFactory);
-                }
                 connection.connect();
 
                 // expect HTTP 200 OK, so we don't mistakenly save error report instead of the file
