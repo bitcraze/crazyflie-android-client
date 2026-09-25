@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -261,13 +259,6 @@ public class BootloaderActivity extends Activity {
             InputStream input = null;
             OutputStream output = null;
             HttpsURLConnection connection = null;
-
-            // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
-            try {
-                HttpsURLConnection.setDefaultSSLSocketFactory(new TLSSocketFactory());
-            } catch (KeyManagementException | NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
 
             try {
                 URL url = new URL(urlString);

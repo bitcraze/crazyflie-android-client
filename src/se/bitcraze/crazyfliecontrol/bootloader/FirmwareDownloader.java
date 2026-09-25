@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -193,16 +191,6 @@ public class FirmwareDownloader {
         BufferedReader reader = null;
         StringBuilder builder = new StringBuilder();
         URL url = new URL(myUrl);
-
-        // Retrofitting support for TLSv1.2, because GitHub only supports TLSv1.2
-        try {
-            HttpsURLConnection.setDefaultSSLSocketFactory(new TLSSocketFactory());
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
 
         try {
