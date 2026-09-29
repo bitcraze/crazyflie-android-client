@@ -62,20 +62,25 @@ public class TocElement implements Comparable<TocElement> {
      * @param data the binary payload of the element
      */
     public TocElement(CrtpPort port, byte[] data) {
+        this(port, data, false);
+    }
+
+    public TocElement(CrtpPort port, byte[] data, boolean useV2) {
         this();
         if (data != null) {
-            setGroupAndName(data);
-            setIdent(data[0] & 0x00ff);
+            int typeOffset = useV2 ? 2 : 1;
+            setGroupAndName(data, typeOffset + 1);
+            setIdent(useV2 ? (data[0] & 0xff) | ((data[1] & 0xff) << 8) : data[0] & 0xff);
             if (port == CrtpPort.LOGGING) {
-                setCtype(new Toc().getVariableTypeMapLog().get(data[1] & 0x0F)); 
+                setCtype(new Toc().getVariableTypeMapLog().get(data[typeOffset] & 0x0F));
             } else {
-                setCtype(new Toc().getVariableTypeMapParam().get(data[1] & 0x0F));
+                setCtype(new Toc().getVariableTypeMapParam().get(data[typeOffset] & 0x0F));
             }
 
             // setting pytype not needed in Java cf lib
 
             //TODO: self.access = ord(data[1]) & 0x10 ?!
-            if ((data[1] & 0x40) != 0) {
+            if ((data[typeOffset] & 0x40) != 0) {
                 setAccess(RO_ACCESS);
             } else {
                 setAccess(RW_ACCESS);
@@ -138,7 +143,10 @@ public class TocElement implements Comparable<TocElement> {
     }
 
     protected void setGroupAndName(byte[] payload) {
-        int offset = 2;
+        setGroupAndName(payload, 2);
+    }
+
+    private void setGroupAndName(byte[] payload, int offset) {
         byte[] trimmedPayload = new byte[payload.length-offset];
         System.arraycopy(payload, offset, trimmedPayload, 0, trimmedPayload.length);
         String temp = new String(trimmedPayload, Charset.forName("US-ASCII"));

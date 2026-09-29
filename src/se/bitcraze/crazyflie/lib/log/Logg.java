@@ -29,6 +29,7 @@ package se.bitcraze.crazyflie.lib.log;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,7 +267,7 @@ public class Logg {
             LogConfig logConfig = findLogConfig(id);
 
             //TODO: use switch instead of if?
-            if (cmd == CMD_CREATE_LOGCONFIG) {
+            if (cmd == CMD_CREATE_LOGCONFIG || cmd == CMD_CREATE_LOGCONFIG_V2) {
                 if (logConfig != null) {
                     if (errorStatus == 0x00) {
                         if (!logConfig.isAdded()) {
@@ -409,6 +410,7 @@ public class Logg {
     public final static int CMD_START_LOGGING = 3;
     public final static int CMD_STOP_LOGGING = 4;
     public final static int CMD_RESET_LOGGING = 5;
+    public final static int CMD_CREATE_LOGCONFIG_V2 = 6;
 
 
     // Channels used for the logging port
@@ -428,8 +430,10 @@ public class Logg {
         }
         int logConfigId = logConfig.getId();
 
-        ByteBuffer bb = ByteBuffer.allocate(31);
-        bb.put((byte) CMD_CREATE_LOGCONFIG);
+        boolean useV2 = mCrazyflie.getProtocolVersion() >= 4;
+        int createCommand = useV2 ? CMD_CREATE_LOGCONFIG_V2 : CMD_CREATE_LOGCONFIG;
+        ByteBuffer bb = ByteBuffer.allocate(31).order(CrtpPacket.BYTE_ORDER);
+        bb.put((byte) createCommand);
         bb.put((byte) logConfigId);
 
         List<LogVariable> logVariables = logConfig.getLogVariables();
@@ -438,7 +442,7 @@ public class Logg {
         }
         // currently the number of LogVariables per LogConfig is limited by the size of one packet: 31 bytes - 2 bytes (header)
         // TODO: it should be possible to add more LogVariables in additional packets
-        if (logVariables.size() >= (bb.capacity()-2)/2) {
+        if (logVariables.size() > (bb.capacity()-2)/(useV2 ? 3 : 2)) {
             throw new IllegalStateException("Maximum number of LogVariables per packet has been reached (" + logVariables.size() + ").");
         }
         checkTotalSizeOfVariables(logVariables);
@@ -460,7 +464,7 @@ public class Logg {
         }
 
         if (noOfCheckedLogVariables > 0) {
-            sendLoggPacket(bb.array(), new byte[]{CMD_CREATE_LOGCONFIG, (byte) logConfig.getId()});
+            sendLoggPacket(Arrays.copyOf(bb.array(), bb.position()), new byte[]{(byte) createCommand, (byte) logConfig.getId()});
             mLogger.debug("Added log config ID " + logConfigId + " containing " + noOfCheckedLogVariables + " log variables.");
         } else {
             mLogger.error("No log variables added to log config, skipped creating log config " + logConfig.getName());
@@ -494,7 +498,11 @@ public class Logg {
         mLogger.debug("Logging to raw memory " + variableType.name() + ", address: " + variable.getAddress());
         // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
         // pk.data += struct.pack('<I', var.address)
-        bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
+        if (mCrazyflie.getProtocolVersion() >= 4) {
+            bb.put((byte) variableTypeId).putShort((short) 0xffff).putInt(variable.getAddress());
+        } else {
+            bb.put(new byte[] {(byte) variableTypeId, (byte) variable.getAddress()});
+        }
     }
 
     private boolean createTocElement(ByteBuffer bb, LogVariable variable) {
@@ -521,7 +529,9 @@ public class Logg {
             // mLogger.debug("Adding " + name + " with id " + tocElementId + ", type " + variableType.name() + " and variableTypeId " + variableTypeId);
             // pk.data += struct.pack('<B', var.get_storage_and_fetch_byte())
             // pk.data += struct.pack('<B', self.cf.log.toc.get_element_id(var.name))
-            bb.put(new byte[] {(byte) variableTypeId, (byte) tocElementId});
+            bb.put((byte) variableTypeId);
+            if (mCrazyflie.getProtocolVersion() >= 4) { bb.putShort((short) tocElementId); }
+            else { bb.put((byte) tocElementId); }
             return true;
         }
         return false;

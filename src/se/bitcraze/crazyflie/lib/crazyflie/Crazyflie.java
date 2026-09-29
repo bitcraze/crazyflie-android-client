@@ -66,6 +66,8 @@ public class Crazyflie {
     private Param mParam;
     private Logg mLogg;
     private TocCache mTocCache;
+    private int mProtocolVersion = -1;
+    private PlatformService mPlatformService;
 
     /**
      * State of the connection procedure
@@ -143,6 +145,10 @@ public class Crazyflie {
                 //Send commander packet with all values set to 0 before closing the connection
                 sendPacket(new CommanderPacket(0, 0, 0, (char) 0));
             }
+            if (mPlatformService != null) {
+                mPlatformService.close();
+            }
+            mResendQueue.clear();
             mDriver.disconnect();
 
             if(mIncomingPacketHandlerThread != null) {
@@ -209,6 +215,10 @@ public class Crazyflie {
     private boolean isPacketMatchingExpectedReply(CrtpPacket resendQueuePacket, CrtpPacket packet) {
         //Only check equality for the amount of bytes in expected reply
         byte[] expectedReply = resendQueuePacket.getExpectedReply();
+        if (resendQueuePacket.getHeaderByte() != packet.getHeaderByte() ||
+                packet.getPayload().length < expectedReply.length) {
+            return false;
+        }
         for(int i = 0; i < expectedReply.length;i++) {
             if(expectedReply[i] != packet.getPayload()[i]) {
                 return false;
@@ -289,6 +299,23 @@ public class Crazyflie {
         }
         mLogger.info("We are connected [{}], requesting connection setup...", connection);
 
+        if (mDriver instanceof RadioDriver) {
+            mPlatformService = new PlatformService(this);
+            mPlatformService.fetchProtocolVersion(version -> {
+                mProtocolVersion = version;
+                mLogger.info("Firmware protocol version: {}", version);
+                startTocSetup();
+            });
+        } else {
+            startTocSetup();
+        }
+    }
+
+    public int getProtocolVersion() {
+        return mProtocolVersion;
+    }
+
+    private void startTocSetup() {
         mParam = new Param(this);
         //must be defined first to be usable in Log TocFetchFinishedListener
         final TocFetchFinishedListener paramTocFetchFinishedListener = new TocFetchFinishedListener(CrtpPort.PARAMETERS) {

@@ -73,7 +73,7 @@ public class CrtpPacket {
 
         public Header(byte header) {
             if(header != -1){
-                this.mPort = CrtpPort.getByNumber((byte) (header >> 4));
+                this.mPort = CrtpPort.getByNumber((byte) ((header & 0xff) >> 4));
                 this.mChannel = header & 0x03;
             }else{
                 isNullPacketHeader = true;

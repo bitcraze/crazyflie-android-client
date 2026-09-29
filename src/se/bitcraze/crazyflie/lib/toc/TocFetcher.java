@@ -29,6 +29,7 @@ package se.bitcraze.crazyflie.lib.toc;
 
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -58,7 +59,9 @@ public class TocFetcher {
 
     public static final int TOC_CHANNEL = 0;
     public static final int CMD_TOC_ELEMENT = 0;
-    public static final int CMD_TOC_INFO= 1;
+    public static final int CMD_TOC_INFO = 1;
+    public static final int CMD_TOC_ELEMENT_V2 = 2;
+    public static final int CMD_TOC_INFO_V2 = 3;
 
     private int mRequestedIndex = -1;
     private int mNoOfItems = -1;
@@ -69,6 +72,7 @@ public class TocFetcher {
     private long tocFetchStartTime;
 
     private Header mTocHeader;
+    private final boolean mUseV2;
 
     public enum TocState {
         IDLE, GET_TOC_INFO, GET_TOC_ELEMENT, TOC_FETCH_FINISHED;
@@ -76,6 +80,7 @@ public class TocFetcher {
 
     public TocFetcher(Crazyflie crazyFlie, CrtpPort port, Toc tocHolder, TocCache tocCache) {
         this.mCrazyflie = crazyFlie;
+        this.mUseV2 = crazyFlie != null && crazyFlie.getProtocolVersion() >= 4;
         this.mPort = port;
         this.mToc = tocHolder;
         this.mTocCache = tocCache;
@@ -125,25 +130,25 @@ public class TocFetcher {
     }
 
     /* package private */ void newPacketReceived(CrtpPacket packet) {
-        if (packet.getHeader().getChannel() != TOC_CHANNEL) {
+        if (packet.getPayload().length == 0 || packet.getHeader().getChannel() != TOC_CHANNEL) {
             return;
         }
         // payload = struct.pack("B" * (len(packet.datal) - 1), *packet.datal[1:])
         int offset = 1;
         byte[] payload = new byte[packet.getPayload().length-offset];
         System.arraycopy(packet.getPayload(), offset, payload, 0, payload.length);
-        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
+        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload).order(ByteOrder.LITTLE_ENDIAN);
 
         if (mState == TocState.GET_TOC_INFO) {
-            if (packet.getPayload()[0] == CMD_TOC_INFO) {
+            if (packet.getPayload()[0] == (mUseV2 ? CMD_TOC_INFO_V2 : CMD_TOC_INFO) && payload.length >= (mUseV2 ? 6 : 5)) {
                 handleCmdTocInfo(payloadBuffer);
             }
         } else if (mState == TocState.GET_TOC_ELEMENT) {
-            if (packet.getPayload()[0] == CMD_TOC_ELEMENT) {
+            if (packet.getPayload()[0] == (mUseV2 ? CMD_TOC_ELEMENT_V2 : CMD_TOC_ELEMENT) && payload.length >= (mUseV2 ? 3 : 2)) {
                 // Always add new element, but only request new if it's not the last one.
                 // if self.requested_index != ord(payload[0]):
                 // Fix for TOC > 128 items (fixed by Arnaud)
-                int actualIndex = payloadBuffer.get(0) & 0x00ff;
+                int actualIndex = mUseV2 ? payloadBuffer.getShort(0) & 0xffff : payloadBuffer.get(0) & 0xff;
                 if (this.mRequestedIndex != actualIndex) {
                     /*
                         # TODO: There might be a timing issue here with resending old
@@ -163,7 +168,7 @@ public class TocFetcher {
     private void handleCmdTocInfo(ByteBuffer payloadBuffer) {
         // [self.nbr_of_items, self._crc] = struct.unpack("<BI", payload[:5])
         // Fix for TOC > 128 items (fixed by Arnaud)
-        this.mNoOfItems = payloadBuffer.get() & 0x00ff;
+        this.mNoOfItems = mUseV2 ? payloadBuffer.getShort() & 0xffff : payloadBuffer.get() & 0xff;
         this.mCrc = payloadBuffer.getInt();
         mToc.setCrc(mCrc);
 
@@ -177,6 +182,8 @@ public class TocFetcher {
             mToc.setTocElementMap(cacheData.getTocElementMap());
             mLogger.info("TOC for port {} found in cache.", mPort);
             tocFetchFinished();
+        } else if (mNoOfItems == 0) {
+            tocFetchFinished();
         } else {
             this.mState = TocState.GET_TOC_ELEMENT;
             this.mRequestedIndex = 0;
@@ -185,7 +192,7 @@ public class TocFetcher {
     }
 
     private void handleCmdTocElement(ByteBuffer payloadBuffer) {
-        TocElement tocElement = new TocElement(mPort, payloadBuffer.array());
+        TocElement tocElement = new TocElement(mPort, payloadBuffer.array(), mUseV2);
         mToc.addElement(tocElement);
 
         mLogger.debug("Added "+ tocElement.getClass().getSimpleName() + " [" + tocElement.getIdent() + "] to TOC");
@@ -199,10 +206,8 @@ public class TocFetcher {
             mLogger.info("No more variables in TOC.");
             if (mTocCache != null) {
                 mTocCache.insert(mCrc, mPort, mToc);
-                tocFetchFinished();
-            } else {
-                mLogger.error("TOCCache is null!.");
             }
+            tocFetchFinished();
         }
     }
 
@@ -212,7 +217,7 @@ public class TocFetcher {
     private void requestTocInfo() {
         this.mState = TocState.GET_TOC_INFO;
         mLogger.debug("Requesting TOC info on port {}", this.mPort);
-        sendTocPacket(new byte[]{CMD_TOC_INFO});
+        sendTocPacket(new byte[]{(byte) (mUseV2 ? CMD_TOC_INFO_V2 : CMD_TOC_INFO)});
     }
 
     /**
@@ -222,7 +227,8 @@ public class TocFetcher {
      */
     private void requestTocElement(int index) {
         mLogger.debug("Requesting index {} on port {}", index, this.mPort);
-        sendTocPacket(new byte[]{CMD_TOC_ELEMENT, (byte) index});
+        sendTocPacket(mUseV2 ? new byte[]{CMD_TOC_ELEMENT_V2, (byte) index, (byte) (index >> 8)} :
+                new byte[]{CMD_TOC_ELEMENT, (byte) index});
     }
 
     /**
