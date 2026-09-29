@@ -156,13 +156,21 @@ public class Param {
      * Callback with data for an updated parameter
      */
     public void paramUpdated(CrtpPacket packet) {
-        int varId = packet.getPayload()[0];
+        byte[] data = packet.getPayload();
+        boolean useV2 = mCrazyflie.getProtocolVersion() >= 4;
+        int valueOffset = useV2 ? 2 : 1;
+        if (data.length < valueOffset) { return; }
+        int varId = useV2 ? (data[0] & 0xff) | ((data[1] & 0xff) << 8) : data[0] & 0xff;
+        if (useV2 && packet.getHeader().getChannel() == READ_CHANNEL) {
+            if (data.length < 3 || data[2] != 0) { return; }
+            valueOffset = 3;
+        }
         TocElement tocElement = mToc.getElementById(varId);
-        if (tocElement != null) {
+        if (tocElement != null && data.length - valueOffset >= tocElement.getCtype().getSize()) {
             //s = struct.unpack(element.pytype, pk.data[1:])[0]
             //s = s.__str__()
             // TODO: probably does not work as intended, use System.arrayCopy instead
-            ByteBuffer payload = ByteBuffer.wrap(packet.getPayload(), 1, packet.getPayload().length-1);
+            ByteBuffer payload = ByteBuffer.wrap(data, valueOffset, data.length - valueOffset);
             Number number = tocElement.getCtype().parse(payload);
 
             String completeName = tocElement.getCompleteName();
@@ -262,7 +270,10 @@ public class Param {
         // self.param_updater.request_param_update(self.toc.get_element_id(complete_name))
         int elementId = mToc.getElementId(completeName);
         Header header = new Header(READ_CHANNEL, CrtpPort.PARAMETERS);
-        CrtpPacket requestPacket = new CrtpPacket(header.getByte(), new byte[]{(byte) elementId});
+        if (elementId < 0) { return; }
+        byte[] id = mCrazyflie.getProtocolVersion() >= 4 ?
+                new byte[]{(byte) elementId, (byte) (elementId >> 8)} : new byte[]{(byte) elementId};
+        CrtpPacket requestPacket = new CrtpPacket(header.getByte(), id);
         mPut.addParamRequest(requestPacket);
     }
 
@@ -286,8 +297,10 @@ public class Param {
             //pk.data += struct.pack(element.pytype, eval(value))
             //TODO: value.byteValue() might not be the right method to use, because it can involve rounding or truncation!
             byte[] parse = tocElement.getCtype().parse(value);
-            ByteBuffer bb = ByteBuffer.allocate(parse.length+1);
-            bb.put((byte) tocElement.getIdent());
+            boolean useV2 = mCrazyflie.getProtocolVersion() >= 4;
+            ByteBuffer bb = ByteBuffer.allocate(parse.length + (useV2 ? 2 : 1)).order(CrtpPacket.BYTE_ORDER);
+            if (useV2) { bb.putShort((short) tocElement.getIdent()); }
+            else { bb.put((byte) tocElement.getIdent()); }
             bb.put(parse);
             CrtpPacket packet = new CrtpPacket(header.getByte(), bb.array());
             //self.param_updater.request_param_setvalue(pk)
@@ -421,9 +434,11 @@ public class Param {
                     // self.wait_lock.acquire()
                     // if self.cf.link:
                     if (packet != null && packet.getPayload().length > 0) {
-                        mReqParam = packet.getPayload()[0];
+                        boolean useV2 = mCrazyflie.getProtocolVersion() >= 4;
+                        mReqParam = useV2 ? (packet.getPayload()[0] & 0xff) |
+                                ((packet.getPayload()[1] & 0xff) << 8) : packet.getPayload()[0] & 0xff;
                         // self.cf.send_packet(pk, expected_reply=(pk.datat[0:2]))
-                        packet.setExpectedReply(new byte[] {packet.getPayload()[0]});
+                        packet.setExpectedReply(java.util.Arrays.copyOf(packet.getPayload(), useV2 ? 2 : 1));
                         if (packet.getHeader().getChannel() == READ_CHANNEL) {
                             mLogger.debug("Requesting updated for param with ID {}", (mReqParam & 0x00ff));
                         } else {

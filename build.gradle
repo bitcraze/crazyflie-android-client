@@ -4,7 +4,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.1'
+        classpath 'com.android.tools.build:gradle:9.4.0'
     }
 }
 allprojects {
@@ -17,57 +17,55 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdk 33
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
 
     useLibrary 'org.apache.http.legacy'
 
     namespace "se.bitcraze.crazyfliecontrol2"
 
-    buildTypes {
-        debug {
-            sourceSets {
-                main {
-                    manifest.srcFile 'AndroidManifest.xml'
-                    java.srcDirs = ['src']
-                    resources.srcDirs = ['src']
-                    aidl.srcDirs = ['src']
-                    renderscript.srcDirs = ['src']
-                    res.srcDirs = ['res']
-                    assets.srcDirs = ['assets']
-                }
-            }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
         }
+        test {
+            java.srcDirs = ['test/java']
+            resources.srcDirs = ['test/resources']
+        }
+    }
+
+    buildTypes {
         release {
-            sourceSets {
-                main {
-                    manifest.srcFile 'AndroidManifest.xml'
-                    java.srcDirs = ['src']
-                    resources.srcDirs = ['src']
-                    aidl.srcDirs = ['src']
-                    renderscript.srcDirs = ['src']
-                    res.srcDirs = ['res']
-                    assets.srcDirs = ['assets']
-                }
-            }
             signingConfig signingConfigs.debug
         }
     }
 
-    lintOptions {
+    lint {
         abortOnError false
     }
 
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
+    packaging {
+        resources {
+            excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
+        }
     }
     defaultConfig {
         minSdkVersion 26
         targetSdkVersion 34
     }
     buildFeatures {
-        renderScript true
-        aidl true
+        buildConfig true
+    }
+    testOptions {
+        // Bootloader tests use Android only through the SLF4J logging backend.
+        unitTests.returnDefaultValues = true
     }
 }
 
@@ -76,4 +74,5 @@ dependencies {
     implementation 'org.slf4j:slf4j-android:1.6.1-RC1'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.6.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
+    testImplementation 'junit:junit:4.13.2'
 }

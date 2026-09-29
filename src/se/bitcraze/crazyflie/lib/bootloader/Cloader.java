@@ -69,7 +69,7 @@ public class Cloader {
     private String mErrorMessage = "";
     private int mProtocolVersion = 0xFF;
 
-    private boolean mCancelled = false;
+    private volatile boolean mCancelled = false;
 
     // Bootloader commands
     public final static int GET_INFO = 0x10;
@@ -532,9 +532,11 @@ public class Cloader {
         #print "Write page", flashPage
         #print "Writing page [%d] and [%d] forward" % (flashPage, nPage)
         */
+        if (isCancelled()) {
+            mErrorMessage = "Flashing cancelled";
+            return false;
+        }
         CrtpPacket replyPk = null;
-        int retryCounter = 5;
-        //#print "Flashing to 0x{:X}".format(addr)
 
         //pk.data = struct.pack("<BBHHH", addr, 0x18, page_buffer, target_page, page_count)
         ByteBuffer bb = ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN);
@@ -545,15 +547,22 @@ public class Cloader {
         bb.putChar((char) pageCount);
         sendBootloaderPacket(bb.array());
 
-        while(!isBootloaderReplyPacket(replyPk, addr, WRITE_FLASH) && retryCounter >= 0 && !isCancelled()) {
+        // A missing reply leaves the write result unknown. Stop instead of repeating the command.
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
+        while (!isCancelled() && System.nanoTime() < deadline) {
             replyPk = this.mDriver.receivePacket(1);
-            //TODO: why does it not work, when the retryCounter is activated?
-//            retryCounter--;
+            if (isBootloaderReplyPacket(replyPk, addr, WRITE_FLASH) && replyPk.getPayload().length >= 4) {
+                break;
+            }
+            replyPk = null;
         }
-
-        if (retryCounter < 0) {
-            mLogger.debug("RetryCounter is < 0!");
-            //self.error_code = -1
+        if (isCancelled()) {
+            mErrorMessage = "Flashing cancelled";
+            return false;
+        }
+        if (replyPk == null) {
+            mErrorMessage = "Timed out waiting for flash acknowledgement from " + TargetTypes.toString(addr)
+                    + " at page " + targetPage + ". Keep the Crazyflie in bootloader mode and retry the update";
             return false;
         }
 
@@ -609,7 +618,7 @@ public class Cloader {
         if (paket == null) {
             return false;
         }
-        return paket.getHeaderByte() == (byte) 0xFF && paket.getPayload()[0] == (byte) firstByte && paket.getPayload()[1] == (byte) secondByte;
+        return paket.getHeaderByte() == (byte) 0xFF && paket.getPayload().length >= 2 && paket.getPayload()[0] == (byte) firstByte && paket.getPayload()[1] == (byte) secondByte;
     }
 
     public List<Target> getTargetsAsList() {
