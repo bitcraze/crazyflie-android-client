@@ -27,23 +27,30 @@
 
 package se.bitcraze.crazyflie.lib.bootloader;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Needs to be in a separate class, otherwise more JSON serialization magic is required
  *
  */
 public class FirmwareDetails {
     private String mPlatform;
-    private String mTarget;
+    private List<String> mTarget = new ArrayList<String>();
     private String mType;
     private String mRelease;
     private String mRepository;
+    private List<String> mRequires = new ArrayList<String>();
 
     public FirmwareDetails() {
     }
 
     public FirmwareDetails(String platform, String target, String type, String release, String repository) {
         this.mPlatform = platform;
-        this.mTarget = target;
+        this.mTarget = Collections.singletonList(target);
         this.mType = type;
         this.mRelease = release;
         this.mRepository = repository;
@@ -57,12 +64,33 @@ public class FirmwareDetails {
         this.mPlatform = platform;
     }
 
-    public String getTarget() {
+    public List<String> getTarget() {
         return mTarget;
     }
 
-    public void setTarget(String target) {
-        this.mTarget = target;
+    public void setTarget(JsonNode target) {
+        List<String> targets = new ArrayList<String>();
+        if (target.isTextual()) {
+            targets.add(target.asText());
+        } else if (target.isArray()) {
+            for (JsonNode name : target) {
+                if (!name.isTextual()) {
+                    throw new IllegalArgumentException("Firmware targets must be strings");
+                }
+                targets.add(name.asText());
+            }
+        } else {
+            throw new IllegalArgumentException("Firmware target must be a string or a list of strings");
+        }
+        this.mTarget = targets;
+    }
+
+    public List<String> getRequires() {
+        return mRequires;
+    }
+
+    public void setRequires(List<String> requires) {
+        this.mRequires = requires == null ? new ArrayList<String>() : requires;
     }
 
     public String getType() {

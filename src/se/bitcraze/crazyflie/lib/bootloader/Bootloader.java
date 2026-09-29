@@ -71,10 +71,11 @@ public class Bootloader {
 
     final Logger mLogger = LoggerFactory.getLogger("Bootloader");
 
-    private static ObjectMapper mMapper = new ObjectMapper(); // can reuse, share globally
+    private static final ObjectMapper mMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final String MANIFEST_FILENAME = "manifest.json";
     private Cloader mCload;
-    private boolean mCancelled = false;
+    private volatile boolean mCancelled = false;
     private List<BootloaderListener> mBootloaderListeners = Collections.synchronizedList(new LinkedList<BootloaderListener>());
 
     /**
@@ -86,7 +87,6 @@ public class Bootloader {
      */
     public Bootloader(CrtpDriver driver) {
         this.mCload = new Cloader(driver);
-        mMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public Cloader getCloader() {
@@ -206,8 +206,7 @@ public class Bootloader {
     public boolean flash(File file, String... targetNames) throws IOException {
         List<FlashTarget> filesToFlash = getFlashTargets(file, targetNames);
         if (filesToFlash.isEmpty()) {
-            mLogger.error("Found no files to flash.");
-            return false;
+            throw new IOException("No compatible firmware images found in the selected file.");
         }
         int fileCounter = 0;
         for (FlashTarget ft : filesToFlash) {
@@ -238,46 +237,48 @@ public class Bootloader {
             File basePath = new File(file.getAbsoluteFile().getParent() + "/" + getFileNameWithoutExtension(file));
             File manifestFile = new File(basePath.getAbsolutePath(), MANIFEST_FILENAME);
             if (basePath.exists() && manifestFile.exists()) {
-                Manifest mf = null;
-                try {
-                    mf = readManifest(manifestFile);
-                } catch (IOException ioe) {
-                    mLogger.error("Error while trying to read manifest file:\n" + ioe.getMessage());
+                Manifest mf = readManifest(manifestFile);
+                if (mf.getVersion() < 1 || mf.getVersion() > 2) {
+                    throw new IOException("Unsupported firmware manifest version: " + mf.getVersion());
                 }
-                //TODO: improve error handling
-                if (mf == null) {
-                    return filesToFlash;
+                Target stm32 = this.mCload.getTargets().get(TargetTypes.STM32);
+                if (stm32 == null) {
+                    throw new IOException("No bootloader information for stm32.");
+                }
+                String platform;
+                if (stm32.getProtocolVersion() == BootVersion.CF2_PROTO_VER) {
+                    platform = "cf2";
+                } else if (stm32.getProtocolVersion() == BootVersion.CF1_PROTO_VER_0 ||
+                        stm32.getProtocolVersion() == BootVersion.CF1_PROTO_VER_1) {
+                    platform = "cf1";
+                } else {
+                    throw new IOException("Unsupported bootloader protocol: " + stm32.getProtocolVersion());
                 }
                 Set<String> files = mf.getFiles().keySet();
 
                 // iterate over file names in manifest.json
                 for (String fileName : files) {
                     FirmwareDetails firmwareDetails = mf.getFiles().get(fileName);
-                    Target t = this.mCload.getTargets().get(TargetTypes.fromString(firmwareDetails.getTarget()));
-                    if (t != null) {
-                        // use path to extracted file
-                        //File flashFile = new File(file.getParent() + "/" + file.getName() + "/" + fileName);
-                        File flashFile = new File(basePath.getAbsolutePath(), fileName);
-                        FlashTarget ft = new FlashTarget(t, readFile(flashFile), firmwareDetails.getType(), t.getStartPage()); //TODO: does startPage HAVE to be an extra argument!? (it's already included in Target)
-                        // add flash target
-                        // if no target names are specified, flash everything
-                        if (targetNames == null || targetNames.length == 0 || targetNames[0].isEmpty()) {
-                            // deal with different platforms (CF1, CF2)
-                            // TODO: simplify
-                            if (t.getFlashPages() == 128 && "cf1".equalsIgnoreCase(firmwareDetails.getPlatform())) { //128 = CF 1.0
-                                filesToFlash.add(ft);
-                                // deal with STM32 and NRF51 for CF2 (different no of flash pages)
-                            } else if ((t.getFlashPages() == 1024 || t.getFlashPages() == 232) && "cf2".equalsIgnoreCase(firmwareDetails.getPlatform())) { //1024 = CF 2.0
-                                filesToFlash.add(ft);
-                            }
-                        } else {
-                            // else flash only files whose targets are contained in targetNames
-                            if (Arrays.asList(targetNames).contains(firmwareDetails.getTarget())) {
-                                filesToFlash.add(ft);
-                            }
+                    // Deck updates and bootloader/SoftDevice upgrades need their own flashing algorithms.
+                    if (!platform.equalsIgnoreCase(firmwareDetails.getPlatform()) ||
+                            !"fw".equals(firmwareDetails.getType())) {
+                        continue;
+                    }
+                    for (String targetName : firmwareDetails.getTarget()) {
+                        if (targetNames != null && targetNames.length > 0 && !targetNames[0].isEmpty() &&
+                                !Arrays.asList(targetNames).contains(targetName)) {
+                            continue;
                         }
-                    } else {
-                        mLogger.error("No target found for " + firmwareDetails.getTarget());
+                        Target target = this.mCload.getTargets().get(TargetTypes.fromString(targetName));
+                        if (target == null) {
+                            throw new IOException("No bootloader information for " + targetName + ".");
+                        }
+                        if (target.getId() == TargetTypes.NRF51) {
+                            checkSoftDevice(target, firmwareDetails);
+                        }
+                        File flashFile = new File(basePath, fileName);
+                        filesToFlash.add(new FlashTarget(target, readFile(flashFile),
+                                firmwareDetails.getType(), target.getStartPage()));
                     }
                 }
             } else {
@@ -298,6 +299,30 @@ public class Bootloader {
             }
         }
         return filesToFlash;
+    }
+
+    private void checkSoftDevice(Target nrf51, FirmwareDetails firmware) throws IOException {
+        String installed;
+        // The firmware start page identifies the SoftDevice, as in the Python client.
+        if (nrf51.getStartPage() == 88) {
+            installed = "sd-s110";
+        } else if (nrf51.getStartPage() == 108) {
+            installed = "sd-s130";
+        } else {
+            throw new IOException("Cannot identify installed SoftDevice: unknown nrf51 firmware start page " +
+                    nrf51.getStartPage() + ". Use the PC client to update this Crazyflie.");
+        }
+        // Older releases omit the dependency and require the original S110 SoftDevice.
+        List<String> requirements = firmware.getRequires().isEmpty() ?
+                Collections.singletonList("sd-s110") : firmware.getRequires();
+        for (String required : requirements) {
+            if (!installed.equals(required)) {
+                throw new IOException("SoftDevice mismatch: Crazyflie has " + installed +
+                        ", firmware requires " + required + ". No firmware was written. " +
+                        "Update your Crazyflie with the PC client first.");
+            }
+        }
+        notifyUpdateStatus("SoftDevice compatible: " + installed + ".");
     }
 
     private void unzip(File zipFile) {
@@ -596,8 +621,7 @@ public class Bootloader {
         } catch (JsonMappingException jme) {
             errorMessage = jme.getMessage();
         }
-        LoggerFactory.getLogger("Bootloader").error("Error while parsing manifest " + file.getName() + ": " + errorMessage);
-        return null;
+        throw new IOException("Error while parsing firmware manifest " + file.getName() + ": " + errorMessage);
     }
 
     public static void writeManifest (String fileName, Manifest manifest) throws IOException {

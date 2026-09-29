@@ -497,6 +497,7 @@ public class BootloaderActivity extends Activity {
                 flashSuccessful = mBootloader.flash(firmwareFile);
             } catch (IOException ioe) {
                 Log.e(LOG_TAG, ioe.getMessage());
+                publishProgress(null, null, null, ioe.getMessage());
                 flashSuccessful = false;
             }
             mBootloader.removeBootloaderListener(bootloaderListener);
@@ -514,7 +515,7 @@ public class BootloaderActivity extends Activity {
                 // TODO: progress bar max is reset when activity is resumed
                 mProgressBar.setMax(Integer.parseInt(progress[2]));
             } else if (progress[3] != null) {
-                appendConsole(progress[3]);
+                appendConsoleError(progress[3]);
             }
         }
 
@@ -525,7 +526,7 @@ public class BootloaderActivity extends Activity {
             } else {
                 appendConsoleError(result);
             }
-            stopFlashProcess(true);
+            stopFlashProcess(flashSuccessful);
         }
 
         @Override
