@@ -14,5 +14,6 @@ https://play.google.com/store/apps/details?id=se.bitcraze.crazyfliecontrol2
 - [Development guide](/docs/development/android-development.md)
 
 ## Contribute
+Before you open a pull request, please read our [General guidelines for code contributions](https://www.bitcraze.io/development/contribute/general-guidelines/).
 
-Please check the [CONTRIBUTING.md](CONTRIBUTING.md) guide or visit our [contribute page](https://www.bitcraze.io/contribute/).
+For other ways to contribute, see the [contribute page](https://www.bitcraze.io/development/contribute/).
